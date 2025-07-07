@@ -23,6 +23,7 @@ let bpThumbnails = new BiggerPictureThumbnails({
 })
 
 let imageLinks = document.querySelectorAll('#images a')
+let coverLinks = document.querySelectorAll('#cover a')
 let vidIframeLinks = document.querySelectorAll('#vids a')
 let htmlLinks = document.querySelectorAll('[data-html]')
 let captionLinks = document.querySelectorAll('#captions a')
@@ -210,6 +211,7 @@ handleMasonry(document.querySelectorAll('.masonry'))
 
 // BiggerPicture setup
 handleNodes(imageLinks)
+handleNodes(coverLinks)
 handleNodes(captionLinks)
 handleNodes(responsiveExample)
 handleVids(vidIframeLinks)

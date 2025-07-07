@@ -100,6 +100,24 @@
 				position = i
 			}
 		}
+
+		items.forEach((item) => {
+			if (item.element && (!item.thumb || !item.fit)) {
+				const thumbElement = item.element.querySelector('img');
+				if (thumbElement instanceof HTMLImageElement) {
+					if (!item.thumb) {
+						item.thumb = thumbElement.src
+					}
+					if (!item.fit) {
+						item.fit = window.getComputedStyle(thumbElement).objectFit
+					}
+				}
+			}
+			if (!item.fit) {
+				item.fit = 'fill'
+			}
+		});
+
 	}
 
 	/** closes gallery */
@@ -119,6 +137,7 @@
 
 	/**
 	 * go to specific item in gallery
+	 * @param {number} index
 	 * @param {number} index
 	 */
 	export const setPosition = (index) => {
@@ -162,8 +181,12 @@
 	 * @param {object} item object with height / width properties
 	 * @returns {Array} [width: number, height: number]
 	 */
-	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
+	const calculateDimensions = ({ width = 0, height = 0 }) => {
 		const { scale = 0.99 } = opts
+		if (!width || !height) {
+			width = container.w
+			height = container.h
+		}
 		const ratio = Math.min(
 			1,
 			(container.w / width) * scale,
@@ -190,7 +213,13 @@
 			image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`
 			image.srcset = item.img
 			item.preload = true
-			return image.decode().catch((error) => {})
+			return image.decode().then(() => {
+				if (item.width > 0 && item.height > 0) {
+					return;
+				}
+				item.width = image.naturalWidth
+				item.height = image.naturalHeight
+			}).catch((error) => {})
 		}
 	}
 
@@ -213,6 +242,7 @@
 	/** custom svelte transition for entrance zoom */
 	const scaleIn = (node) => {
 		let dimensions
+		let css
 
 		if (activeItemIsHtml()) {
 			const bpItem = node.firstChild.firstChild
@@ -228,16 +258,30 @@
 		const scaleWidth = rect.width / dimensions[0]
 		const scaleHeight = rect.height / dimensions[1]
 
+		if (activeItem.fit === 'cover') {
+			const scale = Math.max(scaleHeight, scaleWidth),
+				offsetVertical = Math.max((dimensions[1] - rect.height / scale) / 2, 0),
+				offsetHorizontal = Math.max((dimensions[0] - rect.width / scale) / 2, 0);
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);
+				--bp-clip-y: ${offsetVertical * u}px;
+				--bp-clip-x: ${offsetHorizontal * u}px;`
+			}
+		} else if (activeItem.fit === 'contain') {
+			const scale = Math.min(scaleHeight, scaleWidth);
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);`
+			}
+		} else {
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scaleWidth + t * (1 - scaleWidth)}, ${scaleHeight + t * (1 - scaleHeight)}, 1);`
+			};
+		}
+
 		return {
 			duration: 480,
 			easing: cubicOut,
-			css: (t, u) => {
-				return `transform:translate3d(${leftOffset * u}px, ${
-					centerTop * u
-				}px, 0) scale3d(${scaleWidth + t * (1 - scaleWidth)}, ${
-					scaleHeight + t * (1 - scaleHeight)
-				}, 1)`
-			},
+			css: css,
 		}
 	}
 

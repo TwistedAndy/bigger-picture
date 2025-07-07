@@ -15,6 +15,9 @@ function run_all(fns) {
 function is_function(thing) {
     return typeof thing === 'function';
 }
+function safe_not_equal(a, b) {
+    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
 function not_equal(a, b) {
     return a != a ? b == b : a !== b;
 }
@@ -69,11 +72,22 @@ function loop(callback) {
 function append(target, node) {
     target.appendChild(node);
 }
+function append_empty_stylesheet(node) {
+    const style_element = element('style');
+    append_stylesheet(document, style_element);
+    return style_element.sheet;
+}
+function append_stylesheet(node, style) {
+    append(node.head || node, style);
+    return style.sheet;
+}
 function insert(target, node, anchor) {
     target.insertBefore(node, anchor || null);
 }
 function detach(node) {
-    node.parentNode.removeChild(node);
+    if (node.parentNode) {
+        node.parentNode.removeChild(node);
+    }
 }
 function element(name) {
     return document.createElement(name);
@@ -105,22 +119,29 @@ function set_style(node, key, value, important) {
 function toggle_class(element, name, toggle) {
     element.classList[toggle ? 'add' : 'remove'](name);
 }
-function custom_event(type, detail, bubbles = false) {
+function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
     const e = document.createEvent('CustomEvent');
-    e.initCustomEvent(type, bubbles, false, detail);
+    e.initCustomEvent(type, bubbles, cancelable, detail);
     return e;
 }
-let stylesheet;
+
+// we need to store the information for multiple documents because a Svelte application could also contain iframes
+// https://github.com/sveltejs/svelte/issues/3624
+const managed_styles = new Map();
 let active = 0;
-let current_rules = {};
 // https://github.com/darkskyapp/string-hash/blob/master/index.js
-// function hash(str) {
-//     let hash = 5381;
-//     let i = str.length;
-//     while (i--)
-//         hash = ((hash << 5) - hash) ^ str.charCodeAt(i);
-//     return hash >>> 0;
-// }
+function hash(str) {
+    let hash = 5381;
+    let i = str.length;
+    while (i--)
+        hash = ((hash << 5) - hash) ^ str.charCodeAt(i);
+    return hash >>> 0;
+}
+function create_style_information(doc, node) {
+    const info = { stylesheet: append_empty_stylesheet(), rules: {} };
+    managed_styles.set(doc, info);
+    return info;
+}
 function create_rule(node, a, b, duration, delay, ease, fn, uid = 0) {
     const step = 16.666 / duration;
     let keyframes = '{\n';
@@ -129,40 +150,43 @@ function create_rule(node, a, b, duration, delay, ease, fn, uid = 0) {
         keyframes += p * 100 + `%{${fn(t, 1 - t)}}\n`;
     }
     const rule = keyframes + `100% {${fn(b, 1 - b)}}\n}`;
-    const name = `_bp_${Math.round(Math.random() * 1e9)}_${uid}`;
-    if (!current_rules[name]) {
-        if (!stylesheet) {
-            const style = element('style');
-            document.head.appendChild(style);
-            stylesheet = style.sheet;
-        }
-        current_rules[name] = true;
+    const name = `_bp_${hash(rule)}_${uid}`;
+    const doc = document;
+    const { stylesheet, rules } = managed_styles.get(doc) || create_style_information(doc);
+    if (!rules[name]) {
+        rules[name] = true;
         stylesheet.insertRule(`@keyframes ${name} ${rule}`, stylesheet.cssRules.length);
     }
     const animation = node.style.animation || '';
-    node.style.animation = `${animation ? `${animation}, ` : ``}${name} ${duration}ms linear ${delay}ms 1 both`;
+    node.style.animation = `${animation ? `${animation}, ` : ''}${name} ${duration}ms linear ${delay}ms 1 both`;
     active += 1;
     return name;
 }
 function delete_rule(node, name) {
-    node.style.animation = (node.style.animation || '')
-        .split(', ')
-        .filter(name
+    const previous = (node.style.animation || '').split(', ');
+    const next = previous.filter(name
         ? anim => anim.indexOf(name) < 0 // remove specific animation
         : anim => anim.indexOf('_bp') === -1 // remove all Svelte animations
-    )
-        .join(', ');
-    if (name && !--active)
-        clear_rules();
+    );
+    const deleted = previous.length - next.length;
+    if (deleted) {
+        node.style.animation = next.join(', ');
+        active -= deleted;
+        if (!active)
+            clear_rules();
+    }
 }
 function clear_rules() {
     raf(() => {
         if (active)
             return;
-        let i = stylesheet.cssRules.length;
-        while (i--)
-            stylesheet.deleteRule(i);
-        current_rules = {};
+        managed_styles.forEach(info => {
+            const { ownerNode } = info.stylesheet;
+            // there is no ownerNode if it runs on jsdom.
+            if (ownerNode)
+                detach(ownerNode);
+        });
+        managed_styles.clear();
     });
 }
 
@@ -207,15 +231,29 @@ function add_render_callback(fn) {
 const seen_callbacks = new Set();
 let flushidx = 0; // Do *not* move this inside the flush() function
 function flush() {
+    // Do not reenter flush while dirty components are updated, as this can
+    // result in an infinite loop. Instead, let the inner flush handle it.
+    // Reentrancy is ok afterwards for bindings etc.
+    if (flushidx !== 0) {
+        return;
+    }
     const saved_component = current_component;
     do {
         // first, call beforeUpdate functions
         // and update components
-        while (flushidx < dirty_components.length) {
-            const component = dirty_components[flushidx];
-            flushidx++;
-            set_current_component(component);
-            update(component.$$);
+        try {
+            while (flushidx < dirty_components.length) {
+                const component = dirty_components[flushidx];
+                flushidx++;
+                set_current_component(component);
+                update(component.$$);
+            }
+        }
+        catch (e) {
+            // reset dirty state to not end up in a deadlocked state and then rethrow
+            dirty_components.length = 0;
+            flushidx = 0;
+            throw e;
         }
         set_current_component(null);
         dirty_components.length = 0;
@@ -302,10 +340,14 @@ function transition_out(block, local, detach, callback) {
         });
         block.o(local);
     }
+    else if (callback) {
+        callback();
+    }
 }
 const null_transition = { duration: 0 };
 function create_in_transition(node, fn, params) {
-    let config = fn(node, params);
+    const options = { direction: 'in' };
+    let config = fn(node, params, options);
     let running = false;
     let animation_name;
     let task;
@@ -349,7 +391,7 @@ function create_in_transition(node, fn, params) {
             started = true;
             delete_rule(node);
             if (is_function(config)) {
-                config = config();
+                config = config(options);
                 wait().then(go);
             }
             else {
@@ -368,7 +410,8 @@ function create_in_transition(node, fn, params) {
     };
 }
 function create_out_transition(node, fn, params) {
-    let config = fn(node, params);
+    const options = { direction: 'out' };
+    let config = fn(node, params, options);
     let running = true;
     let animation_name;
     const group = outros;
@@ -403,7 +446,7 @@ function create_out_transition(node, fn, params) {
     if (is_function(config)) {
         wait().then(() => {
             // @ts-ignore
-            config = config();
+            config = config(options);
             go();
         });
     }
@@ -427,14 +470,17 @@ function create_component(block) {
     block && block.c();
 }
 function mount_component(component, target, anchor, customElement) {
-    const { fragment, on_mount, on_destroy, after_update } = component.$$;
+    const { fragment, after_update } = component.$$;
     fragment && fragment.m(target, anchor);
     if (!customElement) {
         // onMount happens before the initial afterUpdate
         add_render_callback(() => {
-            const new_on_destroy = on_mount.map(run).filter(is_function);
-            if (on_destroy) {
-                on_destroy.push(...new_on_destroy);
+            const new_on_destroy = component.$$.on_mount.map(run).filter(is_function);
+            // if the component was destroyed immediately
+            // it will update the `$$.on_destroy` reference to `null`.
+            // the destructured on_destroy may still reference to the old array
+            if (component.$$.on_destroy) {
+                component.$$.on_destroy.push(...new_on_destroy);
             }
             else {
                 // Edge case - component was destroyed immediately,
@@ -470,7 +516,7 @@ function init(component, options, instance, create_fragment, not_equal, props, a
     set_current_component(component);
     const $$ = component.$$ = {
         fragment: null,
-        ctx: null,
+        ctx: [],
         // state
         props,
         update: noop,
@@ -527,6 +573,9 @@ class SvelteComponent {
         this.$destroy = noop;
     }
     $on(type, callback) {
+        if (!is_function(callback)) {
+            return noop;
+        }
         const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
         callbacks.push(callback);
         return () => {
@@ -574,7 +623,7 @@ function writable(value, start = noop) {
     let stop;
     const subscribers = new Set();
     function set(new_value) {
-        if (not_equal(value, new_value)) {
+        if (safe_not_equal(value, new_value)) {
             value = new_value;
             if (stop) { // store is ready
                 const run_queue = !subscriber_queue.length;
@@ -685,12 +734,14 @@ function tweened(value, defaults = {}) {
 /** true if gallery is in the process of closing */
 const closing = writable(0);
 
-/** store if user prefers reduced motion  */
+/** if user prefers reduced motion  */
 const prefersReducedMotion = globalThis.matchMedia?.(
 	'(prefers-reduced-motion: reduce)'
 ).matches;
 
-/** default options for tweens / transitions */
+/** default options for tweens / transitions
+ * @param {number} duration
+ */
 const defaultTweenOptions = (duration) => ({
 	easing: cubicOut,
 	duration: prefersReducedMotion ? 0 : duration,
@@ -717,7 +768,7 @@ const addAttributes = (node, obj) => {
 	}
 };
 
-/* src/components/loading.svelte generated by Svelte v3.55.1 */
+/* src\components\loading.svelte generated by Svelte v3.55.1 */
 
 function create_if_block_1$2(ctx) {
 	let div;
@@ -891,7 +942,7 @@ class Loading extends SvelteComponent {
 	}
 }
 
-/* src/components/image.svelte generated by Svelte v3.55.1 */
+/* src\components\image.svelte generated by Svelte v3.55.1 */
 
 function create_if_block_1$1(ctx) {
 	let img;
@@ -943,7 +994,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (384:10) {#if showLoader}
+// (387:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -1460,6 +1511,9 @@ function instance$3($$self, $$props, $$invalidate) {
 
 		// decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
+			$$invalidate(24, calculatedDimensions = props.calculateDimensions(activeItem));
+			imageDimensions.set(calculatedDimensions);
+			$$invalidate(1, sizes = calculatedDimensions[0]);
 			$$invalidate(2, loaded = true);
 			props.preloadNext();
 		});
@@ -1541,7 +1595,7 @@ class Image extends SvelteComponent {
 	}
 }
 
-/* src/components/iframe.svelte generated by Svelte v3.55.1 */
+/* src\components\iframe.svelte generated by Svelte v3.55.1 */
 
 function create_fragment$2(ctx) {
 	let div;
@@ -1642,7 +1696,7 @@ class Iframe extends SvelteComponent {
 	}
 }
 
-/* src/components/video.svelte generated by Svelte v3.55.1 */
+/* src\components\video.svelte generated by Svelte v3.55.1 */
 
 function create_fragment$1(ctx) {
 	let div;
@@ -1772,7 +1826,7 @@ class Video extends SvelteComponent {
 	}
 }
 
-/* src/bigger-picture.svelte generated by Svelte v3.55.1 */
+/* src\bigger-picture.svelte generated by Svelte v3.55.1 */
 
 function create_if_block(ctx) {
 	let div2;
@@ -1898,7 +1952,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (311:199) {:else}
+// (355:199) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[6].html ?? /*activeItem*/ ctx[6].element.outerHTML) + "";
@@ -1922,7 +1976,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (311:165) 
+// (355:165) 
 function create_if_block_5(ctx) {
 	let iframe;
 	let current;
@@ -1955,7 +2009,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (311:104) 
+// (355:104) 
 function create_if_block_4(ctx) {
 	let video;
 	let current;
@@ -1988,7 +2042,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (311:4) {#if activeItem.img}
+// (355:4) {#if activeItem.img}
 function create_if_block_3(ctx) {
 	let imageitem;
 	let current;
@@ -2028,7 +2082,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (311:299) {#if activeItem.caption}
+// (355:299) {#if activeItem.caption}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[6].caption + "";
@@ -2063,7 +2117,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (300:43) {#key activeItem.i}
+// (344:43) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let current_block_type_index;
@@ -2194,7 +2248,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (311:554) {#if items.length > 1}
+// (355:554) {#if items.length > 1}
 function create_if_block_1(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[4] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2394,6 +2448,26 @@ function instance($$self, $$props, $$invalidate) {
 				$$invalidate(4, position = i);
 			}
 		}
+
+		items.forEach(item => {
+			if (item.element && (!item.thumb || !item.fit)) {
+				const thumbElement = item.element.querySelector('img');
+
+				if (thumbElement instanceof HTMLImageElement) {
+					if (!item.thumb) {
+						item.thumb = thumbElement.src;
+					}
+
+					if (!item.fit) {
+						item.fit = globalThis.getComputedStyle(thumbElement).objectFit;
+					}
+				}
+			}
+
+			if (!item.fit) {
+				item.fit = 'fill';
+			}
+		});
 	};
 
 	const close = () => {
@@ -2449,8 +2523,14 @@ function instance($$self, $$props, $$invalidate) {
  * @param {object} item object with height / width properties
  * @returns {Array} [width: number, height: number]
  */
-	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
+	const calculateDimensions = ({ width = 0, height = 0 }) => {
 		const { scale = 0.99 } = opts;
+
+		if (!width || !height) {
+			width = container.w;
+			height = container.h;
+		}
+
 		const ratio = Math.min(1, container.w / width * scale, container.h / height * scale);
 
 		// round number so we don't use a float as the sizes attribute
@@ -2475,7 +2555,14 @@ function instance($$self, $$props, $$invalidate) {
 			image.srcset = item.img;
 			item.preload = true;
 
-			return image.decode().catch(error => {
+			return image.decode().then(() => {
+				if (item.width > 0 && item.height > 0) {
+					return;
+				}
+
+				item.width = image.naturalWidth;
+				item.height = image.naturalHeight;
+			}).catch(error => {
 				
 			});
 		}
@@ -2502,6 +2589,7 @@ function instance($$self, $$props, $$invalidate) {
 	/** custom svelte transition for entrance zoom */
 	const scaleIn = node => {
 		let dimensions;
+		let css;
 
 		if (activeItemIsHtml()) {
 			const bpItem = node.firstChild.firstChild;
@@ -2518,13 +2606,29 @@ function instance($$self, $$props, $$invalidate) {
 		const scaleWidth = rect.width / dimensions[0];
 		const scaleHeight = rect.height / dimensions[1];
 
-		return {
-			duration: 480,
-			easing: cubicOut,
-			css: (t, u) => {
-				return `transform:translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scaleWidth + t * (1 - scaleWidth)}, ${scaleHeight + t * (1 - scaleHeight)}, 1)`;
-			}
-		};
+		if (activeItem.fit === 'cover') {
+			const scale = Math.max(scaleHeight, scaleWidth),
+				offsetVertical = Math.max((dimensions[1] - rect.height / scale) / 2, 0),
+				offsetHorizontal = Math.max((dimensions[0] - rect.width / scale) / 2, 0);
+
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);
+				--bp-clip-y: ${offsetVertical * u}px;
+				--bp-clip-x: ${offsetHorizontal * u}px;`;
+			};
+		} else if (activeItem.fit === 'contain') {
+			const scale = Math.min(scaleHeight, scaleWidth);
+
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);`;
+			};
+		} else {
+			css = (t, u) => {
+				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scaleWidth + t * (1 - scaleWidth)}, ${scaleHeight + t * (1 - scaleHeight)}, 1);`;
+			};
+		}
+
+		return { duration: 480, easing: cubicOut, css };
 	};
 
 	/** provides object w/ needed funcs / data to child components  */

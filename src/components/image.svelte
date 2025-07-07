@@ -342,9 +342,12 @@
 		})
 		// decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
+			calculatedDimensions = props.calculateDimensions(activeItem)
+			imageDimensions.set(calculatedDimensions);
+			sizes = calculatedDimensions[0]
 			loaded = true
 			props.preloadNext()
-		})
+		});
 		// show loading indicator if needed
 		setTimeout(() => {
 			showLoader = !loaded

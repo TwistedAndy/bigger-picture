@@ -56,8 +56,8 @@ interface item {
 	width?: string | number
 	/** Largest possible height of media item in pixels. Not required for HTML, which can be sized via CSS. */
 	height?: string | number
-	/** URL or path to image used for thumbnail displayed before media loads. */
-	thumb?: string
+	/** An image element, image URL or path to image used for thumbnail displayed before media loads. If an image element is provided, it will be used to detect the fit mode */
+	thumb?: string | HTMLImageElement
 	/** URL or path to full image. Can be a `srcset` value.
 	 *
 	 * When using `srcset`, the `sizes` value will update automatically when an image is zoomed. You may override this behavior by setting the [`sizes`](https://github.com/henrygd/bigger-picture#sizes) value. */
@@ -97,6 +97,8 @@ interface item {
 	element?: HTMLElement | EventTarget
 	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. */
 	attr?: Record<string, string | boolean> | string
+	/** Controls how images are sized during the open and close animations. Accepts: 'cover', 'contain', and 'fill'. Default: 'fill' */
+	fit?: string
 }
 
 export interface activeItem extends item {

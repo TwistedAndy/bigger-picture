@@ -1,3 +1,8 @@
+:root {
+  --bp-clip-y: 0px;
+  --bp-clip-x: 0px;
+}
+
 @keyframes bp-fadein {
   from {
     opacity: 0.01;
@@ -93,11 +98,14 @@
   top: 50%;
   left: 50%;
   user-select: none;
-  background-size: 100% 100%;
+  background: 50% 50%/contain no-repeat;
+  clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
+  will-change: clip-path;
 }
 .bp-img img,
 .bp-img div {
   position: absolute;
+  object-fit: contain;
   top: 0;
   left: 0;
   width: 100%;
@@ -208,8 +216,7 @@
 .bp-vid {
   position: relative;
   margin: auto;
-  background: #000;
-  background-size: 100% 100%;
+  background: #000 50% 50%/contain no-repeat;
 }
 .bp-if iframe,
 .bp-if video,
@@ -227,7 +234,7 @@
 
 .bp-load {
   display: flex;
-  background-size: 100% 100%;
+  background: 50% 50%/contain no-repeat;
   overflow: hidden;
   z-index: 1;
 }

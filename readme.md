@@ -257,9 +257,17 @@ Largest possible height of media item in pixels. Not required for HTML, which ca
 
 ### thumb
 
-Type: `string`
+Type: `string` or `HTMLImageElement`
 
-URL or path to image used for thumbnail displayed before media loads.
+An image element, image URL or path to image used for thumbnail displayed before media loads. If an image element is provided, it will be used to detect the fit
+mode
+
+### fit
+
+Type: `string`<br>
+Default: `fill`
+
+Controls how images are sized during the open and close animations. Accepts: 'cover', 'contain', and 'fill'. If not specified, the fill state can be determined by `thumb` element or by the first inner image.
 
 ### img
 
