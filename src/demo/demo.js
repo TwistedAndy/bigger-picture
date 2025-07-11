@@ -58,6 +58,7 @@ function openBiggerPicture(items, e) {
 		el: e.currentTarget,
 		// position: 3,
 		items,
+		thumbs: true,
 		maxZoom: 3,
 		// scale: 0.8,
 		// noClose: true,
@@ -135,6 +136,7 @@ function initInlineGallery() {
 		noClose: true,
 		inline: true,
 		maxZoom: 4,
+		thumbs: true,
 		noPinch: (container) => container.clientWidth < 800,
 		onImageClick(inlineContainer, inlineActiveItem) {
 			if (!(inlineContainer.clientWidth < 800)) {

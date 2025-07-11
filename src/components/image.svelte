@@ -12,7 +12,7 @@
 	export let props
 	export let smallScreen
 
-	let { activeItem, opts, prev, next, zoomed, container } = props
+	let { activeItem, opts, prev, next, zoomed, container, containerWidth, containerHeight } = props
 
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10
 
@@ -53,17 +53,17 @@
 	/** tween to control image size */
 	const imageDimensions = tweened(
 		calculatedDimensions,
-		defaultTweenOptions(400)
+		defaultTweenOptions(500)
 	)
 	/** translate transform for pointerDown */
-	const zoomDragTranslate = tweened([0, 0], defaultTweenOptions(400))
+	const zoomDragTranslate = tweened([0, 0], defaultTweenOptions(500))
 
 	$: zoomed.set($imageDimensions[0] - 10 > calculatedDimensions[0])
 
 	// if zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
 	$: if ($closing && $zoomed && !opts.intro) {
-		const closeTweenOpts = defaultTweenOptions(480)
+		const closeTweenOpts = defaultTweenOptions(500)
 		zoomDragTranslate.set([0, 0], closeTweenOpts)
 		imageDimensions.set(calculatedDimensions, closeTweenOpts)
 		closingWhileZoomed = true
@@ -72,8 +72,8 @@
 	/** calculate translate position with bounds */
 	const boundTranslateValues = ([x, y], newDimensions = $imageDimensions) => {
 		// image drag translate bounds
-		const maxTranslateX = (newDimensions[0] - container.w) / 2
-		const maxTranslateY = (newDimensions[1] - container.h) / 2
+		const maxTranslateX = (newDimensions[0] - containerWidth) / 2
+		const maxTranslateY = (newDimensions[1] - containerHeight) / 2
 		// x max drag
 		if (maxTranslateX < 0) {
 			x = 0
@@ -207,7 +207,7 @@
 		if (pointerCache.size > 1) {
 			// if multiple pointer events, pass to handlePinch function
 			pointerDown = false
-			return opts.noPinch?.(container.el) || handlePinch(e)
+			return opts.noPinch?.(container) || handlePinch(e)
 		}
 
 		if (!pointerDown) {
@@ -318,7 +318,7 @@
 					])
 				)
 			}
-		} else if (!opts.onImageClick?.(container.el, activeItem)) {
+		} else if (!opts.onImageClick?.(container, activeItem)) {
 			changeZoom($zoomed ? -maxZoom : maxZoom, e)
 		}
 
@@ -342,9 +342,6 @@
 		})
 		// decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
-			calculatedDimensions = props.calculateDimensions(activeItem)
-			imageDimensions.set(calculatedDimensions)
-			sizes = calculatedDimensions[0]
 			naturalWidth = +activeItem.width
 			loaded = true
 			props.preloadNext()

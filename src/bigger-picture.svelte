@@ -1,13 +1,13 @@
 <svelte:options accessors={true} immutable={true} />
 
 <script>
+	import { closing, defaultTweenOptions } from './stores';
+	import { writable } from 'svelte/store'
 	import { fly } from 'svelte/transition'
-	import { cubicOut } from 'svelte/easing'
+	import Thumbs from './components/thumbs.svelte'
 	import ImageItem from './components/image.svelte'
 	import Iframe from './components/iframe.svelte'
 	import Video from './components/video.svelte'
-	import { writable } from 'svelte/store'
-	import { closing } from './stores'
 
 	/** items currently displayed in gallery */
 	export let items = undefined
@@ -41,20 +41,24 @@
 	/** stores target on pointerdown (ref for overlay close) */
 	let clickedEl
 
+	let hasThumbs
+
+	let ruler
+	let container
+	let containerWidth;
+	let containerHeight;
+
 	/** active item object */
 	let activeItem
 
 	/** returns true if `activeItem` is html */
-	const activeItemIsHtml = () =>
-		!activeItem.img && !activeItem.sources && !activeItem.iframe
+	const activeItemIsHtml = () => !activeItem.img && !activeItem.sources && !activeItem.iframe
 
 	/** function set by child component to run when container resized */
 	let resizeFunc
+
 	/** used by child components to set resize function */
 	const setResizeFunc = (fn) => (resizeFunc = fn)
-
-	/** container element (el) / width (w) / height (h) */
-	const container = {}
 
 	// /** true if image is currently zoomed past starting size */
 	const zoomed = writable(0)
@@ -64,7 +68,7 @@
 		activeItem = items[position]
 		if (isOpen) {
 			// run onUpdate when items updated
-			opts.onUpdate?.(container.el, activeItem)
+			opts.onUpdate?.(container, activeItem)
 		}
 	}
 
@@ -76,11 +80,18 @@
 		if (!inline && html.scrollHeight > html.clientHeight) {
 			html.classList.add('bp-lock')
 		}
+
+		hasThumbs = opts.thumbs && opts.items?.length > 1
+
 		// update trigger element to restore focus
 		focusTrigger = document.activeElement
-		container.w = target.offsetWidth
-		container.h = target === document.body ? window.innerHeight : target.clientHeight
-		smallScreen = container.w < 769
+
+		if (target) {
+			container = target;
+			containerWidth = target.offsetWidth
+			containerHeight = target === document.body ? window.innerHeight : target.clientHeight
+		}
+
 		position = opts.position || 0
 		// set items
 		items = []
@@ -106,7 +117,7 @@
 
 	/** closes gallery */
 	export const close = () => {
-		opts.onClose?.(container.el, activeItem)
+		opts.onClose?.(container, activeItem)
 		closing.set(true)
 		items = null
 		// restore focus to trigger element
@@ -148,7 +159,7 @@
 			// allow browser to handle tab into video controls only
 			if (shiftKey || !activeElement.controls) {
 				e.preventDefault()
-				const { focusWrap = container.el } = opts
+				const { focusWrap = container } = opts
 				const tabbable = [...focusWrap.querySelectorAll('*')].filter(
 					(node) => node.tabIndex >= 0
 				)
@@ -230,10 +241,10 @@
 	 * @returns {Array} [width: number, height: number]
 	 */
 	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
-		const { scale = 0.99 } = opts
+		const { scale = 1 } = opts
 		const ratio = Math.min(
-			(container.w / width) * scale,
-			(container.h / height) * scale
+			(containerWidth / width) * scale,
+			(containerHeight / height) * scale
 		)
 		// round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)]
@@ -300,8 +311,8 @@
 		}
 		// forward / backward transition
 		return fly(node, {
-			x: (movement > 0 ? 20 : -20) * (isEntering ? 1 : -1),
-			duration: 250,
+			...defaultTweenOptions(250),
+			x: (movement > 0 ? 20 : -20) * (isEntering ? 1 : -1)
 		})
 	}
 
@@ -309,6 +320,20 @@
 	const scaleIn = (node) => {
 		let dimensions
 		let css
+
+		/**
+		 * Update the container dimensions before triggering an animation
+		 */
+		if (ruler) {
+			containerWidth = ruler.clientWidth;
+			containerHeight = ruler.clientHeight;
+		}
+
+		let gap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
+
+		if (isNaN(gap)) {
+			gap = 0;
+		}
 
 		if (activeItemIsHtml()) {
 			const bpItem = node.firstChild.firstChild
@@ -319,8 +344,8 @@
 
 		// rect is bounding rect of trigger element
 		const rect = (activeItem.element || focusTrigger).getBoundingClientRect()
-		const leftOffset = rect.left - (container.w - rect.width) / 2
-		const centerTop = rect.top - (container.h - rect.height) / 2
+		const leftOffset = rect.left - gap - (containerWidth - rect.width) / 2
+		const centerTop = rect.top - gap - (containerHeight - rect.height) / 2
 		const scaleWidth = rect.width / dimensions[0]
 		const scaleHeight = rect.height / dimensions[1]
 
@@ -345,9 +370,8 @@
 		}
 
 		return {
-			duration: 480,
-			easing: cubicOut,
-			css: css,
+			...defaultTweenOptions(500),
+			css: css
 		}
 	}
 
@@ -364,37 +388,24 @@
 		setResizeFunc,
 		zoomed,
 		container,
+		containerWidth,
+		containerHeight
 	})
 
-	/** code to run on mount / destroy */
+	/**
+	 * Process the gallery mount and destroy
+	 */
 	const containerActions = (node) => {
-		container.el = node
-		let roActive
-		opts.onOpen?.(container.el, activeItem)
+		container = node
+		opts.onOpen?.(container, activeItem)
 		// don't use keyboard events for inline galleries
 		if (!inline) {
 			window.addEventListener('keydown', onKeydown)
 		}
-		// set up resize observer
-		const ro = new ResizeObserver((entries) => {
-			// use roActive to avoid running on initial open
-			if (roActive) {
-				container.w = entries[0].contentRect.width
-				container.h = entries[0].contentRect.height
-				smallScreen = container.w < 769
-				// run child component resize function
-				if (!activeItemIsHtml()) {
-					resizeFunc?.()
-				}
-				// run user defined onResize function
-				opts.onResize?.(container.el, activeItem)
-			}
-			roActive = true
-		})
-		ro.observe(node)
+		containerObserver.observe(node)
 		return {
 			destroy() {
-				ro.disconnect()
+				containerObserver.disconnect()
 				window.removeEventListener('keydown', onKeydown)
 				closing.set(false)
 				// remove class hiding scroll
@@ -403,6 +414,43 @@
 			},
 		}
 	}
+
+	$: smallScreen = containerWidth < 769
+
+	/**
+	 * Set up the resize observer for the container node
+	 */
+	const containerObserver = new ResizeObserver((entries) => {
+		// run child component resize function
+		if (!activeItemIsHtml()) {
+			resizeFunc?.()
+		}
+		// run user defined onResize function
+		opts.onResize?.(container, activeItem)
+	})
+
+	/**
+	 * Ruler is required to measure available width and height
+	 */
+	const rulerActions = (node) => {
+
+		ruler = node
+
+		const rulerObserver = new ResizeObserver((entries) => {
+			containerWidth = entries[0].contentRect.width
+			containerHeight = entries[0].contentRect.height
+		});
+
+		rulerObserver.observe(node)
+
+		return {
+			destroy() {
+				rulerObserver.disconnect()
+			},
+		}
+
+	}
+
 </script>
 
 {#if items}
@@ -414,39 +462,45 @@
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.noClose}
 	>
-	<div class="bp-overlay" out:fly|local={{ duration: 480 }} />
-	<div class="bp-stage">
-		{#key activeItem.i}
-			<div
-				class="bp-inner"
-				in:mediaTransition|global={true}
-				out:mediaTransition|global={false}
-				on:pointerdown={(e) => (clickedEl = e.target)}
-				on:pointerup={function (e) {
-					// only close if left click on self and not dragged
-					if (e.button !== 2 && e.target === this && clickedEl === this) {
-						!opts.noClose && close()
-					}
-				}}
-			>
-				{#if activeItem.img}
-					<ImageItem props={getChildProps()} {smallScreen} />
-				{:else if activeItem.sources}
-					<Video props={getChildProps()} />
-				{:else if activeItem.iframe}
-					<Iframe props={getChildProps()} />
-				{:else}
-					<div class="bp-html">
-						{@html activeItem.html ?? activeItem.element.outerHTML}
+		<div class="bp-overlay" out:fly|local={defaultTweenOptions(500)} />
+		<div class="bp-stage">
+			{#key activeItem.i}
+				<div class="bp-slide">
+					<div
+						class="bp-inner"
+						in:mediaTransition|global={true}
+						out:mediaTransition|global={false}
+						on:pointerdown={(e) => (clickedEl = e.target)}
+						on:pointerup={function (e) {
+						// only close if left click on self and not dragged
+						if (e.button !== 2 && e.target === this && clickedEl === this) {
+							!opts.noClose && close()
+						}
+					}}
+					>
+						{#if containerWidth > 0 && containerHeight > 0}
+							{#if activeItem.img}
+								<ImageItem props={getChildProps()} {smallScreen} />
+							{:else if activeItem.sources}
+								<Video props={getChildProps()} />
+							{:else if activeItem.iframe}
+								<Iframe props={getChildProps()} />
+							{:else}
+								<div class="bp-html">
+									{@html activeItem.html ?? activeItem.element.outerHTML}
+								</div>
+							{/if}
+						{/if}
+						<div class="bp-ruler" use:rulerActions></div>
 					</div>
-				{/if}
-			</div>
-			{#if activeItem.caption}
-				<div class="bp-cap" out:fly|global={{ duration: 200 }}>
-					{@html activeItem.caption}
+					{#if activeItem.caption}
+						<div class="bp-cap" out:fly|global={defaultTweenOptions(250)}>
+							{@html activeItem.caption}
+						</div>
+					{/if}
 				</div>
-			{/if}
-		{/key}
+			{/key}
+		</div>
 		<div class="bp-controls" out:fly|local>
 			<!-- close button -->
 			<button class="bp-x" title="Close" aria-label="Close" on:click={close} />
@@ -471,6 +525,8 @@
 				/>
 			{/if}
 		</div>
-	</div>
+		{#if hasThumbs}
+			<Thumbs {position} {setPosition} {items} />
+		{/if}
 	</div>
 {/if}

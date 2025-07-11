@@ -1,6 +1,10 @@
 :root {
   --bp-clip-y: 0px;
   --bp-clip-x: 0px;
+  --bp-stage-gap: 10px;
+  --bp-thumb-gap: 5px;
+  --bp-thumb-height: 70px;
+  --bp-thumb-ratio: 1.25;
 }
 
 .bp-controls, .bp-if iframe,
@@ -9,7 +13,8 @@
 .bp-vid iframe,
 .bp-vid video,
 .bp-vid div, .bp-img img,
-.bp-img div, .bp-img-wrap, .bp-inner, .bp-overlay, .bp-wrap {
+.bp-img div, .bp-img-wrap, .bp-overlay, .bp-wrap {
+  display: block;
   position: absolute;
   top: 0;
   left: 0;
@@ -28,8 +33,22 @@
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
+.bp-wrap:has(.bp-thumbs) {
+  contain: layout size;
+}
 .bp-wrap.bp-inline {
   position: absolute;
+  --bp-stage-gap: 0px;
+}
+.bp-wrap.bp-zoomed {
+  --bp-stage-gap: 0px;
+}
+.bp-wrap.bp-zoomed .bp-img:not(.bp-drag) {
+  cursor: grab;
+}
+.bp-wrap.bp-zoomed .bp-cap {
+  animation: none !important;
+  opacity: 0;
 }
 .bp-wrap.bp-noclose .bp-x {
   display: none;
@@ -54,14 +73,39 @@
 }
 
 .bp-stage {
-  display: block;
+  display: flex;
   position: relative;
   flex-grow: 1;
+  width: 100%;
   min-height: 0;
+  padding: var(--bp-stage-gap);
+}
+
+.bp-slide {
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  inset: var(--bp-stage-gap);
 }
 
 .bp-inner {
   display: flex;
+  position: relative;
+  flex-grow: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.bp-ruler {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -10;
 }
 
 .bp-img {
@@ -119,18 +163,6 @@
 }
 .bp-html > :first-child {
   margin: auto;
-}
-
-.bp-close {
-  contain: layout size;
-}
-
-.bp-zoomed .bp-img:not(.bp-drag) {
-  cursor: grab;
-}
-.bp-zoomed .bp-cap {
-  animation: none !important;
-  opacity: 0;
 }
 
 .bp-controls {
@@ -192,6 +224,10 @@
   transform: scalex(-1);
 }
 
+.bp-close {
+  contain: layout size;
+}
+
 .bp-x {
   top: 0;
   right: 0;
@@ -239,39 +275,83 @@
 }
 
 .bp-cap {
-  display: table;
   position: absolute;
-  bottom: 2%;
+  bottom: var(--bp-stage-gap);
   left: 50%;
-  width: fit-content;
-  width: -moz-fit-content;
-  max-width: 95%;
-  padding: 0.6em 1.2em;
-  border-radius: 4px;
+  max-width: 100%;
+  max-height: 200px;
+  padding: 10px 20px;
+  border-radius: 5px;
   background: rgba(9, 9, 9, 0.8);
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.3;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  text-align: center;
   animation: bp-fadein 0.2s;
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
   transform: translateX(-50%);
 }
 .bp-cap a {
   color: inherit;
 }
 
-@media (prefers-reduced-motion) {
-  .bp-wrap * {
-    animation-duration: 0s !important;
-  }
+.bp-thumbs {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 100%;
+  height: var(--bp-thumb-height);
+  background: #12161a;
+  z-index: 1;
 }
+.bp-thumbs-outer {
+  display: table;
+  height: 100%;
+  margin: 0 auto;
+}
+.bp-thumbs-inner {
+  display: flex;
+  align-items: stretch;
+  height: var(--bp-thumb-height);
+  padding: var(--bp-thumb-gap) 0;
+  touch-action: pan-y;
+  gap: var(--bp-thumb-gap);
+}
+.bp-thumbs button {
+  display: block;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: calc(var(--bp-thumb-ratio) * (var(--bp-thumb-height) - 10px));
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1) 50% 50%/cover no-repeat;
+  transition: 0.15s;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.5;
+  filter: grayscale(25%);
+}
+.bp-thumbs button:hover, .bp-thumbs button:focus {
+  outline-offset: -2px;
+  opacity: 0.75;
+  filter: grayscale(0%);
+}
+.bp-thumbs button.active {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
 @media (max-width: 500px) {
-  .bp-zoomed .bp-controls {
+  .bp-wrap.bp-zoomed .bp-controls {
     opacity: 0;
   }
-  .bp-zoomed .bp-controls button {
+  .bp-wrap.bp-zoomed .bp-controls button {
     pointer-events: none;
   }
-
   .bp-x {
     width: 47px;
     height: 47px;
@@ -281,29 +361,31 @@
     right: 6px;
     width: 34px;
   }
-
   .bp-prev,
-.bp-next {
+  .bp-next {
     width: 45px;
     height: 54px;
     margin-top: -27px;
   }
   .bp-prev:before,
-.bp-next:before {
+  .bp-next:before {
     top: 7px;
     left: 2px;
     width: 43px;
   }
-
   .bp-o,
-.bp-o:after {
+  .bp-o:after {
     width: 60px;
     height: 60px;
     border-width: 6px;
   }
-
   .bp-count {
     margin: 12px 10px;
+  }
+}
+@media (prefers-reduced-motion) {
+  .bp-wrap * {
+    animation-duration: 0s !important;
   }
 }
 @keyframes bp-fadein {
