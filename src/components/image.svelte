@@ -42,7 +42,7 @@
 	/** if true, adds class to .bp-wrap to avoid image cropping */
 	let closingWhileZoomed
 
-	const naturalWidth = +activeItem.width
+	let naturalWidth = +activeItem.width
 
 	/** store positions for drag inertia */
 	const dragPositions = []
@@ -343,8 +343,9 @@
 		// decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
 			calculatedDimensions = props.calculateDimensions(activeItem)
-			imageDimensions.set(calculatedDimensions);
+			imageDimensions.set(calculatedDimensions)
 			sizes = calculatedDimensions[0]
+			naturalWidth = +activeItem.width
 			loaded = true
 			props.preloadNext()
 		});
@@ -356,7 +357,6 @@
 
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr)
-		node.srcset = activeItem.img
 	}
 </script>
 

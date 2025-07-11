@@ -79,8 +79,7 @@
 		// update trigger element to restore focus
 		focusTrigger = document.activeElement
 		container.w = target.offsetWidth
-		container.h =
-			target === document.body ? window.innerHeight : target.clientHeight
+		container.h = target === document.body ? window.innerHeight : target.clientHeight
 		smallScreen = container.w < 769
 		position = opts.position || 0
 		// set items
@@ -101,22 +100,7 @@
 			}
 		}
 
-		items.forEach((item) => {
-			if (item.element && (!item.thumb || !item.fit)) {
-				const thumbElement = item.element.querySelector('img');
-				if (thumbElement instanceof HTMLImageElement) {
-					if (!item.thumb) {
-						item.thumb = thumbElement.src
-					}
-					if (!item.fit) {
-						item.fit = window.getComputedStyle(thumbElement).objectFit
-					}
-				}
-			}
-			if (!item.fit) {
-				item.fit = 'fill'
-			}
-		});
+		items.forEach(normalizeItem);
 
 	}
 
@@ -137,7 +121,6 @@
 
 	/**
 	 * go to specific item in gallery
-	 * @param {number} index
 	 * @param {number} index
 	 */
 	export const setPosition = (index) => {
@@ -177,18 +160,78 @@
 	}
 
 	/**
-	 * calculate dimensions of height / width resized to fit within container
+	 * Normalize a gallery item
+	 *
+	 * @param {Object} item
+	 */
+	const normalizeItem = (item) => {
+
+		if (item.thumb instanceof HTMLImageElement) {
+
+			setDimensions(item, item.thumb);
+
+			item.fit = window.getComputedStyle(item.thumb).objectFit;
+			item.thumb = item.thumb.src;
+
+		} else {
+
+			let thumbElement;
+
+			if (item.element) {
+				thumbElement = item.element.querySelector('img');
+			}
+
+			if (thumbElement && !item.fit) {
+				item.fit = window.getComputedStyle(thumbElement).objectFit;
+			}
+
+			if (thumbElement && (!item.thumb || item.thumb === thumbElement.src)) {
+				setDimensions(item, thumbElement);
+				item.thumb = thumbElement.src;
+			} else if (item.thumb) {
+				thumbElement = new Image();
+				thumbElement.src = item.thumb;
+				thumbElement.onload = () => {
+					setDimensions(item, thumbElement);
+				};
+			}
+
+		}
+
+	}
+
+	/**
+	 * Set item dimensions based on a thumbnail image if not already specified
+	 *
+	 * @param {Object} item Gallery item object to check and update
+	 * @param {HTMLImageElement} thumb Thumbnail image element to extract dimensions from
+	 */
+	const setDimensions = (item, thumb) => {
+
+		if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
+
+			let dimensions = calculateDimensions({
+				width: thumb.naturalWidth,
+				height: thumb.naturalHeight,
+			});
+
+			item.width = dimensions[0];
+			item.height = dimensions[1];
+			item.scaled = 1;
+
+		}
+
+	};
+
+	/**
+	 * Calculate width and height to fit inside a container
+	 *
 	 * @param {object} item object with height / width properties
 	 * @returns {Array} [width: number, height: number]
 	 */
-	const calculateDimensions = ({ width = 0, height = 0 }) => {
+	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
 		const { scale = 0.99 } = opts
-		if (!width || !height) {
-			width = container.w
-			height = container.h
-		}
 		const ratio = Math.min(
-			1,
 			(container.w / width) * scale,
 			(container.h / height) * scale
 		)
@@ -206,20 +249,43 @@
 		}
 	}
 
-	/** loads / decodes image for item */
+	/**
+	 * Load and decode the image for an item
+	 *
+	 * @param {Object} item
+	 */
 	const loadImage = (item) => {
+
 		if (item.img) {
+
 			const image = document.createElement('img')
-			image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`
-			image.srcset = item.img
-			item.preload = true
-			return image.decode().then(() => {
-				if (item.width > 0 && item.height > 0) {
-					return;
+			const src = decodeURIComponent(item.img);
+
+			if (/\s+\d+[wx]/.test(src)) {
+				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`
+				image.srcset = src
+				item.attr = {
+					sizes: image.sizes,
+					srcset: image.srcset,
+					...item.attr
 				}
-				item.width = image.naturalWidth
-				item.height = image.naturalHeight
+			} else {
+				image.src = src;
+				item.attr = {
+					src: src,
+					...item.attr
+				}
+			}
+
+			image.preload = true
+
+			return image.decode().then(() => {
+				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
+					item.width = image.naturalWidth;
+					item.height = image.naturalHeight;
+				}
 			}).catch((error) => {})
+
 		}
 	}
 
@@ -348,7 +414,8 @@
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.noClose}
 	>
-		<div out:fly|local={{ duration: 480 }} />
+	<div class="bp-overlay" out:fly|local={{ duration: 480 }} />
+	<div class="bp-stage">
 		{#key activeItem.i}
 			<div
 				class="bp-inner"
@@ -380,7 +447,6 @@
 				</div>
 			{/if}
 		{/key}
-
 		<div class="bp-controls" out:fly|local>
 			<!-- close button -->
 			<button class="bp-x" title="Close" aria-label="Close" on:click={close} />
@@ -390,7 +456,7 @@
 				<div class="bp-count">
 					{@html `${position + 1} / ${items.length}`}
 				</div>
-				<!-- foward / back buttons -->
+				<!-- forward / back buttons -->
 				<button
 					class="bp-prev"
 					title="Previous"
@@ -405,5 +471,6 @@
 				/>
 			{/if}
 		</div>
+	</div>
 	</div>
 {/if}

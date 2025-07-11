@@ -960,8 +960,8 @@
     	return {
     		c() {
     			img = element("img");
-    			attr(img, "sizes", img_sizes_value = /*opts*/ ctx[8].sizes || `${/*sizes*/ ctx[1]}px`);
-    			attr(img, "alt", /*activeItem*/ ctx[7].alt);
+    			attr(img, "sizes", img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`);
+    			attr(img, "alt", /*activeItem*/ ctx[8].alt);
     		},
     		m(target, anchor) {
     			insert(target, img, anchor);
@@ -977,7 +977,7 @@
     			}
     		},
     		p(ctx, dirty) {
-    			if (!current || dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*opts*/ ctx[8].sizes || `${/*sizes*/ ctx[1]}px`)) {
+    			if (!current || dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`)) {
     				attr(img, "sizes", img_sizes_value);
     			}
     		},
@@ -1006,7 +1006,7 @@
 
     	loading = new Loading({
     			props: {
-    				activeItem: /*activeItem*/ ctx[7],
+    				activeItem: /*activeItem*/ ctx[8],
     				loaded: /*loaded*/ ctx[2]
     			}
     		});
@@ -1043,7 +1043,7 @@
     	let div1;
     	let div0;
     	let if_block0_anchor;
-    	let style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[6][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[6][1]}px, 0)`;
+    	let style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`;
     	let current;
     	let mounted;
     	let dispose;
@@ -1061,8 +1061,8 @@
     			set_style(div0, "width", /*$imageDimensions*/ ctx[0][0] + "px");
     			set_style(div0, "height", /*$imageDimensions*/ ctx[0][1] + "px");
     			toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
-    			toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[11] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[12]);
-    			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[7]));
+    			toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
+    			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
     			set_style(div0, "transform", style_transform);
     			attr(div1, "class", "bp-img-wrap");
     			toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[5]);
@@ -1147,11 +1147,11 @@
     				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
     			}
 
-    			if (!current || dirty[0] & /*maxZoom, $imageDimensions, naturalWidth*/ 6145) {
-    				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[11] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[12]);
+    			if (!current || dirty[0] & /*maxZoom, $imageDimensions, naturalWidth*/ 4161) {
+    				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
     			}
 
-    			if (dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 65 && style_transform !== (style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[6][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[6][1]}px, 0)`)) {
+    			if (dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 129 && style_transform !== (style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`)) {
     				set_style(div0, "transform", style_transform);
     			}
 
@@ -1217,7 +1217,7 @@
     	/** if true, adds class to .bp-wrap to avoid image cropping */
     	let closingWhileZoomed;
 
-    	const naturalWidth = +activeItem.width;
+    	let naturalWidth = +activeItem.width;
 
     	/** store positions for drag inertia */
     	const dragPositions = [];
@@ -1233,7 +1233,7 @@
     	/** translate transform for pointerDown */
     	const zoomDragTranslate = tweened([0, 0], defaultTweenOptions(400));
 
-    	component_subscribe($$self, zoomDragTranslate, value => $$invalidate(6, $zoomDragTranslate = value));
+    	component_subscribe($$self, zoomDragTranslate, value => $$invalidate(7, $zoomDragTranslate = value));
 
     	/** calculate translate position with bounds */
     	const boundTranslateValues = ([x, y], newDimensions = $imageDimensions) => {
@@ -1519,6 +1519,7 @@
     			$$invalidate(24, calculatedDimensions = props.calculateDimensions(activeItem));
     			imageDimensions.set(calculatedDimensions);
     			$$invalidate(1, sizes = calculatedDimensions[0]);
+    			$$invalidate(6, naturalWidth = +activeItem.width);
     			$$invalidate(2, loaded = true);
     			props.preloadNext();
     		});
@@ -1534,7 +1535,6 @@
 
     	const addSrc = node => {
     		addAttributes(node, activeItem.attr);
-    		node.srcset = activeItem.img;
     	};
 
     	const error_handler = error => opts.onError?.(container, activeItem, error);
@@ -1568,13 +1568,13 @@
     		showLoader,
     		pointerDown,
     		closingWhileZoomed,
+    		naturalWidth,
     		$zoomDragTranslate,
     		activeItem,
     		opts,
     		zoomed,
     		container,
     		maxZoom,
-    		naturalWidth,
     		imageDimensions,
     		zoomDragTranslate,
     		onWheel,
@@ -1593,12 +1593,12 @@
     	];
     }
 
-    class Image extends SvelteComponent {
+    let Image$1 = class Image extends SvelteComponent {
     	constructor(options) {
     		super();
     		init(this, options, instance$3, create_fragment$3, not_equal, { props: 22, smallScreen: 23 }, null, [-1, -1]);
     	}
-    }
+    };
 
     /* src\components\iframe.svelte generated by Svelte v3.55.1 */
 
@@ -1834,9 +1834,10 @@
     /* src\bigger-picture.svelte generated by Svelte v3.55.1 */
 
     function create_if_block(ctx) {
-    	let div2;
+    	let div3;
     	let div0;
     	let div0_outro;
+    	let div2;
     	let previous_key = /*activeItem*/ ctx[6].i;
     	let div1;
     	let button;
@@ -1849,25 +1850,29 @@
 
     	return {
     		c() {
-    			div2 = element("div");
+    			div3 = element("div");
     			div0 = element("div");
+    			div2 = element("div");
     			key_block.c();
     			div1 = element("div");
     			button = element("button");
     			if (if_block) if_block.c();
+    			attr(div0, "class", "bp-overlay");
     			attr(button, "class", "bp-x");
     			attr(button, "title", "Close");
     			attr(button, "aria-label", "Close");
     			attr(div1, "class", "bp-controls");
-    			attr(div2, "class", "bp-wrap");
-    			toggle_class(div2, "bp-zoomed", /*$zoomed*/ ctx[10]);
-    			toggle_class(div2, "bp-inline", /*inline*/ ctx[8]);
-    			toggle_class(div2, "bp-small", /*smallScreen*/ ctx[7]);
-    			toggle_class(div2, "bp-noclose", /*opts*/ ctx[5].noClose);
+    			attr(div2, "class", "bp-stage");
+    			attr(div3, "class", "bp-wrap");
+    			toggle_class(div3, "bp-zoomed", /*$zoomed*/ ctx[10]);
+    			toggle_class(div3, "bp-inline", /*inline*/ ctx[8]);
+    			toggle_class(div3, "bp-small", /*smallScreen*/ ctx[7]);
+    			toggle_class(div3, "bp-noclose", /*opts*/ ctx[5].noClose);
     		},
     		m(target, anchor) {
-    			insert(target, div2, anchor);
-    			append(div2, div0);
+    			insert(target, div3, anchor);
+    			append(div3, div0);
+    			append(div3, div2);
     			key_block.m(div2, null);
     			append(div2, div1);
     			append(div1, button);
@@ -1877,7 +1882,7 @@
     			if (!mounted) {
     				dispose = [
     					listen(button, "click", /*close*/ ctx[1]),
-    					action_destroyer(/*containerActions*/ ctx[14].call(null, div2))
+    					action_destroyer(/*containerActions*/ ctx[14].call(null, div3))
     				];
 
     				mounted = true;
@@ -1910,19 +1915,19 @@
     			}
 
     			if (!current || dirty[0] & /*$zoomed*/ 1024) {
-    				toggle_class(div2, "bp-zoomed", /*$zoomed*/ ctx[10]);
+    				toggle_class(div3, "bp-zoomed", /*$zoomed*/ ctx[10]);
     			}
 
     			if (!current || dirty[0] & /*inline*/ 256) {
-    				toggle_class(div2, "bp-inline", /*inline*/ ctx[8]);
+    				toggle_class(div3, "bp-inline", /*inline*/ ctx[8]);
     			}
 
     			if (!current || dirty[0] & /*smallScreen*/ 128) {
-    				toggle_class(div2, "bp-small", /*smallScreen*/ ctx[7]);
+    				toggle_class(div3, "bp-small", /*smallScreen*/ ctx[7]);
     			}
 
     			if (!current || dirty[0] & /*opts*/ 32) {
-    				toggle_class(div2, "bp-noclose", /*opts*/ ctx[5].noClose);
+    				toggle_class(div3, "bp-noclose", /*opts*/ ctx[5].noClose);
     			}
     		},
     		i(local) {
@@ -1946,7 +1951,7 @@
     			current = false;
     		},
     		d(detaching) {
-    			if (detaching) detach(div2);
+    			if (detaching) detach(div3);
     			if (detaching && div0_outro) div0_outro.end();
     			key_block.d(detaching);
     			if (if_block) if_block.d();
@@ -1957,7 +1962,7 @@
     	};
     }
 
-    // (355:199) {:else}
+    // (421:199) {:else}
     function create_else_block(ctx) {
     	let div;
     	let raw_value = (/*activeItem*/ ctx[6].html ?? /*activeItem*/ ctx[6].element.outerHTML) + "";
@@ -1981,7 +1986,7 @@
     	};
     }
 
-    // (355:165) 
+    // (421:165) 
     function create_if_block_5(ctx) {
     	let iframe;
     	let current;
@@ -2014,7 +2019,7 @@
     	};
     }
 
-    // (355:104) 
+    // (421:104) 
     function create_if_block_4(ctx) {
     	let video;
     	let current;
@@ -2047,12 +2052,12 @@
     	};
     }
 
-    // (355:4) {#if activeItem.img}
+    // (421:4) {#if activeItem.img}
     function create_if_block_3(ctx) {
     	let imageitem;
     	let current;
 
-    	imageitem = new Image({
+    	imageitem = new Image$1({
     			props: {
     				props: /*getChildProps*/ ctx[13](),
     				smallScreen: /*smallScreen*/ ctx[7]
@@ -2087,7 +2092,7 @@
     	};
     }
 
-    // (355:299) {#if activeItem.caption}
+    // (421:299) {#if activeItem.caption}
     function create_if_block_2(ctx) {
     	let div;
     	let raw_value = /*activeItem*/ ctx[6].caption + "";
@@ -2122,7 +2127,7 @@
     	};
     }
 
-    // (344:43) {#key activeItem.i}
+    // (410:84) {#key activeItem.i}
     function create_key_block(ctx) {
     	let div;
     	let current_block_type_index;
@@ -2253,7 +2258,7 @@
     	};
     }
 
-    // (355:554) {#if items.length > 1}
+    // (421:554) {#if items.length > 1}
     function create_if_block_1(ctx) {
     	let div;
     	let raw_value = `${/*position*/ ctx[4] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2454,25 +2459,7 @@
     			}
     		}
 
-    		items.forEach(item => {
-    			if (item.element && (!item.thumb || !item.fit)) {
-    				const thumbElement = item.element.querySelector('img');
-
-    				if (thumbElement instanceof HTMLImageElement) {
-    					if (!item.thumb) {
-    						item.thumb = thumbElement.src;
-    					}
-
-    					if (!item.fit) {
-    						item.fit = globalThis.getComputedStyle(thumbElement).objectFit;
-    					}
-    				}
-    			}
-
-    			if (!item.fit) {
-    				item.fit = 'fill';
-    			}
-    		});
+    		items.forEach(normalizeItem);
     	};
 
     	const close = () => {
@@ -2524,19 +2511,68 @@
     	};
 
     	/**
-     * calculate dimensions of height / width resized to fit within container
+     * Normalize a gallery item
+     *
+     * @param {Object} item
+     */
+    	const normalizeItem = item => {
+    		if (item.thumb instanceof HTMLImageElement) {
+    			setDimensions(item, item.thumb);
+    			item.fit = globalThis.getComputedStyle(item.thumb).objectFit;
+    			item.thumb = item.thumb.src;
+    		} else {
+    			let thumbElement;
+
+    			if (item.element) {
+    				thumbElement = item.element.querySelector('img');
+    			}
+
+    			if (thumbElement && !item.fit) {
+    				item.fit = globalThis.getComputedStyle(thumbElement).objectFit;
+    			}
+
+    			if (thumbElement && (!item.thumb || item.thumb === thumbElement.src)) {
+    				setDimensions(item, thumbElement);
+    				item.thumb = thumbElement.src;
+    			} else if (item.thumb) {
+    				thumbElement = new Image();
+    				thumbElement.src = item.thumb;
+
+    				thumbElement.onload = () => {
+    					setDimensions(item, thumbElement);
+    				};
+    			}
+    		}
+    	};
+
+    	/**
+     * Set item dimensions based on a thumbnail image if not already specified
+     *
+     * @param {Object} item Gallery item object to check and update
+     * @param {HTMLImageElement} thumb Thumbnail image element to extract dimensions from
+     */
+    	const setDimensions = (item, thumb) => {
+    		if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
+    			let dimensions = calculateDimensions({
+    				width: thumb.naturalWidth,
+    				height: thumb.naturalHeight
+    			});
+
+    			item.width = dimensions[0];
+    			item.height = dimensions[1];
+    			item.scaled = 1;
+    		}
+    	};
+
+    	/**
+     * Calculate width and height to fit inside a container
+     *
      * @param {object} item object with height / width properties
      * @returns {Array} [width: number, height: number]
      */
-    	const calculateDimensions = ({ width = 0, height = 0 }) => {
+    	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
     		const { scale = 0.99 } = opts;
-
-    		if (!width || !height) {
-    			width = container.w;
-    			height = container.h;
-    		}
-
-    		const ratio = Math.min(1, container.w / width * scale, container.h / height * scale);
+    		const ratio = Math.min(container.w / width * scale, container.h / height * scale);
 
     		// round number so we don't use a float as the sizes attribute
     		return [Math.round(width * ratio), Math.round(height * ratio)];
@@ -2552,21 +2588,37 @@
     		}
     	};
 
-    	/** loads / decodes image for item */
+    	/**
+     * Load and decode the image for an item
+     *
+     * @param {Object} item
+     */
     	const loadImage = item => {
     		if (item.img) {
     			const image = document.createElement('img');
-    			image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
-    			image.srcset = item.img;
-    			item.preload = true;
+    			const src = decodeURIComponent(item.img);
+
+    			if ((/\s+\d+[wx]/).test(src)) {
+    				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
+    				image.srcset = src;
+
+    				item.attr = {
+    					sizes: image.sizes,
+    					srcset: image.srcset,
+    					...item.attr
+    				};
+    			} else {
+    				image.src = src;
+    				item.attr = { src, ...item.attr };
+    			}
+
+    			image.preload = true;
 
     			return image.decode().then(() => {
-    				if (item.width > 0 && item.height > 0) {
-    					return;
+    				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
+    					item.width = image.naturalWidth;
+    					item.height = image.naturalHeight;
     				}
-
-    				item.width = image.naturalWidth;
-    				item.height = image.naturalHeight;
     			}).catch(error => {
     				
     			});
