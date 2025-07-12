@@ -19,7 +19,7 @@
 	let focusWrap
 	let closing
 
-	const prefersReducedMotion = globalThis.matchMedia?.(
+	const prefersReducedMotion = window.matchMedia?.(
 		'(prefers-reduced-motion: reduce)'
 	).matches
 
@@ -132,7 +132,7 @@
 			$translate = 0
 		}}
 	>
-		<div class="thumbnail-bp" use:onMount />
+		<div class="thumbnail-bp" use:onMount></div>
 		<div
 			class="thumbnails"
 			in:fade={{
@@ -162,7 +162,7 @@
 							on:focus={(e) => scrollToButton(e.target)}
 							on:pointerup={() => !hasDragged && bp.setPosition(element.i)}
 							on:keyup={(e) => e.key === 'Enter' && bp.setPosition(element.i)}
-						/>
+						></button>
 					{/each}
 				</div>
 			</div>

@@ -98,23 +98,28 @@
 	 * Update dimensions on resize
 	 */
 	const thumbsActions = function(node) {
+
+		thumbsPanel = node;
+
+		const resizeObserver = new ResizeObserver(entries => {
+			for (const entry of entries) {
+				if (entry.target === thumbsPanel) {
+					thumbsPanelWidth = entry.contentRect.width;
+				} else {
+					thumbsWidth = entry.contentRect.width;
+				}
+			}
+		});
+
 		resizeObserver.observe(node);
+
 		return {
 			destroy() {
 				resizeObserver.unobserve(node);
 			}
-		};
-	};
-
-	const resizeObserver = new ResizeObserver(entries => {
-		for (const entry of entries) {
-			if (entry.target === thumbsPanel) {
-				thumbsPanelWidth = entry.contentRect.width;
-			} else {
-				thumbsWidth = entry.contentRect.width;
-			}
 		}
-	});
+
+	};
 
 	const thumbsTransition = (node, isIntro) => {
 		return {
@@ -129,7 +134,6 @@
 
 <div
 	use:thumbsActions
-	bind:this={thumbsPanel}
 	in:thumbsTransition|global={true}
 	out:thumbsTransition|global={false}
 	on:pointermove={pointerMove}
@@ -154,7 +158,7 @@
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}
 					on:click={() => !hasDragged && setPosition(item.i)}
-				/>
+				></button>
 			{/each}
 		</div>
 	</div>

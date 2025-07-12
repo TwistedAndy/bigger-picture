@@ -85,7 +85,7 @@ function split_css_unit(value) {
 }
 
 /** @type {() => number} */
-let now = () => globalThis.performance.now() ;
+let now = () => window.performance.now() ;
 
 let raf = (cb) => requestAnimationFrame(cb) ;
 
@@ -1088,7 +1088,7 @@ class SvelteComponent {
 
 const PUBLIC_VERSION = '4';
 
-(globalThis._bp || (globalThis._bp = { v: new Set() })).v.add(PUBLIC_VERSION);
+(window._bp || (window._bp = { v: new Set() })).v.add(PUBLIC_VERSION);
 
 const subscriber_queue = [];
 
@@ -1180,7 +1180,7 @@ function cubicOut(t) {
 const closing = writable(0);
 
 /** if user prefers reduced motion  */
-const prefersReducedMotion = globalThis.matchMedia?.(
+const prefersReducedMotion = window.matchMedia?.(
 	'(prefers-reduced-motion: reduce)'
 ).matches;
 
@@ -1333,11 +1333,11 @@ function tweened(value, defaults = {}) {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[24] = list[i];
+	child_ctx[22] = list[i];
 	return child_ctx;
 }
 
-// (142:3) {#each items as item (item.i)}
+// (146:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
@@ -1346,7 +1346,7 @@ function create_each_block(key_1, ctx) {
 	let dispose;
 
 	function click_handler() {
-		return /*click_handler*/ ctx[14](/*item*/ ctx[24]);
+		return /*click_handler*/ ctx[13](/*item*/ ctx[22]);
 	}
 
 	return {
@@ -1354,12 +1354,12 @@ function create_each_block(key_1, ctx) {
 		first: null,
 		c() {
 			button = element("button");
-			attr(button, "title", button_title_value = /*item*/ ctx[24].caption);
-			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[24].caption || `View image ${/*item*/ ctx[24].i + 1}`);
-			toggle_class(button, "active", /*item*/ ctx[24].i === /*position*/ ctx[1]);
+			attr(button, "title", button_title_value = /*item*/ ctx[22].caption);
+			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[22].caption || `View image ${/*item*/ ctx[22].i + 1}`);
+			toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
 
-			set_style(button, "background-image", /*item*/ ctx[24].thumb
-			? `url(${/*item*/ ctx[24].thumb})`
+			set_style(button, "background-image", /*item*/ ctx[22].thumb
+			? `url(${/*item*/ ctx[22].thumb})`
 			: 'none');
 
 			this.first = button;
@@ -1369,7 +1369,7 @@ function create_each_block(key_1, ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(button, "focus", /*focus_handler*/ ctx[13]),
+					listen(button, "focus", /*focus_handler*/ ctx[12]),
 					listen(button, "click", click_handler)
 				];
 
@@ -1379,21 +1379,21 @@ function create_each_block(key_1, ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[24].caption)) {
+			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[22].caption)) {
 				attr(button, "title", button_title_value);
 			}
 
-			if (dirty & /*items*/ 1 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[24].caption || `View image ${/*item*/ ctx[24].i + 1}`)) {
+			if (dirty & /*items*/ 1 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[22].caption || `View image ${/*item*/ ctx[22].i + 1}`)) {
 				attr(button, "aria-label", button_aria_label_value);
 			}
 
 			if (dirty & /*items, position*/ 3) {
-				toggle_class(button, "active", /*item*/ ctx[24].i === /*position*/ ctx[1]);
+				toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
 			}
 
 			if (dirty & /*items*/ 1) {
-				set_style(button, "background-image", /*item*/ ctx[24].thumb
-				? `url(${/*item*/ ctx[24].thumb})`
+				set_style(button, "background-image", /*item*/ ctx[22].thumb
+				? `url(${/*item*/ ctx[22].thumb})`
 				: 'none');
 			}
 		},
@@ -1414,14 +1414,14 @@ function create_fragment$5(ctx) {
 	let div0;
 	let each_blocks = [];
 	let each_1_lookup = new Map();
-	let style_transform = `translateX(${/*$thumbsTranslate*/ ctx[5]}px)`;
+	let style_transform = `translateX(${/*$thumbsTranslate*/ ctx[4]}px)`;
 	let div2_intro;
 	let div2_outro;
 	let current;
 	let mounted;
 	let dispose;
 	let each_value = ensure_array_like(/*items*/ ctx[0]);
-	const get_key = ctx => /*item*/ ctx[24].i;
+	const get_key = ctx => /*item*/ ctx[22].i;
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -1455,29 +1455,28 @@ function create_fragment$5(ctx) {
 				}
 			}
 
-			/*div2_binding*/ ctx[15](div2);
 			current = true;
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*thumbsActions*/ ctx[11].call(null, div0)),
-					listen(div1, "pointerdown", /*pointerDown*/ ctx[8]),
-					action_destroyer(/*thumbsActions*/ ctx[11].call(null, div2)),
-					listen(div2, "pointermove", /*pointerMove*/ ctx[9]),
-					listen(div2, "pointerup", /*pointerUp*/ ctx[10]),
-					listen(div2, "pointercancel", /*pointerUp*/ ctx[10])
+					action_destroyer(/*thumbsActions*/ ctx[10].call(null, div0)),
+					listen(div1, "pointerdown", /*pointerDown*/ ctx[7]),
+					action_destroyer(/*thumbsActions*/ ctx[10].call(null, div2)),
+					listen(div2, "pointermove", /*pointerMove*/ ctx[8]),
+					listen(div2, "pointerup", /*pointerUp*/ ctx[9]),
+					listen(div2, "pointercancel", /*pointerUp*/ ctx[9])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*items, position, scrollToButton, hasDragged, setPosition*/ 151) {
+			if (dirty & /*items, position, scrollToButton, hasDragged, setPosition*/ 79) {
 				each_value = ensure_array_like(/*items*/ ctx[0]);
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div0, destroy_block, create_each_block, null, get_each_context);
 			}
 
-			if (dirty & /*$thumbsTranslate*/ 32 && style_transform !== (style_transform = `translateX(${/*$thumbsTranslate*/ ctx[5]}px)`)) {
+			if (dirty & /*$thumbsTranslate*/ 16 && style_transform !== (style_transform = `translateX(${/*$thumbsTranslate*/ ctx[4]}px)`)) {
 				set_style(div1, "transform", style_transform);
 			}
 		},
@@ -1487,7 +1486,7 @@ function create_fragment$5(ctx) {
 			add_render_callback(() => {
 				if (!current) return;
 				if (div2_outro) div2_outro.end(1);
-				div2_intro = create_in_transition(div2, /*thumbsTransition*/ ctx[12], true);
+				div2_intro = create_in_transition(div2, /*thumbsTransition*/ ctx[11], true);
 				div2_intro.start();
 			});
 
@@ -1495,7 +1494,7 @@ function create_fragment$5(ctx) {
 		},
 		o(local) {
 			if (div2_intro) div2_intro.invalidate();
-			div2_outro = create_out_transition(div2, /*thumbsTransition*/ ctx[12], false);
+			div2_outro = create_out_transition(div2, /*thumbsTransition*/ ctx[11], false);
 			current = false;
 		},
 		d(detaching) {
@@ -1507,7 +1506,6 @@ function create_fragment$5(ctx) {
 				each_blocks[i].d();
 			}
 
-			/*div2_binding*/ ctx[15](null);
 			if (detaching && div2_outro) div2_outro.end();
 			mounted = false;
 			run_all(dispose);
@@ -1525,7 +1523,7 @@ function instance$5($$self, $$props, $$invalidate) {
 	let thumbsPanelWidth;
 	let initialTranslate = 0;
 	let thumbsTranslate = tweened(0, defaultTweenOptions(250));
-	component_subscribe($$self, thumbsTranslate, value => $$invalidate(5, $thumbsTranslate = value));
+	component_subscribe($$self, thumbsTranslate, value => $$invalidate(4, $thumbsTranslate = value));
 	let isPointerDown, pointerDownX, hasDragged;
 	let dragPositions = [];
 
@@ -1574,7 +1572,7 @@ function instance$5($$self, $$props, $$invalidate) {
 				thumbsTranslate.set(boundTranslate(initialTranslate + dragAmount), { duration: 0 });
 				dragPositions.push(e.clientX);
 			} else {
-				$$invalidate(4, hasDragged = Math.abs(dragAmount) > 5);
+				$$invalidate(3, hasDragged = Math.abs(dragAmount) > 5);
 			}
 		}
 	};
@@ -1593,7 +1591,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		}
 
 		dragPositions = [];
-		isPointerDown = $$invalidate(4, hasDragged = false);
+		isPointerDown = $$invalidate(3, hasDragged = false);
 		initialTranslate = $thumbsTranslate;
 	};
 
@@ -1601,6 +1599,18 @@ function instance$5($$self, $$props, $$invalidate) {
  * Update dimensions on resize
  */
 	const thumbsActions = function (node) {
+		thumbsPanel = node;
+
+		const resizeObserver = new ResizeObserver(entries => {
+				for (const entry of entries) {
+					if (entry.target === thumbsPanel) {
+						thumbsPanelWidth = entry.contentRect.width;
+					} else {
+						thumbsWidth = entry.contentRect.width;
+					}
+				}
+			});
+
 		resizeObserver.observe(node);
 
 		return {
@@ -1609,16 +1619,6 @@ function instance$5($$self, $$props, $$invalidate) {
 			}
 		};
 	};
-
-	const resizeObserver = new ResizeObserver(entries => {
-			for (const entry of entries) {
-				if (entry.target === thumbsPanel) {
-					thumbsPanelWidth = entry.contentRect.width;
-				} else {
-					thumbsWidth = entry.contentRect.width;
-				}
-			}
-		});
 
 	const thumbsTransition = (node, isIntro) => {
 		return {
@@ -1631,13 +1631,6 @@ function instance$5($$self, $$props, $$invalidate) {
 
 	const focus_handler = e => scrollToButton(e.target);
 	const click_handler = item => !hasDragged && setPosition(item.i);
-
-	function div2_binding($$value) {
-		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-			thumbsPanel = $$value;
-			$$invalidate(3, thumbsPanel);
-		});
-	}
 
 	$$self.$$set = $$props => {
 		if ('items' in $$props) $$invalidate(0, items = $$props.items);
@@ -1660,7 +1653,6 @@ function instance$5($$self, $$props, $$invalidate) {
 		items,
 		position,
 		setPosition,
-		thumbsPanel,
 		hasDragged,
 		$thumbsTranslate,
 		thumbsTranslate,
@@ -1671,8 +1663,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		thumbsActions,
 		thumbsTransition,
 		focus_handler,
-		click_handler,
-		div2_binding
+		click_handler
 	];
 }
 
@@ -1728,7 +1719,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (12:57) {#if $closing}
+// (12:67) {#if $closing}
 function create_if_block$2(ctx) {
 	let div;
 	let div_intro;
@@ -2434,7 +2425,7 @@ function instance$3($$self, $$props, $$invalidate) {
 	const onMount = node => {
 		bpImg = node;
 
-		// handle globalThis resize
+		// handle window resize
 		props.setResizeFunc(() => {
 			$$invalidate(26, calculatedDimensions = props.calculateDimensions(activeItem));
 
@@ -2954,7 +2945,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (466:6) {#if containerWidth > 0 && containerHeight > 0}
+// (471:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -3029,7 +3020,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (466:283) {:else}
+// (471:283) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3055,7 +3046,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (466:249) 
+// (471:249) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3088,7 +3079,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (466:188) 
+// (471:188) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3121,7 +3112,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (466:53) {#if activeItem.img}
+// (471:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3165,7 +3156,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (466:433) {#if activeItem.caption}
+// (471:433) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3203,7 +3194,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (455:91) {#key activeItem.i}
+// (460:95) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -3327,7 +3318,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (466:707) {#if items.length > 1}
+// (471:714) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[5] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3379,7 +3370,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (476:17) {#if hasThumbs}
+// (481:25) {#if hasThumbs}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3551,7 +3542,7 @@ function instance($$self, $$props, $$invalidate) {
 			$$invalidate(7, containerWidth = target.offsetWidth);
 
 			$$invalidate(13, containerHeight = target === document.body
-			? globalThis.innerHeight
+			? window.innerHeight
 			: target.clientHeight);
 		}
 
@@ -3638,7 +3629,7 @@ function instance($$self, $$props, $$invalidate) {
 	const normalizeItem = item => {
 		if (item.thumb instanceof HTMLImageElement) {
 			setDimensions(item, item.thumb);
-			item.fit = globalThis.getComputedStyle(item.thumb).objectFit;
+			item.fit = window.getComputedStyle(item.thumb).objectFit;
 			item.thumb = item.thumb.src;
 		} else {
 			let thumbElement;
@@ -3648,7 +3639,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 
 			if (thumbElement && !item.fit) {
-				item.fit = globalThis.getComputedStyle(thumbElement).objectFit;
+				item.fit = window.getComputedStyle(thumbElement).objectFit;
 			}
 
 			if (thumbElement && (!item.thumb || item.thumb === thumbElement.src)) {
@@ -3682,6 +3673,8 @@ function instance($$self, $$props, $$invalidate) {
 			item.height = dimensions[1];
 			item.scaled = 1;
 		}
+
+		console.log(item.width, item.height);
 	};
 
 	/**
@@ -3777,7 +3770,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		let gap = container
-		? parseInt(globalThis.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
+		? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
 		: 0;
 
 		if (isNaN(gap)) {
@@ -3848,15 +3841,28 @@ function instance($$self, $$props, $$invalidate) {
 
 		// don't use keyboard events for inline galleries
 		if (!inline) {
-			globalThis.addEventListener('keydown', onKeydown);
+			window.addEventListener('keydown', onKeydown);
 		}
+
+		/**
+ * Set up the resize observer for the container node
+ */
+		const containerObserver = new ResizeObserver(entries => {
+				// run child component resize function
+				if (!activeItemIsHtml()) {
+					resizeFunc?.();
+				}
+
+				// run user defined onResize function
+				opts.onResize?.(container, activeItem);
+			});
 
 		containerObserver.observe(node);
 
 		return {
 			destroy() {
 				containerObserver.disconnect();
-				globalThis.removeEventListener('keydown', onKeydown);
+				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
 
 				// remove class hiding scroll
@@ -3866,19 +3872,6 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		};
 	};
-
-	/**
- * Set up the resize observer for the container node
- */
-	const containerObserver = new ResizeObserver(entries => {
-			// run child component resize function
-			if (!activeItemIsHtml()) {
-				resizeFunc?.();
-			}
-
-			// run user defined onResize function
-			opts.onResize?.(container, activeItem);
-		});
 
 	/**
  * Ruler is required to measure available width and height
@@ -4020,11 +4013,17 @@ class Bigger_picture extends SvelteComponent {
 }
 
 /**
- * Initializes BiggerPicture
+ * Initializes BiggerPicture and assigns provided options to a props property
+ *
  * @param {{target: HTMLElement}} options
  * @returns BiggerPicture instance
  */
 function biggerPicture (options) {
+	if (typeof options !== 'object') {
+		options = {
+			target: document.body
+		};
+	}
 	return new Bigger_picture({
 		...options,
 		props: options,

@@ -13,8 +13,8 @@
 		out:fly|local={defaultTweenOptions(500)}
 		style:background-image={getThumbBackground(activeItem)}
 	>
-		<span class="bp-bar" />
-		<span class="bp-o" />
+		<span class="bp-bar"></span>
+		<span class="bp-o"></span>
 	</div>
 {/if}
 
@@ -23,5 +23,5 @@
 		class="bp-load"
 		in:fly|global={defaultTweenOptions(500)}
 		style:background-image={getThumbBackground(activeItem)}
-	/>
+	></div>
 {/if}

@@ -5,7 +5,7 @@ import { cubicOut } from 'svelte/easing'
 export const closing = writable(0)
 
 /** if user prefers reduced motion  */
-export const prefersReducedMotion = globalThis.matchMedia?.(
+export const prefersReducedMotion = window.matchMedia?.(
 	'(prefers-reduced-motion: reduce)'
 ).matches
 

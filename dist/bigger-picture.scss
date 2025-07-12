@@ -14,6 +14,8 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
+	border: 0;
+	object-fit: contain;
 }
 
 .bp-wrap {
@@ -160,13 +162,13 @@
 	position: relative;
 	margin: auto;
 	background: #000 50% 50% / contain no-repeat;
+	clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
+	will-change: clip-path;
 
 	iframe,
 	video,
 	div {
 		@extend %fill;
-		border: 0;
-		object-fit: contain;
 	}
 }
 

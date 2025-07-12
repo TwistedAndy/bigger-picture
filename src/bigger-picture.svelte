@@ -1,4 +1,4 @@
-<svelte:options accessors={true} immutable={true} />
+<svelte:options accessors={true} />
 
 <script>
 	import { closing, defaultTweenOptions } from './stores';
@@ -232,6 +232,8 @@
 
 		}
 
+		console.log(item.width, item.height);
+
 	};
 
 	/**
@@ -396,11 +398,26 @@
 	const containerActions = (node) => {
 		container = node
 		opts.onOpen?.(container, activeItem)
+
 		// don't use keyboard events for inline galleries
 		if (!inline) {
 			window.addEventListener('keydown', onKeydown)
 		}
+
+		/**
+		 * Set up the resize observer for the container node
+		 */
+		const containerObserver = new ResizeObserver((entries) => {
+			// run child component resize function
+			if (!activeItemIsHtml()) {
+				resizeFunc?.()
+			}
+			// run user defined onResize function
+			opts.onResize?.(container, activeItem)
+		})
+
 		containerObserver.observe(node)
+
 		return {
 			destroy() {
 				containerObserver.disconnect()
@@ -414,18 +431,6 @@
 	}
 
 	$: smallScreen = containerWidth < 769
-
-	/**
-	 * Set up the resize observer for the container node
-	 */
-	const containerObserver = new ResizeObserver((entries) => {
-		// run child component resize function
-		if (!activeItemIsHtml()) {
-			resizeFunc?.()
-		}
-		// run user defined onResize function
-		opts.onResize?.(container, activeItem)
-	})
 
 	/**
 	 * Ruler is required to measure available width and height
@@ -460,7 +465,7 @@
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.noClose}
 	>
-		<div class="bp-overlay" out:fly|local={defaultTweenOptions(500)} />
+		<div class="bp-overlay" out:fly|local={defaultTweenOptions(500)}></div>
 		<div class="bp-stage">
 			{#key activeItem.i}
 				<div class="bp-slide">
@@ -501,7 +506,7 @@
 		</div>
 		<div class="bp-controls" out:fly|local>
 			<!-- close button -->
-			<button class="bp-x" title="Close" aria-label="Close" on:click={close} />
+			<button class="bp-x" title="Close" aria-label="Close" on:click={close}></button>
 
 			{#if items.length > 1}
 				<!-- counter -->
@@ -514,13 +519,13 @@
 					title="Previous"
 					aria-label="Previous"
 					on:click={prev}
-				/>
+				></button>
 				<button
 					class="bp-next"
 					title="Next"
 					aria-label="Next"
 					on:click={next}
-				/>
+				></button>
 			{/if}
 		</div>
 		{#if hasThumbs}

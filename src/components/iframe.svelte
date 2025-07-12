@@ -32,6 +32,6 @@
 		allow="autoplay; fullscreen"
 		title={activeItem.title}
 		on:load={() => (loaded = true)}
-	/>
+	></iframe>
 	<Loading {activeItem} {loaded} />
 </div>

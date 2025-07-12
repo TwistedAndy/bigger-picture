@@ -1,7 +1,7 @@
 import svelte from 'rollup-plugin-svelte'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import { terser } from 'rollup-plugin-terser'
+import terser from '@rollup/plugin-terser'
 import size from 'rollup-plugin-size'
 import modify from 'rollup-plugin-modify'
 
@@ -61,7 +61,6 @@ const findReplaceOptions = [
 	[': blank_object()', ': {}'],
 	['__svelte', '_bp'],
 	[`typeof window !== 'undefined'`, 'true'],
-	['window', 'globalThis'],
 	['const doc = get_root_for_style(node)', 'const doc = document'],
 	[/get_root_for_style\(node\),/g, 'document,'],
 ].map(([find, replace]) => modify({ find, replace }))
