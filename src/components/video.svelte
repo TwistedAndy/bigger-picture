@@ -14,8 +14,7 @@
 
 	const { activeItem, opts, container } = props
 
-	const setDimensions = () =>
-		(dimensions = props.calculateDimensions(activeItem))
+	const setDimensions = () => (dimensions = props.calculateDimensions(activeItem))
 
 	setDimensions()
 
@@ -47,7 +46,7 @@
 				// add sources / tracks to media element
 				const el = document.createElement(tag)
 				addAttributes(el, obj)
-				if (tag == 'source') {
+				if (tag === 'source') {
 					el.onError = (error) => opts.onError?.(container, activeItem, error)
 				}
 				mediaElement.append(el)

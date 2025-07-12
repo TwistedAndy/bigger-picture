@@ -8,8 +8,7 @@
 
 	const { activeItem } = props
 
-	const setDimensions = () =>
-		(dimensions = props.calculateDimensions(activeItem))
+	const setDimensions = () => (dimensions = props.calculateDimensions(activeItem))
 
 	setDimensions()
 

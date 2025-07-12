@@ -377,19 +377,17 @@
 
 	/** provides object w/ needed funcs / data to child components  */
 	const getChildProps = () => ({
-		activeItem,
 		calculateDimensions,
-		loadImage,
+		setResizeFunc,
 		preloadNext,
+		activeItem,
+		loadImage,
+		container,
+		zoomed,
+		close,
 		opts,
 		prev,
 		next,
-		close,
-		setResizeFunc,
-		zoomed,
-		container,
-		containerWidth,
-		containerHeight
 	})
 
 	/**
@@ -480,7 +478,7 @@
 					>
 						{#if containerWidth > 0 && containerHeight > 0}
 							{#if activeItem.img}
-								<ImageItem props={getChildProps()} {smallScreen} />
+								<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} />
 							{:else if activeItem.sources}
 								<Video props={getChildProps()} />
 							{:else if activeItem.iframe}

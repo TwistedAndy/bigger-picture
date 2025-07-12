@@ -11,8 +11,10 @@
 
 	export let props
 	export let smallScreen
+	export let containerWidth
+	export let containerHeight
 
-	let { activeItem, opts, prev, next, zoomed, container, containerWidth, containerHeight } = props
+	let { activeItem, opts, prev, next, zoomed, container } = props
 
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10
 
@@ -283,7 +285,7 @@
 	/** remove event from pointer event cache */
 	const removeEventFromCache = (e) => pointerCache.delete(e.pointerId)
 
-	function onPointerUp(e) {
+	const onPointerUp = function(e) {
 		removeEventFromCache(e)
 
 		if (pinchDetails) {

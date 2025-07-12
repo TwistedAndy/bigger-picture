@@ -1893,7 +1893,7 @@
 				if (!mounted) {
 					dispose = [
 						action_destroyer(/*addSrc*/ ctx[21].call(null, img)),
-						listen(img, "error", /*error_handler*/ ctx[27])
+						listen(img, "error", /*error_handler*/ ctx[29])
 					];
 
 					mounted = true;
@@ -1925,7 +1925,7 @@
 		};
 	}
 
-	// (384:10) {#if showLoader}
+	// (386:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -2120,11 +2120,13 @@
 		let $zoomDragTranslate;
 		let $closing;
 		let $imageDimensions;
-		component_subscribe($$self, closing, $$value => $$invalidate(26, $closing = $$value));
+		component_subscribe($$self, closing, $$value => $$invalidate(28, $closing = $$value));
 		let { props } = $$props;
 		let { smallScreen } = $$props;
-		let { activeItem, opts, prev, next, zoomed, container, containerWidth, containerHeight } = props;
-		component_subscribe($$self, zoomed, value => $$invalidate(25, $zoomed = value));
+		let { containerWidth } = $$props;
+		let { containerHeight } = $$props;
+		let { activeItem, opts, prev, next, zoomed, container } = props;
+		component_subscribe($$self, zoomed, value => $$invalidate(27, $zoomed = value));
 		let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 		let calculatedDimensions = props.calculateDimensions(activeItem);
 
@@ -2388,7 +2390,7 @@
 		/** remove event from pointer event cache */
 		const removeEventFromCache = e => pointerCache.delete(e.pointerId);
 
-		function onPointerUp(e) {
+		const onPointerUp = function (e) {
 			removeEventFromCache(e);
 
 			if (pinchDetails) {
@@ -2432,14 +2434,14 @@
 
 			// reset dragPositions
 			dragPositions.length = 0;
-		}
+		};
 
 		const onMount = node => {
 			bpImg = node;
 
 			// handle globalThis resize
 			props.setResizeFunc(() => {
-				$$invalidate(24, calculatedDimensions = props.calculateDimensions(activeItem));
+				$$invalidate(26, calculatedDimensions = props.calculateDimensions(activeItem));
 
 				// adjust image size / zoom on resize, but not on mobile because
 				// some browsers (ios safari 15) constantly resize screen on drag
@@ -2474,14 +2476,16 @@
 		$$self.$$set = $$props => {
 			
 			if ('smallScreen' in $$props) $$invalidate(23, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(24, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(25, containerHeight = $$props.containerHeight);
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*$imageDimensions, calculatedDimensions*/ 16777217) {
+			if ($$self.$$.dirty[0] & /*$imageDimensions, calculatedDimensions*/ 67108865) {
 				zoomed.set($imageDimensions[0] - 10 > calculatedDimensions[0]);
 			}
 
-			if ($$self.$$.dirty[0] & /*$closing, $zoomed, calculatedDimensions*/ 117440512) {
+			if ($$self.$$.dirty[0] & /*$closing, $zoomed, calculatedDimensions*/ 469762048) {
 				// if zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && $zoomed && !opts.intro) {
@@ -2518,6 +2522,8 @@
 			addSrc,
 			props,
 			smallScreen,
+			containerWidth,
+			containerHeight,
 			calculatedDimensions,
 			$zoomed,
 			$closing,
@@ -2528,7 +2534,22 @@
 	let Image$1 = class Image extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$3, create_fragment$3, not_equal, { props: 22, smallScreen: 23 }, null, [-1, -1]);
+
+			init(
+				this,
+				options,
+				instance$3,
+				create_fragment$3,
+				not_equal,
+				{
+					props: 22,
+					smallScreen: 23,
+					containerWidth: 24,
+					containerHeight: 25
+				},
+				null,
+				[-1, -1]
+			);
 		}
 	};
 
@@ -2749,7 +2770,7 @@
 
 					addAttributes(el, obj);
 
-					if (tag == 'source') {
+					if (tag === 'source') {
 						el.onError = error => opts.onError?.(container, activeItem, error);
 					}
 
@@ -2938,7 +2959,7 @@
 		};
 	}
 
-	// (468:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (466:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -3013,7 +3034,7 @@
 		};
 	}
 
-	// (468:248) {:else}
+	// (466:283) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3039,7 +3060,7 @@
 		};
 	}
 
-	// (468:214) 
+	// (466:249) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -3072,7 +3093,7 @@
 		};
 	}
 
-	// (468:153) 
+	// (466:188) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -3105,7 +3126,7 @@
 		};
 	}
 
-	// (468:53) {#if activeItem.img}
+	// (466:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -3113,7 +3134,9 @@
 		imageitem = new Image$1({
 				props: {
 					props: /*getChildProps*/ ctx[17](),
-					smallScreen: /*smallScreen*/ ctx[9]
+					smallScreen: /*smallScreen*/ ctx[9],
+					containerWidth: /*containerWidth*/ ctx[7],
+					containerHeight: /*containerHeight*/ ctx[13]
 				}
 			});
 
@@ -3128,6 +3151,8 @@
 			p(ctx, dirty) {
 				const imageitem_changes = {};
 				if (dirty[0] & /*smallScreen*/ 512) imageitem_changes.smallScreen = /*smallScreen*/ ctx[9];
+				if (dirty[0] & /*containerWidth*/ 128) imageitem_changes.containerWidth = /*containerWidth*/ ctx[7];
+				if (dirty[0] & /*containerHeight*/ 8192) imageitem_changes.containerHeight = /*containerHeight*/ ctx[13];
 				imageitem.$set(imageitem_changes);
 			},
 			i(local) {
@@ -3145,7 +3170,7 @@
 		};
 	}
 
-	// (468:398) {#if activeItem.caption}
+	// (466:433) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3183,7 +3208,7 @@
 		};
 	}
 
-	// (457:91) {#key activeItem.i}
+	// (455:91) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -3307,7 +3332,7 @@
 		};
 	}
 
-	// (468:672) {#if items.length > 1}
+	// (466:707) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[5] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3359,7 +3384,7 @@
 		};
 	}
 
-	// (478:17) {#if hasThumbs}
+	// (476:17) {#if hasThumbs}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -3806,19 +3831,17 @@
 
 		/** provides object w/ needed funcs / data to child components  */
 		const getChildProps = () => ({
-			activeItem,
 			calculateDimensions,
-			loadImage,
+			setResizeFunc,
 			preloadNext,
+			activeItem,
+			loadImage,
+			container,
+			zoomed,
+			close,
 			opts,
 			prev,
-			next,
-			close,
-			setResizeFunc,
-			zoomed,
-			container,
-			containerWidth,
-			containerHeight
+			next
 		});
 
 		/**
