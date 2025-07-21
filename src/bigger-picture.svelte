@@ -232,8 +232,6 @@
 
 		}
 
-		console.log(item.width, item.height);
-
 	};
 
 	/**
@@ -465,12 +463,12 @@
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.noClose}
 	>
-		<div class="bp-overlay" out:fly|local={defaultTweenOptions(500)}></div>
+		<div class="bp-overlay" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}></div>
 		<div class="bp-stage">
-			{#key activeItem.i}
-				<div class="bp-slide">
+			<div class="bp-inner">
+				{#key activeItem.i}
 					<div
-						class="bp-inner"
+						class="bp-slide"
 						in:mediaTransition|global={true}
 						out:mediaTransition|global={false}
 						on:pointerdown={(e) => (clickedEl = e.target)}
@@ -496,15 +494,15 @@
 						{/if}
 						<div class="bp-ruler" use:rulerActions></div>
 					</div>
-					{#if activeItem.caption}
-						<div class="bp-cap" out:fly|global={defaultTweenOptions(250)}>
-							{@html activeItem.caption}
-						</div>
-					{/if}
+				{/key}
+			</div>
+			{#if activeItem.caption}
+				<div class="bp-caption" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}>
+					{@html activeItem.caption}
 				</div>
-			{/key}
+			{/if}
 		</div>
-		<div class="bp-controls" out:fly|local>
+		<div class="bp-controls" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}>
 			<!-- close button -->
 			<button class="bp-x" title="Close" aria-label="Close" on:click={close}></button>
 

@@ -6,7 +6,6 @@
 		defaultTweenOptions,
 		getThumbBackground,
 	} from '../stores'
-	import { fly } from 'svelte/transition'
 	import Loading from './loading.svelte'
 
 	export let props
@@ -388,7 +387,6 @@
 				sizes={opts.sizes || `${sizes}px`}
 				alt={activeItem.alt}
 				on:error={(error) => opts.onError?.(container, activeItem, error)}
-				out:fly|global
 			/>
 		{/if}
 		{#if showLoader}

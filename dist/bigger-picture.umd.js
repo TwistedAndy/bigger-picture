@@ -1182,7 +1182,7 @@
 	}
 
 	/** true if gallery is in the process of closing */
-	const closing = writable(0);
+	const closing = writable(false);
 
 	/** if user prefers reduced motion  */
 	const prefersReducedMotion = window.matchMedia?.(
@@ -1338,11 +1338,11 @@
 
 	function get_each_context(ctx, list, i) {
 		const child_ctx = ctx.slice();
-		child_ctx[22] = list[i];
+		child_ctx[21] = list[i];
 		return child_ctx;
 	}
 
-	// (146:3) {#each items as item (item.i)}
+	// (140:3) {#each items as item (item.i)}
 	function create_each_block(key_1, ctx) {
 		let button;
 		let button_title_value;
@@ -1351,7 +1351,7 @@
 		let dispose;
 
 		function click_handler() {
-			return /*click_handler*/ ctx[13](/*item*/ ctx[22]);
+			return /*click_handler*/ ctx[12](/*item*/ ctx[21]);
 		}
 
 		return {
@@ -1359,12 +1359,12 @@
 			first: null,
 			c() {
 				button = element("button");
-				attr(button, "title", button_title_value = /*item*/ ctx[22].caption);
-				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[22].caption || `View image ${/*item*/ ctx[22].i + 1}`);
-				toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
+				attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
+				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].caption || `View image ${/*item*/ ctx[21].i + 1}`);
+				toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
 
-				set_style(button, "background-image", /*item*/ ctx[22].thumb
-				? `url(${/*item*/ ctx[22].thumb})`
+				set_style(button, "background-image", /*item*/ ctx[21].thumb
+				? `url(${/*item*/ ctx[21].thumb})`
 				: 'none');
 
 				this.first = button;
@@ -1374,7 +1374,7 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(button, "focus", /*focus_handler*/ ctx[12]),
+						listen(button, "focus", /*focus_handler*/ ctx[11]),
 						listen(button, "click", click_handler)
 					];
 
@@ -1384,21 +1384,21 @@
 			p(new_ctx, dirty) {
 				ctx = new_ctx;
 
-				if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[22].caption)) {
+				if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[21].caption)) {
 					attr(button, "title", button_title_value);
 				}
 
-				if (dirty & /*items*/ 1 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[22].caption || `View image ${/*item*/ ctx[22].i + 1}`)) {
+				if (dirty & /*items*/ 1 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[21].caption || `View image ${/*item*/ ctx[21].i + 1}`)) {
 					attr(button, "aria-label", button_aria_label_value);
 				}
 
 				if (dirty & /*items, position*/ 3) {
-					toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
+					toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
 				}
 
 				if (dirty & /*items*/ 1) {
-					set_style(button, "background-image", /*item*/ ctx[22].thumb
-					? `url(${/*item*/ ctx[22].thumb})`
+					set_style(button, "background-image", /*item*/ ctx[21].thumb
+					? `url(${/*item*/ ctx[21].thumb})`
 					: 'none');
 				}
 			},
@@ -1426,7 +1426,7 @@
 		let mounted;
 		let dispose;
 		let each_value = ensure_array_like(/*items*/ ctx[0]);
-		const get_key = ctx => /*item*/ ctx[22].i;
+		const get_key = ctx => /*item*/ ctx[21].i;
 
 		for (let i = 0; i < each_value.length; i += 1) {
 			let child_ctx = get_each_context(ctx, each_value, i);
@@ -1491,7 +1491,7 @@
 				add_render_callback(() => {
 					if (!current) return;
 					if (div2_outro) div2_outro.end(1);
-					div2_intro = create_in_transition(div2, /*thumbsTransition*/ ctx[11], true);
+					div2_intro = create_in_transition(div2, fly, defaultTweenOptions(500));
 					div2_intro.start();
 				});
 
@@ -1499,7 +1499,7 @@
 			},
 			o(local) {
 				if (div2_intro) div2_intro.invalidate();
-				div2_outro = create_out_transition(div2, /*thumbsTransition*/ ctx[11], false);
+				div2_outro = create_out_transition(div2, fly, defaultTweenOptions(500));
 				current = false;
 			},
 			d(detaching) {
@@ -1625,15 +1625,6 @@
 			};
 		};
 
-		const thumbsTransition = (node, isIntro) => {
-			return {
-				...defaultTweenOptions(500),
-				css: (u, t) => {
-					return `opacity: ${u}`;
-				}
-			};
-		};
-
 		const focus_handler = e => scrollToButton(e.target);
 		const click_handler = item => !hasDragged && setPosition(item.i);
 
@@ -1666,7 +1657,6 @@
 			pointerMove,
 			pointerUp,
 			thumbsActions,
-			thumbsTransition,
 			focus_handler,
 			click_handler
 		];
@@ -1866,8 +1856,6 @@
 	function create_if_block_1$1(ctx) {
 		let img;
 		let img_sizes_value;
-		let img_outro;
-		let current;
 		let mounted;
 		let dispose;
 
@@ -1879,7 +1867,6 @@
 			},
 			m(target, anchor) {
 				insert(target, img, anchor);
-				current = true;
 
 				if (!mounted) {
 					dispose = [
@@ -1891,32 +1878,22 @@
 				}
 			},
 			p(ctx, dirty) {
-				if (!current || dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`)) {
+				if (dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`)) {
 					attr(img, "sizes", img_sizes_value);
 				}
-			},
-			i(local) {
-				if (current) return;
-				if (img_outro) img_outro.end(1);
-				current = true;
-			},
-			o(local) {
-				img_outro = create_out_transition(img, fly, {});
-				current = false;
 			},
 			d(detaching) {
 				if (detaching) {
 					detach(img);
 				}
 
-				if (detaching && img_outro) img_outro.end();
 				mounted = false;
 				run_all(dispose);
 			}
 		};
 	}
 
-	// (386:10) {#if showLoader}
+	// (384:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -2009,24 +1986,14 @@
 				if (/*loaded*/ ctx[2]) {
 					if (if_block0) {
 						if_block0.p(ctx, dirty);
-
-						if (dirty[0] & /*loaded*/ 4) {
-							transition_in(if_block0, 1);
-						}
 					} else {
 						if_block0 = create_if_block_1$1(ctx);
 						if_block0.c();
-						transition_in(if_block0, 1);
 						if_block0.m(div0, if_block0_anchor);
 					}
 				} else if (if_block0) {
-					group_outros();
-
-					transition_out(if_block0, 1, 1, () => {
-						if_block0 = null;
-					});
-
-					check_outros();
+					if_block0.d(1);
+					if_block0 = null;
 				}
 
 				if (/*showLoader*/ ctx[3]) {
@@ -2084,12 +2051,10 @@
 			},
 			i(local) {
 				if (current) return;
-				transition_in(if_block0);
 				transition_in(if_block1);
 				current = true;
 			},
 			o(local) {
-				transition_out(if_block0);
 				transition_out(if_block1);
 				current = false;
 			},
@@ -2568,7 +2533,7 @@
 				create_component(loading.$$.fragment);
 				attr(iframe, "allow", "autoplay; fullscreen");
 				attr(iframe, "title", /*activeItem*/ ctx[2].title);
-				attr(div, "class", "bp-if");
+				attr(div, "class", "bp-iframe");
 				set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
 				set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
 			},
@@ -2668,7 +2633,7 @@
 			c() {
 				div = element("div");
 				create_component(loading.$$.fragment);
-				attr(div, "class", "bp-vid");
+				attr(div, "class", "bp-video");
 				set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
 				set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
 				set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
@@ -2790,58 +2755,67 @@
 	/* src\bigger-picture.svelte generated by Svelte v4.2.20 */
 
 	function create_if_block(ctx) {
-		let div3;
+		let div4;
 		let div0;
+		let div0_intro;
 		let div0_outro;
+		let div2;
 		let div1;
 		let previous_key = /*activeItem*/ ctx[8].i;
-		let div2;
+		let div3;
 		let button;
-		let div2_outro;
+		let div3_intro;
+		let div3_outro;
 		let current;
 		let mounted;
 		let dispose;
 		let key_block = create_key_block(ctx);
-		let if_block0 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
-		let if_block1 = /*hasThumbs*/ ctx[12] && create_if_block_1(ctx);
+		let if_block0 = /*activeItem*/ ctx[8].caption && create_if_block_3(ctx);
+		let if_block1 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
+		let if_block2 = /*hasThumbs*/ ctx[12] && create_if_block_1(ctx);
 
 		return {
 			c() {
-				div3 = element("div");
+				div4 = element("div");
 				div0 = element("div");
+				div2 = element("div");
 				div1 = element("div");
 				key_block.c();
-				div2 = element("div");
-				button = element("button");
 				if (if_block0) if_block0.c();
+				div3 = element("div");
+				button = element("button");
 				if (if_block1) if_block1.c();
+				if (if_block2) if_block2.c();
 				attr(div0, "class", "bp-overlay");
-				attr(div1, "class", "bp-stage");
+				attr(div1, "class", "bp-inner");
+				attr(div2, "class", "bp-stage");
 				attr(button, "class", "bp-x");
 				attr(button, "title", "Close");
 				attr(button, "aria-label", "Close");
-				attr(div2, "class", "bp-controls");
-				attr(div3, "class", "bp-wrap");
-				toggle_class(div3, "bp-zoomed", /*$zoomed*/ ctx[14]);
-				toggle_class(div3, "bp-inline", /*inline*/ ctx[10]);
-				toggle_class(div3, "bp-small", /*smallScreen*/ ctx[9]);
-				toggle_class(div3, "bp-noclose", /*opts*/ ctx[6].noClose);
+				attr(div3, "class", "bp-controls");
+				attr(div4, "class", "bp-wrap");
+				toggle_class(div4, "bp-zoomed", /*$zoomed*/ ctx[14]);
+				toggle_class(div4, "bp-inline", /*inline*/ ctx[10]);
+				toggle_class(div4, "bp-small", /*smallScreen*/ ctx[9]);
+				toggle_class(div4, "bp-noclose", /*opts*/ ctx[6].noClose);
 			},
 			m(target, anchor) {
-				insert(target, div3, anchor);
-				append(div3, div0);
-				append(div3, div1);
+				insert(target, div4, anchor);
+				append(div4, div0);
+				append(div4, div2);
+				append(div2, div1);
 				key_block.m(div1, null);
-				append(div3, div2);
-				append(div2, button);
 				if (if_block0) if_block0.m(div2, null);
+				append(div4, div3);
+				append(div3, button);
 				if (if_block1) if_block1.m(div3, null);
+				if (if_block2) if_block2.m(div4, null);
 				current = true;
 
 				if (!mounted) {
 					dispose = [
 						listen(button, "click", /*close*/ ctx[1]),
-						action_destroyer(/*containerActions*/ ctx[18].call(null, div3))
+						action_destroyer(/*containerActions*/ ctx[18].call(null, div4))
 					];
 
 					mounted = true;
@@ -2860,97 +2834,132 @@
 					key_block.p(ctx, dirty);
 				}
 
-				if (/*items*/ ctx[0].length > 1) {
+				if (/*activeItem*/ ctx[8].caption) {
 					if (if_block0) {
 						if_block0.p(ctx, dirty);
+
+						if (dirty[0] & /*activeItem*/ 256) {
+							transition_in(if_block0, 1);
+						}
 					} else {
-						if_block0 = create_if_block_2(ctx);
+						if_block0 = create_if_block_3(ctx);
 						if_block0.c();
+						transition_in(if_block0, 1);
 						if_block0.m(div2, null);
 					}
 				} else if (if_block0) {
-					if_block0.d(1);
-					if_block0 = null;
+					group_outros();
+
+					transition_out(if_block0, 1, 1, () => {
+						if_block0 = null;
+					});
+
+					check_outros();
 				}
 
-				if (/*hasThumbs*/ ctx[12]) {
+				if (/*items*/ ctx[0].length > 1) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
-
-						if (dirty[0] & /*hasThumbs*/ 4096) {
-							transition_in(if_block1, 1);
-						}
 					} else {
-						if_block1 = create_if_block_1(ctx);
+						if_block1 = create_if_block_2(ctx);
 						if_block1.c();
-						transition_in(if_block1, 1);
 						if_block1.m(div3, null);
 					}
 				} else if (if_block1) {
+					if_block1.d(1);
+					if_block1 = null;
+				}
+
+				if (/*hasThumbs*/ ctx[12]) {
+					if (if_block2) {
+						if_block2.p(ctx, dirty);
+
+						if (dirty[0] & /*hasThumbs*/ 4096) {
+							transition_in(if_block2, 1);
+						}
+					} else {
+						if_block2 = create_if_block_1(ctx);
+						if_block2.c();
+						transition_in(if_block2, 1);
+						if_block2.m(div4, null);
+					}
+				} else if (if_block2) {
 					group_outros();
 
-					transition_out(if_block1, 1, 1, () => {
-						if_block1 = null;
+					transition_out(if_block2, 1, 1, () => {
+						if_block2 = null;
 					});
 
 					check_outros();
 				}
 
 				if (!current || dirty[0] & /*$zoomed*/ 16384) {
-					toggle_class(div3, "bp-zoomed", /*$zoomed*/ ctx[14]);
+					toggle_class(div4, "bp-zoomed", /*$zoomed*/ ctx[14]);
 				}
 
 				if (!current || dirty[0] & /*inline*/ 1024) {
-					toggle_class(div3, "bp-inline", /*inline*/ ctx[10]);
+					toggle_class(div4, "bp-inline", /*inline*/ ctx[10]);
 				}
 
 				if (!current || dirty[0] & /*smallScreen*/ 512) {
-					toggle_class(div3, "bp-small", /*smallScreen*/ ctx[9]);
+					toggle_class(div4, "bp-small", /*smallScreen*/ ctx[9]);
 				}
 
 				if (!current || dirty[0] & /*opts*/ 64) {
-					toggle_class(div3, "bp-noclose", /*opts*/ ctx[6].noClose);
+					toggle_class(div4, "bp-noclose", /*opts*/ ctx[6].noClose);
 				}
 			},
 			i(local) {
 				if (current) return;
-				if (div0_outro) div0_outro.end(1);
+
+				add_render_callback(() => {
+					if (!current) return;
+					if (div0_outro) div0_outro.end(1);
+					div0_intro = create_in_transition(div0, fly, defaultTweenOptions(500));
+					div0_intro.start();
+				});
+
 				transition_in(key_block);
-				if (div2_outro) div2_outro.end(1);
-				transition_in(if_block1);
+				transition_in(if_block0);
+
+				add_render_callback(() => {
+					if (!current) return;
+					if (div3_outro) div3_outro.end(1);
+					div3_intro = create_in_transition(div3, fly, defaultTweenOptions(500));
+					div3_intro.start();
+				});
+
+				transition_in(if_block2);
 				current = true;
 			},
 			o(local) {
-				if (local) {
-					div0_outro = create_out_transition(div0, fly, defaultTweenOptions(500));
-				}
-
+				if (div0_intro) div0_intro.invalidate();
+				div0_outro = create_out_transition(div0, fly, defaultTweenOptions(500));
 				transition_out(key_block);
-
-				if (local) {
-					div2_outro = create_out_transition(div2, fly, {});
-				}
-
-				transition_out(if_block1);
+				transition_out(if_block0);
+				if (div3_intro) div3_intro.invalidate();
+				div3_outro = create_out_transition(div3, fly, defaultTweenOptions(500));
+				transition_out(if_block2);
 				current = false;
 			},
 			d(detaching) {
 				if (detaching) {
-					detach(div3);
+					detach(div4);
 				}
 
 				if (detaching && div0_outro) div0_outro.end();
 				key_block.d(detaching);
 				if (if_block0) if_block0.d();
-				if (detaching && div2_outro) div2_outro.end();
 				if (if_block1) if_block1.d();
+				if (detaching && div3_outro) div3_outro.end();
+				if (if_block2) if_block2.d();
 				mounted = false;
 				run_all(dispose);
 			}
 		};
 	}
 
-	// (471:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (469:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -3025,7 +3034,7 @@
 		};
 	}
 
-	// (471:283) {:else}
+	// (469:283) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3051,7 +3060,7 @@
 		};
 	}
 
-	// (471:249) 
+	// (469:249) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -3084,7 +3093,7 @@
 		};
 	}
 
-	// (471:188) 
+	// (469:188) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -3117,7 +3126,7 @@
 		};
 	}
 
-	// (471:53) {#if activeItem.img}
+	// (469:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -3161,47 +3170,8 @@
 		};
 	}
 
-	// (471:433) {#if activeItem.caption}
-	function create_if_block_3(ctx) {
-		let div;
-		let raw_value = /*activeItem*/ ctx[8].caption + "";
-		let div_outro;
-		let current;
-
-		return {
-			c() {
-				div = element("div");
-				attr(div, "class", "bp-cap");
-			},
-			m(target, anchor) {
-				insert(target, div, anchor);
-				div.innerHTML = raw_value;
-				current = true;
-			},
-			p(ctx, dirty) {
-				if ((!current || dirty[0] & /*activeItem*/ 256) && raw_value !== (raw_value = /*activeItem*/ ctx[8].caption + "")) div.innerHTML = raw_value;		},
-			i(local) {
-				if (current) return;
-				if (div_outro) div_outro.end(1);
-				current = true;
-			},
-			o(local) {
-				div_outro = create_out_transition(div, fly, defaultTweenOptions(250));
-				current = false;
-			},
-			d(detaching) {
-				if (detaching) {
-					detach(div);
-				}
-
-				if (detaching && div_outro) div_outro.end();
-			}
-		};
-	}
-
-	// (460:95) {#key activeItem.i}
+	// (458:159) {#key activeItem.i}
 	function create_key_block(ctx) {
-		let div2;
 		let div1;
 		let div0;
 		let div1_intro;
@@ -3209,26 +3179,20 @@
 		let current;
 		let mounted;
 		let dispose;
-		let if_block0 = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
-		let if_block1 = /*activeItem*/ ctx[8].caption && create_if_block_3(ctx);
+		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
 
 		return {
 			c() {
-				div2 = element("div");
 				div1 = element("div");
-				if (if_block0) if_block0.c();
+				if (if_block) if_block.c();
 				div0 = element("div");
-				if (if_block1) if_block1.c();
 				attr(div0, "class", "bp-ruler");
-				attr(div1, "class", "bp-inner");
-				attr(div2, "class", "bp-slide");
+				attr(div1, "class", "bp-slide");
 			},
 			m(target, anchor) {
-				insert(target, div2, anchor);
-				append(div2, div1);
-				if (if_block0) if_block0.m(div1, null);
+				insert(target, div1, anchor);
+				if (if_block) if_block.m(div1, null);
 				append(div1, div0);
-				if (if_block1) if_block1.m(div2, null);
 				current = true;
 
 				if (!mounted) {
@@ -3243,46 +3207,23 @@
 			},
 			p(ctx, dirty) {
 				if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0) {
-					if (if_block0) {
-						if_block0.p(ctx, dirty);
+					if (if_block) {
+						if_block.p(ctx, dirty);
 
 						if (dirty[0] & /*containerWidth, containerHeight*/ 8320) {
-							transition_in(if_block0, 1);
+							transition_in(if_block, 1);
 						}
 					} else {
-						if_block0 = create_if_block_4(ctx);
-						if_block0.c();
-						transition_in(if_block0, 1);
-						if_block0.m(div1, div0);
+						if_block = create_if_block_4(ctx);
+						if_block.c();
+						transition_in(if_block, 1);
+						if_block.m(div1, div0);
 					}
-				} else if (if_block0) {
+				} else if (if_block) {
 					group_outros();
 
-					transition_out(if_block0, 1, 1, () => {
-						if_block0 = null;
-					});
-
-					check_outros();
-				}
-
-				if (/*activeItem*/ ctx[8].caption) {
-					if (if_block1) {
-						if_block1.p(ctx, dirty);
-
-						if (dirty[0] & /*activeItem*/ 256) {
-							transition_in(if_block1, 1);
-						}
-					} else {
-						if_block1 = create_if_block_3(ctx);
-						if_block1.c();
-						transition_in(if_block1, 1);
-						if_block1.m(div2, null);
-					}
-				} else if (if_block1) {
-					group_outros();
-
-					transition_out(if_block1, 1, 1, () => {
-						if_block1 = null;
+					transition_out(if_block, 1, 1, () => {
+						if_block = null;
 					});
 
 					check_outros();
@@ -3290,7 +3231,7 @@
 			},
 			i(local) {
 				if (current) return;
-				transition_in(if_block0);
+				transition_in(if_block);
 
 				add_render_callback(() => {
 					if (!current) return;
@@ -3299,31 +3240,75 @@
 					div1_intro.start();
 				});
 
-				transition_in(if_block1);
 				current = true;
 			},
 			o(local) {
-				transition_out(if_block0);
+				transition_out(if_block);
 				if (div1_intro) div1_intro.invalidate();
 				div1_outro = create_out_transition(div1, /*mediaTransition*/ ctx[16], false);
-				transition_out(if_block1);
 				current = false;
 			},
 			d(detaching) {
 				if (detaching) {
-					detach(div2);
+					detach(div1);
 				}
 
-				if (if_block0) if_block0.d();
+				if (if_block) if_block.d();
 				if (detaching && div1_outro) div1_outro.end();
-				if (if_block1) if_block1.d();
 				mounted = false;
 				run_all(dispose);
 			}
 		};
 	}
 
-	// (471:714) {#if items.length > 1}
+	// (469:445) {#if activeItem.caption}
+	function create_if_block_3(ctx) {
+		let div;
+		let raw_value = /*activeItem*/ ctx[8].caption + "";
+		let div_intro;
+		let div_outro;
+		let current;
+
+		return {
+			c() {
+				div = element("div");
+				attr(div, "class", "bp-caption");
+			},
+			m(target, anchor) {
+				insert(target, div, anchor);
+				div.innerHTML = raw_value;
+				current = true;
+			},
+			p(ctx, dirty) {
+				if ((!current || dirty[0] & /*activeItem*/ 256) && raw_value !== (raw_value = /*activeItem*/ ctx[8].caption + "")) div.innerHTML = raw_value;		},
+			i(local) {
+				if (current) return;
+
+				add_render_callback(() => {
+					if (!current) return;
+					if (div_outro) div_outro.end(1);
+					div_intro = create_in_transition(div, fly, defaultTweenOptions(500));
+					div_intro.start();
+				});
+
+				current = true;
+			},
+			o(local) {
+				if (div_intro) div_intro.invalidate();
+				div_outro = create_out_transition(div, fly, defaultTweenOptions(500));
+				current = false;
+			},
+			d(detaching) {
+				if (detaching) {
+					detach(div);
+				}
+
+				if (detaching && div_outro) div_outro.end();
+			}
+		};
+	}
+
+	// (469:828) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[5] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3375,7 +3360,7 @@
 		};
 	}
 
-	// (481:25) {#if hasThumbs}
+	// (479:25) {#if hasThumbs}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -3678,8 +3663,6 @@
 				item.height = dimensions[1];
 				item.scaled = 1;
 			}
-
-			console.log(item.width, item.height);
 		};
 
 		/**

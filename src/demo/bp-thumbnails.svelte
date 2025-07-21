@@ -1,7 +1,7 @@
 <script>
 	import BiggerPicture from '../bigger-picture.js'
 	import { tweened } from 'svelte/motion'
-	import { fade } from 'svelte/transition'
+	import { fly } from 'svelte/transition'
 	import { cubicOut } from 'svelte/easing'
 	import { resize } from './actions'
 
@@ -135,11 +135,11 @@
 		<div class="thumbnail-bp" use:onMount></div>
 		<div
 			class="thumbnails"
-			in:fade={{
+			in:fly={{
 				easing: cubicOut,
 				duration: prefersReducedMotion ? 0 : 480,
 			}}
-			out:fade={{
+			out:fly={{
 				easing: cubicOut,
 				duration: prefersReducedMotion ? 0 : 480,
 			}}

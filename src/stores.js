@@ -2,7 +2,7 @@ import { writable } from 'svelte/store'
 import { cubicOut } from 'svelte/easing'
 
 /** true if gallery is in the process of closing */
-export const closing = writable(0)
+export const closing = writable(false)
 
 /** if user prefers reduced motion  */
 export const prefersReducedMotion = window.matchMedia?.(

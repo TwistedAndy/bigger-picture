@@ -1,5 +1,6 @@
 <script>
 	import {tweened} from 'svelte/motion';
+	import {fly} from 'svelte/transition';
 	import {defaultTweenOptions} from '../stores.js';
 
 	export let items;
@@ -121,21 +122,12 @@
 
 	};
 
-	const thumbsTransition = (node, isIntro) => {
-		return {
-			...defaultTweenOptions(500),
-			css: (u, t) => {
-				return `opacity: ${u}`;
-			},
-		}
-	}
-
 </script>
 
 <div
 	use:thumbsActions
-	in:thumbsTransition|global={true}
-	out:thumbsTransition|global={false}
+	in:fly|global={defaultTweenOptions(500)}
+	out:fly|global={defaultTweenOptions(500)}
 	on:pointermove={pointerMove}
 	on:pointerup={pointerUp}
 	on:pointercancel={pointerUp}

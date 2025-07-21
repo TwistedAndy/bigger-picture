@@ -233,7 +233,7 @@ firewatch.addEventListener('click', (e) => {
 		},
 		items: [{ element: e.currentTarget, html: '' }],
 		onOpen: (container) => {
-			component = Firewatch({
+			component = new Firewatch({
 				target: container.querySelector('.bp-html'),
 			})
 		},
@@ -249,7 +249,7 @@ document.getElementById('dialog').addEventListener('click', (e) => {
 		onOpen: (container) => {
 			container.querySelector('.bp-controls').remove()
 			container.classList.add('blur')
-			Dialog({
+			new Dialog({
 				target: container.querySelector('.bp-html'),
 				props: { bp: bodyBp },
 			})

@@ -60,7 +60,7 @@
 </script>
 
 <div
-	class="bp-vid"
+	class="bp-video"
 	use:onMount
 	style:background-image={getThumbBackground(activeItem)}
 	style="

@@ -7,12 +7,12 @@
   --bp-thumb-ratio: 1.25;
 }
 
-.bp-controls, .bp-if iframe,
-.bp-if video,
-.bp-if div,
-.bp-vid iframe,
-.bp-vid video,
-.bp-vid div, .bp-img img,
+.bp-controls, .bp-iframe iframe,
+.bp-iframe video,
+.bp-iframe div,
+.bp-video iframe,
+.bp-video video,
+.bp-video div, .bp-img img,
 .bp-img div, .bp-img-wrap, .bp-overlay, .bp-wrap {
   display: block;
   position: absolute;
@@ -48,7 +48,7 @@
 .bp-wrap.bp-zoomed .bp-img:not(.bp-drag) {
   cursor: grab;
 }
-.bp-wrap.bp-zoomed .bp-cap {
+.bp-wrap.bp-zoomed .bp-caption {
   animation: none !important;
   opacity: 0;
 }
@@ -71,12 +71,12 @@
 
 .bp-overlay {
   background: rgba(0, 0, 0, 0.75);
-  animation: bp-fadein 0.48s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .bp-stage {
   display: flex;
   position: relative;
+  flex-direction: column;
   flex-grow: 1;
   width: 100%;
   min-height: 0;
@@ -87,7 +87,9 @@
   display: flex;
   position: absolute;
   flex-direction: column;
-  inset: var(--bp-stage-gap);
+  align-items: center;
+  justify-content: center;
+  inset: 0;
 }
 
 .bp-inner {
@@ -136,15 +138,15 @@
   display: none;
 }
 
-.bp-if,
-.bp-vid {
+.bp-iframe,
+.bp-video {
   position: relative;
   margin: auto;
   background: #000 50% 50%/contain no-repeat;
   clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
   will-change: clip-path;
 }
-.bp-vid audio {
+.bp-video audio {
   position: absolute;
   bottom: 14px;
   left: 14px;
@@ -161,8 +163,6 @@
 
 .bp-controls {
   text-align: left;
-  animation: bp-fadein 0.3s;
-  transition: opacity 0.3s;
   pointer-events: none;
 }
 .bp-controls button {
@@ -268,9 +268,9 @@
   border-radius: 50%;
 }
 
-.bp-cap {
+.bp-caption {
   position: absolute;
-  bottom: var(--bp-stage-gap);
+  bottom: calc(var(--bp-stage-gap) * 2);
   left: 50%;
   max-width: 100%;
   max-height: 200px;
@@ -282,11 +282,10 @@
   font-weight: 400;
   line-height: 1.25rem;
   text-align: center;
-  animation: bp-fadein 0.2s;
-  transition: opacity 0.2s;
+  transition: opacity 0.25s;
   transform: translateX(-50%);
 }
-.bp-cap a {
+.bp-caption a {
   color: inherit;
 }
 
