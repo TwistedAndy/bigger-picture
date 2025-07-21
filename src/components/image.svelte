@@ -12,15 +12,14 @@
 	export let smallScreen
 	export let containerWidth
 	export let containerHeight
+	export let activeDimensions
 
 	let { activeItem, opts, prev, next, zoomed, container } = props
 
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10
 
-	let calculatedDimensions = props.calculateDimensions(activeItem)
-
 	/** value of sizes attribute */
-	let sizes = calculatedDimensions[0]
+	let sizes = activeDimensions[0]
 
 	/** tracks load state of image */
 	let loaded, showLoader
@@ -53,20 +52,21 @@
 
 	/** tween to control image size */
 	const imageDimensions = tweened(
-		calculatedDimensions,
+		activeDimensions,
 		defaultTweenOptions(500)
 	)
+
 	/** translate transform for pointerDown */
 	const zoomDragTranslate = tweened([0, 0], defaultTweenOptions(500))
 
-	$: zoomed.set($imageDimensions[0] - 10 > calculatedDimensions[0])
+	$: zoomed.set($imageDimensions[0] - 10 > activeDimensions[0])
 
 	// if zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
 	$: if ($closing && $zoomed && !opts.intro) {
 		const closeTweenOpts = defaultTweenOptions(500)
 		zoomDragTranslate.set([0, 0], closeTweenOpts)
-		imageDimensions.set(calculatedDimensions, closeTweenOpts)
+		imageDimensions.set(activeDimensions, closeTweenOpts)
 		closingWhileZoomed = true
 	}
 
@@ -124,7 +124,7 @@
 			return
 		}
 
-		const maxWidth = calculatedDimensions[0] * maxZoom
+		const maxWidth = activeDimensions[0] * maxZoom
 
 		let newWidth = $imageDimensions[0] + $imageDimensions[0] * amt
 		let newHeight = $imageDimensions[1] + $imageDimensions[1] * amt
@@ -133,16 +133,16 @@
 			if (newWidth > maxWidth) {
 				// requesting size large than max zoom
 				newWidth = maxWidth
-				newHeight = calculatedDimensions[1] * maxZoom
+				newHeight = activeDimensions[1] * maxZoom
 			}
 			if (newWidth > naturalWidth) {
 				// if requesting zoom larger than natural size
 				newWidth = naturalWidth
 				newHeight = +activeItem.height
 			}
-		} else if (newWidth < calculatedDimensions[0]) {
+		} else if (newWidth < activeDimensions[0]) {
 			// if requesting image smaller than starting size
-			imageDimensions.set(calculatedDimensions)
+			imageDimensions.set(activeDimensions)
 			return zoomDragTranslate.set([0, 0])
 		}
 
@@ -331,16 +331,7 @@
 
 	const onMount = (node) => {
 		bpImg = node
-		// handle window resize
-		props.setResizeFunc(() => {
-			calculatedDimensions = props.calculateDimensions(activeItem)
-			// adjust image size / zoom on resize, but not on mobile because
-			// some browsers (ios safari 15) constantly resize screen on drag
-			if (opts.inline || !smallScreen) {
-				imageDimensions.set(calculatedDimensions)
-				zoomDragTranslate.set([0, 0])
-			}
-		})
+
 		// decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
 			naturalWidth = +activeItem.width
@@ -356,6 +347,12 @@
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr)
 	}
+
+	$: if (activeDimensions && (opts.inline || !smallScreen)) {
+		imageDimensions.set(activeDimensions)
+		zoomDragTranslate.set([0, 0])
+	}
+
 </script>
 
 <div

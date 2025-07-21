@@ -2,17 +2,11 @@
 	import { addAttributes } from '../stores'
 	import Loading from './loading.svelte'
 
-	export let props
-
-	let loaded, dimensions
-
 	const { activeItem } = props
 
-	const setDimensions = () => (dimensions = props.calculateDimensions(activeItem))
+	export let activeDimensions;
 
-	setDimensions()
-
-	props.setResizeFunc(setDimensions)
+	let loaded;
 
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr)
@@ -22,10 +16,8 @@
 
 <div
 	class="bp-iframe"
-	style="
-		width:{dimensions[0]}px;
-		height:{dimensions[1]}px
-	"
+	style:width="{activeDimensions[0]}px"
+	style:height="{activeDimensions[1]}px"
 >
 	<iframe
 		use:addSrc

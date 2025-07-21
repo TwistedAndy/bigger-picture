@@ -1893,7 +1893,7 @@
 		};
 	}
 
-	// (384:10) {#if showLoader}
+	// (380:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -2081,13 +2081,13 @@
 		let { smallScreen } = $$props;
 		let { containerWidth } = $$props;
 		let { containerHeight } = $$props;
+		let { activeDimensions } = $$props;
 		let { activeItem, opts, prev, next, zoomed, container } = props;
 		component_subscribe($$self, zoomed, value => $$invalidate(27, $zoomed = value));
 		let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
-		let calculatedDimensions = props.calculateDimensions(activeItem);
 
 		/** value of sizes attribute */
-		let sizes = calculatedDimensions[0];
+		let sizes = activeDimensions[0];
 
 		/** tracks load state of image */
 		let loaded, showLoader;
@@ -2119,7 +2119,7 @@
 		const pointerCache = new Map();
 
 		/** tween to control image size */
-		const imageDimensions = tweened(calculatedDimensions, defaultTweenOptions(500));
+		const imageDimensions = tweened(activeDimensions, defaultTweenOptions(500));
 
 		component_subscribe($$self, imageDimensions, value => $$invalidate(0, $imageDimensions = value));
 
@@ -2188,7 +2188,7 @@
 				return;
 			}
 
-			const maxWidth = calculatedDimensions[0] * maxZoom;
+			const maxWidth = activeDimensions[0] * maxZoom;
 			let newWidth = $imageDimensions[0] + $imageDimensions[0] * amt;
 			let newHeight = $imageDimensions[1] + $imageDimensions[1] * amt;
 
@@ -2197,7 +2197,7 @@
 					// requesting size large than max zoom
 					newWidth = maxWidth;
 
-					newHeight = calculatedDimensions[1] * maxZoom;
+					newHeight = activeDimensions[1] * maxZoom;
 				}
 
 				if (newWidth > naturalWidth) {
@@ -2206,9 +2206,9 @@
 
 					newHeight = +activeItem.height;
 				}
-			} else if (newWidth < calculatedDimensions[0]) {
+			} else if (newWidth < activeDimensions[0]) {
 				// if requesting image smaller than starting size
-				imageDimensions.set(calculatedDimensions);
+				imageDimensions.set(activeDimensions);
 
 				return zoomDragTranslate.set([0, 0]);
 			}
@@ -2395,18 +2395,6 @@
 		const onMount = node => {
 			bpImg = node;
 
-			// handle window resize
-			props.setResizeFunc(() => {
-				$$invalidate(26, calculatedDimensions = props.calculateDimensions(activeItem));
-
-				// adjust image size / zoom on resize, but not on mobile because
-				// some browsers (ios safari 15) constantly resize screen on drag
-				if (opts.inline || !smallScreen) {
-					imageDimensions.set(calculatedDimensions);
-					zoomDragTranslate.set([0, 0]);
-				}
-			});
-
 			// decode initial image before rendering
 			props.loadImage(activeItem).then(() => {
 				$$invalidate(6, naturalWidth = +activeItem.width);
@@ -2434,21 +2422,29 @@
 			if ('smallScreen' in $$props) $$invalidate(23, smallScreen = $$props.smallScreen);
 			if ('containerWidth' in $$props) $$invalidate(24, containerWidth = $$props.containerWidth);
 			if ('containerHeight' in $$props) $$invalidate(25, containerHeight = $$props.containerHeight);
+			if ('activeDimensions' in $$props) $$invalidate(26, activeDimensions = $$props.activeDimensions);
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*$imageDimensions, calculatedDimensions*/ 67108865) {
-				zoomed.set($imageDimensions[0] - 10 > calculatedDimensions[0]);
+			if ($$self.$$.dirty[0] & /*$imageDimensions, activeDimensions*/ 67108865) {
+				zoomed.set($imageDimensions[0] - 10 > activeDimensions[0]);
 			}
 
-			if ($$self.$$.dirty[0] & /*$closing, $zoomed, calculatedDimensions*/ 469762048) {
+			if ($$self.$$.dirty[0] & /*$closing, $zoomed, activeDimensions*/ 469762048) {
 				// if zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && $zoomed && !opts.intro) {
 					const closeTweenOpts = defaultTweenOptions(500);
 					zoomDragTranslate.set([0, 0], closeTweenOpts);
-					imageDimensions.set(calculatedDimensions, closeTweenOpts);
+					imageDimensions.set(activeDimensions, closeTweenOpts);
 					$$invalidate(5, closingWhileZoomed = true);
+				}
+			}
+
+			if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 75497472) {
+				if (activeDimensions && (opts.inline || !smallScreen)) {
+					imageDimensions.set(activeDimensions);
+					zoomDragTranslate.set([0, 0]);
 				}
 			}
 		};
@@ -2480,7 +2476,7 @@
 			smallScreen,
 			containerWidth,
 			containerHeight,
-			calculatedDimensions,
+			activeDimensions,
 			$zoomed,
 			$closing,
 			error_handler
@@ -2501,7 +2497,8 @@
 					props: 22,
 					smallScreen: 23,
 					containerWidth: 24,
-					containerHeight: 25
+					containerHeight: 25,
+					activeDimensions: 26
 				},
 				null,
 				[-1, -1]
@@ -2515,6 +2512,8 @@
 		let div;
 		let iframe;
 		let loading;
+		let style_width = `${/*activeDimensions*/ ctx[0][0]}px`;
+		let style_height = `${/*activeDimensions*/ ctx[0][1]}px`;
 		let current;
 		let mounted;
 		let dispose;
@@ -2522,7 +2521,7 @@
 		loading = new Loading({
 				props: {
 					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[0]
+					loaded: /*loaded*/ ctx[1]
 				}
 			});
 
@@ -2534,8 +2533,8 @@
 				attr(iframe, "allow", "autoplay; fullscreen");
 				attr(iframe, "title", /*activeItem*/ ctx[2].title);
 				attr(div, "class", "bp-iframe");
-				set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
-				set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
+				set_style(div, "width", style_width);
+				set_style(div, "height", style_height);
 			},
 			m(target, anchor) {
 				insert(target, div, anchor);
@@ -2546,7 +2545,7 @@
 				if (!mounted) {
 					dispose = [
 						action_destroyer(/*addSrc*/ ctx[3].call(null, iframe)),
-						listen(iframe, "load", /*load_handler*/ ctx[5])
+						listen(iframe, "load", /*load_handler*/ ctx[4])
 					];
 
 					mounted = true;
@@ -2554,15 +2553,15 @@
 			},
 			p(ctx, [dirty]) {
 				const loading_changes = {};
-				if (dirty & /*loaded*/ 1) loading_changes.loaded = /*loaded*/ ctx[0];
+				if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
 				loading.$set(loading_changes);
 
-				if (!current || dirty & /*dimensions*/ 2) {
-					set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
+				if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
+					set_style(div, "width", style_width);
 				}
 
-				if (!current || dirty & /*dimensions*/ 2) {
-					set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
+				if (dirty & /*activeDimensions*/ 1 && style_height !== (style_height = `${/*activeDimensions*/ ctx[0][1]}px`)) {
+					set_style(div, "height", style_height);
 				}
 			},
 			i(local) {
@@ -2587,29 +2586,28 @@
 	}
 
 	function instance$2($$self, $$props, $$invalidate) {
-		let { props } = $$props;
-		let loaded, dimensions;
 		const { activeItem } = props;
-		const setDimensions = () => $$invalidate(1, dimensions = props.calculateDimensions(activeItem));
-		setDimensions();
-		props.setResizeFunc(setDimensions);
+		let { activeDimensions } = $$props;
+		let loaded;
 
 		const addSrc = node => {
 			addAttributes(node, activeItem.attr);
 			node.src = activeItem.iframe;
 		};
 
-		const load_handler = () => $$invalidate(0, loaded = true);
+		const load_handler = () => $$invalidate(1, loaded = true);
 
-		
+		$$self.$$set = $$props => {
+			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
+		};
 
-		return [loaded, dimensions, activeItem, addSrc, props, load_handler];
+		return [activeDimensions, loaded, activeItem, addSrc, load_handler];
 	}
 
 	class Iframe extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$2, create_fragment$2, not_equal, { props: 4 });
+			init(this, options, instance$2, create_fragment$2, not_equal, { activeDimensions: 0 });
 		}
 	}
 
@@ -2618,6 +2616,8 @@
 	function create_fragment$1(ctx) {
 		let div;
 		let loading;
+		let style_width = `${/*activeDimensions*/ ctx[0][0]}px`;
+		let style_height = `${/*activeDimensions*/ ctx[0][1]}px`;
 		let current;
 		let mounted;
 		let dispose;
@@ -2625,7 +2625,7 @@
 		loading = new Loading({
 				props: {
 					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[0]
+					loaded: /*loaded*/ ctx[1]
 				}
 			});
 
@@ -2633,9 +2633,9 @@
 			c() {
 				div = element("div");
 				create_component(loading.$$.fragment);
-				attr(div, "class", "bp-video");
-				set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
-				set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
+				attr(div, "class", "bp-vid");
+				set_style(div, "width", style_width);
+				set_style(div, "height", style_height);
 				set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
 			},
 			m(target, anchor) {
@@ -2650,21 +2650,15 @@
 			},
 			p(ctx, [dirty]) {
 				const loading_changes = {};
-				if (dirty & /*loaded*/ 1) loading_changes.loaded = /*loaded*/ ctx[0];
+				if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
 				loading.$set(loading_changes);
 
-				if (!current || dirty & /*dimensions*/ 2) {
-					set_style(div, "width", /*dimensions*/ ctx[1][0] + "px");
+				if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
+					set_style(div, "width", style_width);
 				}
 
-				if (!current || dirty & /*dimensions*/ 2) {
-					set_style(div, "height", /*dimensions*/ ctx[1][1] + "px");
-				}
-
-				const style_changed = dirty & /*dimensions*/ 2;
-
-				if (dirty & /*dimensions*/ 2 || style_changed) {
-					set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
+				if (dirty & /*activeDimensions*/ 1 && style_height !== (style_height = `${/*activeDimensions*/ ctx[0][1]}px`)) {
+					set_style(div, "height", style_height);
 				}
 			},
 			i(local) {
@@ -2690,11 +2684,9 @@
 
 	function instance$1($$self, $$props, $$invalidate) {
 		let { props } = $$props;
-		let loaded, dimensions;
+		let { activeDimensions } = $$props;
+		let loaded;
 		const { activeItem, opts, container } = props;
-		const setDimensions = () => $$invalidate(1, dimensions = props.calculateDimensions(activeItem));
-		setDimensions();
-		props.setResizeFunc(setDimensions);
 
 		/** create audo / video element */
 		const onMount = node => {
@@ -2736,86 +2728,94 @@
 
 			appendToVideo('source', activeItem.sources);
 			appendToVideo('track', activeItem.tracks || []);
-			mediaElement.oncanplay = () => $$invalidate(0, loaded = true);
+			mediaElement.oncanplay = () => $$invalidate(1, loaded = true);
 			node.append(mediaElement);
 		};
 
-		
+		$$self.$$set = $$props => {
+			
+			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
+		};
 
-		return [loaded, dimensions, activeItem, onMount, props];
+		return [activeDimensions, loaded, activeItem, onMount, props];
 	}
 
 	class Video extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$1, create_fragment$1, not_equal, { props: 4 });
+			init(this, options, instance$1, create_fragment$1, not_equal, { props: 4, activeDimensions: 0 });
 		}
 	}
 
 	/* src\bigger-picture.svelte generated by Svelte v4.2.20 */
 
 	function create_if_block(ctx) {
-		let div4;
+		let div5;
 		let div0;
 		let div0_intro;
 		let div0_outro;
-		let div2;
-		let div1;
-		let previous_key = /*activeItem*/ ctx[8].i;
 		let div3;
+		let div2;
+		let previous_key = /*activeItem*/ ctx[8].i;
+		let div1;
+		let div4;
 		let button;
-		let div3_intro;
-		let div3_outro;
+		let div4_intro;
+		let div4_outro;
 		let current;
 		let mounted;
 		let dispose;
 		let key_block = create_key_block(ctx);
 		let if_block0 = /*activeItem*/ ctx[8].caption && create_if_block_3(ctx);
 		let if_block1 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
-		let if_block2 = /*hasThumbs*/ ctx[12] && create_if_block_1(ctx);
+		let if_block2 = /*opts*/ ctx[6].thumbs && /*items*/ ctx[0].length > 1 && create_if_block_1(ctx);
 
 		return {
 			c() {
-				div4 = element("div");
+				div5 = element("div");
 				div0 = element("div");
-				div2 = element("div");
-				div1 = element("div");
-				key_block.c();
-				if (if_block0) if_block0.c();
 				div3 = element("div");
+				div2 = element("div");
+				key_block.c();
+				div1 = element("div");
+				if (if_block0) if_block0.c();
+				div4 = element("div");
 				button = element("button");
 				if (if_block1) if_block1.c();
 				if (if_block2) if_block2.c();
 				attr(div0, "class", "bp-overlay");
-				attr(div1, "class", "bp-inner");
-				attr(div2, "class", "bp-stage");
+				attr(div1, "class", "bp-ruler");
+				attr(div2, "class", "bp-inner");
+				attr(div3, "class", "bp-stage");
 				attr(button, "class", "bp-x");
 				attr(button, "title", "Close");
 				attr(button, "aria-label", "Close");
-				attr(div3, "class", "bp-controls");
-				attr(div4, "class", "bp-wrap");
-				toggle_class(div4, "bp-zoomed", /*$zoomed*/ ctx[14]);
-				toggle_class(div4, "bp-inline", /*inline*/ ctx[10]);
-				toggle_class(div4, "bp-small", /*smallScreen*/ ctx[9]);
-				toggle_class(div4, "bp-noclose", /*opts*/ ctx[6].noClose);
+				attr(div4, "class", "bp-controls");
+				attr(div5, "class", "bp-wrap");
+				toggle_class(div5, "bp-zoomed", /*$zoomed*/ ctx[14]);
+				toggle_class(div5, "bp-inline", /*inline*/ ctx[10]);
+				toggle_class(div5, "bp-small", /*smallScreen*/ ctx[9]);
+				toggle_class(div5, "bp-noclose", /*opts*/ ctx[6].noClose);
 			},
 			m(target, anchor) {
-				insert(target, div4, anchor);
-				append(div4, div0);
-				append(div4, div2);
+				insert(target, div5, anchor);
+				append(div5, div0);
+				append(div5, div3);
+				append(div3, div2);
+				key_block.m(div2, null);
 				append(div2, div1);
-				key_block.m(div1, null);
-				if (if_block0) if_block0.m(div2, null);
-				append(div4, div3);
-				append(div3, button);
-				if (if_block1) if_block1.m(div3, null);
-				if (if_block2) if_block2.m(div4, null);
+				if (if_block0) if_block0.m(div3, null);
+				append(div5, div4);
+				append(div4, button);
+				if (if_block1) if_block1.m(div4, null);
+				if (if_block2) if_block2.m(div5, null);
 				current = true;
 
 				if (!mounted) {
 					dispose = [
+						action_destroyer(/*rulerActions*/ ctx[19].call(null, div1)),
 						listen(button, "click", /*close*/ ctx[1]),
-						action_destroyer(/*containerActions*/ ctx[18].call(null, div4))
+						action_destroyer(/*containerActions*/ ctx[18].call(null, div5))
 					];
 
 					mounted = true;
@@ -2829,7 +2829,7 @@
 					key_block = create_key_block(ctx);
 					key_block.c();
 					transition_in(key_block, 1);
-					key_block.m(div1, null);
+					key_block.m(div2, div1);
 				} else {
 					key_block.p(ctx, dirty);
 				}
@@ -2845,7 +2845,7 @@
 						if_block0 = create_if_block_3(ctx);
 						if_block0.c();
 						transition_in(if_block0, 1);
-						if_block0.m(div2, null);
+						if_block0.m(div3, null);
 					}
 				} else if (if_block0) {
 					group_outros();
@@ -2863,25 +2863,25 @@
 					} else {
 						if_block1 = create_if_block_2(ctx);
 						if_block1.c();
-						if_block1.m(div3, null);
+						if_block1.m(div4, null);
 					}
 				} else if (if_block1) {
 					if_block1.d(1);
 					if_block1 = null;
 				}
 
-				if (/*hasThumbs*/ ctx[12]) {
+				if (/*opts*/ ctx[6].thumbs && /*items*/ ctx[0].length > 1) {
 					if (if_block2) {
 						if_block2.p(ctx, dirty);
 
-						if (dirty[0] & /*hasThumbs*/ 4096) {
+						if (dirty[0] & /*opts, items*/ 65) {
 							transition_in(if_block2, 1);
 						}
 					} else {
 						if_block2 = create_if_block_1(ctx);
 						if_block2.c();
 						transition_in(if_block2, 1);
-						if_block2.m(div4, null);
+						if_block2.m(div5, null);
 					}
 				} else if (if_block2) {
 					group_outros();
@@ -2894,19 +2894,19 @@
 				}
 
 				if (!current || dirty[0] & /*$zoomed*/ 16384) {
-					toggle_class(div4, "bp-zoomed", /*$zoomed*/ ctx[14]);
+					toggle_class(div5, "bp-zoomed", /*$zoomed*/ ctx[14]);
 				}
 
 				if (!current || dirty[0] & /*inline*/ 1024) {
-					toggle_class(div4, "bp-inline", /*inline*/ ctx[10]);
+					toggle_class(div5, "bp-inline", /*inline*/ ctx[10]);
 				}
 
 				if (!current || dirty[0] & /*smallScreen*/ 512) {
-					toggle_class(div4, "bp-small", /*smallScreen*/ ctx[9]);
+					toggle_class(div5, "bp-small", /*smallScreen*/ ctx[9]);
 				}
 
 				if (!current || dirty[0] & /*opts*/ 64) {
-					toggle_class(div4, "bp-noclose", /*opts*/ ctx[6].noClose);
+					toggle_class(div5, "bp-noclose", /*opts*/ ctx[6].noClose);
 				}
 			},
 			i(local) {
@@ -2924,9 +2924,9 @@
 
 				add_render_callback(() => {
 					if (!current) return;
-					if (div3_outro) div3_outro.end(1);
-					div3_intro = create_in_transition(div3, fly, defaultTweenOptions(500));
-					div3_intro.start();
+					if (div4_outro) div4_outro.end(1);
+					div4_intro = create_in_transition(div4, fly, defaultTweenOptions(500));
+					div4_intro.start();
 				});
 
 				transition_in(if_block2);
@@ -2937,21 +2937,21 @@
 				div0_outro = create_out_transition(div0, fly, defaultTweenOptions(500));
 				transition_out(key_block);
 				transition_out(if_block0);
-				if (div3_intro) div3_intro.invalidate();
-				div3_outro = create_out_transition(div3, fly, defaultTweenOptions(500));
+				if (div4_intro) div4_intro.invalidate();
+				div4_outro = create_out_transition(div4, fly, defaultTweenOptions(500));
 				transition_out(if_block2);
 				current = false;
 			},
 			d(detaching) {
 				if (detaching) {
-					detach(div4);
+					detach(div5);
 				}
 
 				if (detaching && div0_outro) div0_outro.end();
 				key_block.d(detaching);
 				if (if_block0) if_block0.d();
 				if (if_block1) if_block1.d();
-				if (detaching && div3_outro) div3_outro.end();
+				if (detaching && div4_outro) div4_outro.end();
 				if (if_block2) if_block2.d();
 				mounted = false;
 				run_all(dispose);
@@ -2959,7 +2959,7 @@
 		};
 	}
 
-	// (469:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (451:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -3034,7 +3034,7 @@
 		};
 	}
 
-	// (469:283) {:else}
+	// (451:340) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3060,13 +3060,16 @@
 		};
 	}
 
-	// (469:249) 
+	// (451:287) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
 
 		iframe = new Iframe({
-				props: { props: /*getChildProps*/ ctx[17]() }
+				props: {
+					props: /*getChildProps*/ ctx[17](),
+					activeDimensions: /*activeDimensions*/ ctx[13]
+				}
 			});
 
 		return {
@@ -3077,7 +3080,11 @@
 				mount_component(iframe, target, anchor);
 				current = true;
 			},
-			p: noop,
+			p(ctx, dirty) {
+				const iframe_changes = {};
+				if (dirty[0] & /*activeDimensions*/ 8192) iframe_changes.activeDimensions = /*activeDimensions*/ ctx[13];
+				iframe.$set(iframe_changes);
+			},
 			i(local) {
 				if (current) return;
 				transition_in(iframe.$$.fragment, local);
@@ -3093,13 +3100,16 @@
 		};
 	}
 
-	// (469:188) 
+	// (451:207) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
 
 		video = new Video({
-				props: { props: /*getChildProps*/ ctx[17]() }
+				props: {
+					props: /*getChildProps*/ ctx[17](),
+					activeDimensions: /*activeDimensions*/ ctx[13]
+				}
 			});
 
 		return {
@@ -3110,7 +3120,11 @@
 				mount_component(video, target, anchor);
 				current = true;
 			},
-			p: noop,
+			p(ctx, dirty) {
+				const video_changes = {};
+				if (dirty[0] & /*activeDimensions*/ 8192) video_changes.activeDimensions = /*activeDimensions*/ ctx[13];
+				video.$set(video_changes);
+			},
 			i(local) {
 				if (current) return;
 				transition_in(video.$$.fragment, local);
@@ -3126,7 +3140,7 @@
 		};
 	}
 
-	// (469:53) {#if activeItem.img}
+	// (451:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -3136,7 +3150,8 @@
 					props: /*getChildProps*/ ctx[17](),
 					smallScreen: /*smallScreen*/ ctx[9],
 					containerWidth: /*containerWidth*/ ctx[7],
-					containerHeight: /*containerHeight*/ ctx[13]
+					containerHeight: /*containerHeight*/ ctx[12],
+					activeDimensions: /*activeDimensions*/ ctx[13]
 				}
 			});
 
@@ -3152,7 +3167,8 @@
 				const imageitem_changes = {};
 				if (dirty[0] & /*smallScreen*/ 512) imageitem_changes.smallScreen = /*smallScreen*/ ctx[9];
 				if (dirty[0] & /*containerWidth*/ 128) imageitem_changes.containerWidth = /*containerWidth*/ ctx[7];
-				if (dirty[0] & /*containerHeight*/ 8192) imageitem_changes.containerHeight = /*containerHeight*/ ctx[13];
+				if (dirty[0] & /*containerHeight*/ 4096) imageitem_changes.containerHeight = /*containerHeight*/ ctx[12];
+				if (dirty[0] & /*activeDimensions*/ 8192) imageitem_changes.activeDimensions = /*activeDimensions*/ ctx[13];
 				imageitem.$set(imageitem_changes);
 			},
 			i(local) {
@@ -3170,54 +3186,49 @@
 		};
 	}
 
-	// (458:159) {#key activeItem.i}
+	// (440:159) {#key activeItem.i}
 	function create_key_block(ctx) {
-		let div1;
-		let div0;
-		let div1_intro;
-		let div1_outro;
+		let div;
+		let div_intro;
+		let div_outro;
 		let current;
 		let mounted;
 		let dispose;
-		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
+		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[12] > 0 && create_if_block_4(ctx);
 
 		return {
 			c() {
-				div1 = element("div");
+				div = element("div");
 				if (if_block) if_block.c();
-				div0 = element("div");
-				attr(div0, "class", "bp-ruler");
-				attr(div1, "class", "bp-slide");
+				attr(div, "class", "bp-slide");
 			},
 			m(target, anchor) {
-				insert(target, div1, anchor);
-				if (if_block) if_block.m(div1, null);
-				append(div1, div0);
+				insert(target, div, anchor);
+				if (if_block) if_block.m(div, null);
 				current = true;
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*rulerActions*/ ctx[19].call(null, div0)),
-						listen(div1, "pointerdown", /*pointerdown_handler*/ ctx[24]),
-						listen(div1, "pointerup", /*pointerup_handler*/ ctx[25])
+						listen(div, "pointerdown", /*pointerdown_handler*/ ctx[24]),
+						listen(div, "pointerup", /*pointerup_handler*/ ctx[25])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0) {
+				if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[12] > 0) {
 					if (if_block) {
 						if_block.p(ctx, dirty);
 
-						if (dirty[0] & /*containerWidth, containerHeight*/ 8320) {
+						if (dirty[0] & /*containerWidth, containerHeight*/ 4224) {
 							transition_in(if_block, 1);
 						}
 					} else {
 						if_block = create_if_block_4(ctx);
 						if_block.c();
 						transition_in(if_block, 1);
-						if_block.m(div1, div0);
+						if_block.m(div, null);
 					}
 				} else if (if_block) {
 					group_outros();
@@ -3235,33 +3246,33 @@
 
 				add_render_callback(() => {
 					if (!current) return;
-					if (div1_outro) div1_outro.end(1);
-					div1_intro = create_in_transition(div1, /*mediaTransition*/ ctx[16], true);
-					div1_intro.start();
+					if (div_outro) div_outro.end(1);
+					div_intro = create_in_transition(div, /*mediaTransition*/ ctx[16], true);
+					div_intro.start();
 				});
 
 				current = true;
 			},
 			o(local) {
 				transition_out(if_block);
-				if (div1_intro) div1_intro.invalidate();
-				div1_outro = create_out_transition(div1, /*mediaTransition*/ ctx[16], false);
+				if (div_intro) div_intro.invalidate();
+				div_outro = create_out_transition(div, /*mediaTransition*/ ctx[16], false);
 				current = false;
 			},
 			d(detaching) {
 				if (detaching) {
-					detach(div1);
+					detach(div);
 				}
 
 				if (if_block) if_block.d();
-				if (detaching && div1_outro) div1_outro.end();
+				if (detaching && div_outro) div_outro.end();
 				mounted = false;
 				run_all(dispose);
 			}
 		};
 	}
 
-	// (469:445) {#if activeItem.caption}
+	// (451:502) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3308,7 +3319,7 @@
 		};
 	}
 
-	// (469:828) {#if items.length > 1}
+	// (451:885) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[5] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3360,7 +3371,7 @@
 		};
 	}
 
-	// (479:25) {#if hasThumbs}
+	// (461:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -3490,7 +3501,6 @@
 		/** stores target on pointerdown (ref for overlay close) */
 		let clickedEl;
 
-		let hasThumbs;
 		let ruler;
 		let container;
 		let containerWidth;
@@ -3499,14 +3509,7 @@
 		/** active item object */
 		let activeItem;
 
-		/** returns true if `activeItem` is html */
-		const activeItemIsHtml = () => !activeItem.img && !activeItem.sources && !activeItem.iframe;
-
-		/** function set by child component to run when container resized */
-		let resizeFunc;
-
-		/** used by child components to set resize function */
-		const setResizeFunc = fn => resizeFunc = fn;
+		let activeDimensions;
 
 		// /** true if image is currently zoomed past starting size */
 		const zoomed = writable(0);
@@ -3522,8 +3525,6 @@
 				html.classList.add('bp-lock');
 			}
 
-			$$invalidate(12, hasThumbs = opts.thumbs && opts.items?.length > 1);
-
 			// update trigger element to restore focus
 			focusTrigger = document.activeElement;
 
@@ -3531,7 +3532,7 @@
 				$$invalidate(23, container = target);
 				$$invalidate(7, containerWidth = target.offsetWidth);
 
-				$$invalidate(13, containerHeight = target === document.body
+				$$invalidate(12, containerHeight = target === document.body
 				? window.innerHeight
 				: target.clientHeight);
 			}
@@ -3662,6 +3663,7 @@
 				item.width = dimensions[0];
 				item.height = dimensions[1];
 				item.scaled = 1;
+				$$invalidate(13, activeDimensions = dimensions);
 			}
 		};
 
@@ -3672,8 +3674,12 @@
 	 * @returns {Array} [width: number, height: number]
 	 */
 		const calculateDimensions = ({ width = 1920, height = 1080 }) => {
+			const activeGap = container
+			? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
+			: 0;
+
 			const { scale = 1 } = opts;
-			const ratio = Math.min(containerWidth / width * scale, containerHeight / height * scale);
+			const ratio = Math.min((containerWidth - 2 * activeGap) / width * scale, (containerHeight - 2 * activeGap) / height * scale);
 
 			// round number so we don't use a float as the sizes attribute
 			return [Math.round(width * ratio), Math.round(height * ratio)];
@@ -3754,29 +3760,21 @@
 	 */
 			if (ruler) {
 				$$invalidate(7, containerWidth = ruler.clientWidth);
-				$$invalidate(13, containerHeight = ruler.clientHeight);
+				$$invalidate(12, containerHeight = ruler.clientHeight);
 			}
 
-			let gap = container
-			? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
-			: 0;
-
-			if (isNaN(gap)) {
-				gap = 0;
-			}
-
-			if (activeItemIsHtml()) {
+			if (!activeItem.img && !activeItem.sources && !activeItem.iframe) {
 				const bpItem = node.firstChild.firstChild;
 				dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 			} else {
-				dimensions = calculateDimensions(activeItem);
+				dimensions = activeDimensions;
 			}
 
 			// rect is bounding rect of trigger element
 			const rect = (activeItem.element || focusTrigger).getBoundingClientRect();
 
-			const leftOffset = rect.left - gap - (containerWidth - rect.width) / 2;
-			const centerTop = rect.top - gap - (containerHeight - rect.height) / 2;
+			const leftOffset = rect.left - (containerWidth - rect.width) / 2;
+			const centerTop = rect.top - (containerHeight - rect.height) / 2;
 			const scaleWidth = rect.width / dimensions[0];
 			const scaleHeight = rect.height / dimensions[1];
 
@@ -3808,7 +3806,6 @@
 		/** provides object w/ needed funcs / data to child components  */
 		const getChildProps = () => ({
 			calculateDimensions,
-			setResizeFunc,
 			preloadNext,
 			activeItem,
 			loadImage,
@@ -3832,24 +3829,8 @@
 				window.addEventListener('keydown', onKeydown);
 			}
 
-			/**
-	 * Set up the resize observer for the container node
-	 */
-			const containerObserver = new ResizeObserver(entries => {
-					// run child component resize function
-					if (!activeItemIsHtml()) {
-						resizeFunc?.();
-					}
-
-					// run user defined onResize function
-					opts.onResize?.(container, activeItem);
-				});
-
-			containerObserver.observe(node);
-
 			return {
 				destroy() {
-					containerObserver.disconnect();
 					window.removeEventListener('keydown', onKeydown);
 					closing.set(false);
 
@@ -3862,14 +3843,24 @@
 		};
 
 		/**
-	 * Ruler is required to measure available width and height
+	 * Ruler is required to get accurate dimensions and handle container resize
 	 */
 		const rulerActions = node => {
 			ruler = node;
 
 			const rulerObserver = new ResizeObserver(entries => {
-					$$invalidate(7, containerWidth = entries[0].contentRect.width);
-					$$invalidate(13, containerHeight = entries[0].contentRect.height);
+					const rect = entries[0].contentRect;
+
+					if (rect.width !== containerWidth || rect.height !== containerHeight) {
+						$$invalidate(7, containerWidth = rect.width);
+						$$invalidate(12, containerHeight = rect.height);
+						$$invalidate(13, activeDimensions = calculateDimensions(activeItem));
+					}
+
+					/**
+	 * Run the user-defined resize function
+	 */
+					opts.onResize?.(container, activeItem);
 				});
 
 			rulerObserver.observe(node);
@@ -3896,10 +3887,12 @@
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*items, position, isOpen, opts, container, activeItem*/ 12583265) {
+			if ($$self.$$.dirty[0] & /*items, position, activeItem, isOpen, opts, container*/ 12583265) {
 				if (items) {
 					// update active item when position changes
 					$$invalidate(8, activeItem = items[position]);
+
+					$$invalidate(13, activeDimensions = calculateDimensions(activeItem));
 
 					if (isOpen) {
 						// run onUpdate when items updated
@@ -3926,8 +3919,8 @@
 			smallScreen,
 			inline,
 			clickedEl,
-			hasThumbs,
 			containerHeight,
+			activeDimensions,
 			$zoomed,
 			zoomed,
 			mediaTransition,

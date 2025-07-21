@@ -9,16 +9,11 @@
 	import { addAttributes, getThumbBackground } from '../stores'
 
 	export let props
+	export let activeDimensions
 
-	let loaded, dimensions
+	let loaded
 
 	const { activeItem, opts, container } = props
-
-	const setDimensions = () => (dimensions = props.calculateDimensions(activeItem))
-
-	setDimensions()
-
-	props.setResizeFunc(setDimensions)
 
 	/** create audo / video element */
 	const onMount = (node) => {
@@ -60,13 +55,11 @@
 </script>
 
 <div
-	class="bp-video"
+	class="bp-vid"
 	use:onMount
+	style:width="{activeDimensions[0]}px"
+	style:height="{activeDimensions[1]}px"
 	style:background-image={getThumbBackground(activeItem)}
-	style="
-			width:{dimensions[0]}px;
-			height:{dimensions[1]}px;
-		"
 >
 	<Loading {activeItem} {loaded} />
 </div>

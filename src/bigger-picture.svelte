@@ -41,8 +41,6 @@
 	/** stores target on pointerdown (ref for overlay close) */
 	let clickedEl
 
-	let hasThumbs
-
 	let ruler
 	let container
 	let containerWidth;
@@ -50,15 +48,7 @@
 
 	/** active item object */
 	let activeItem
-
-	/** returns true if `activeItem` is html */
-	const activeItemIsHtml = () => !activeItem.img && !activeItem.sources && !activeItem.iframe
-
-	/** function set by child component to run when container resized */
-	let resizeFunc
-
-	/** used by child components to set resize function */
-	const setResizeFunc = (fn) => (resizeFunc = fn)
+	let activeDimensions
 
 	// /** true if image is currently zoomed past starting size */
 	const zoomed = writable(0)
@@ -66,6 +56,7 @@
 	$: if (items) {
 		// update active item when position changes
 		activeItem = items[position]
+		activeDimensions = calculateDimensions(activeItem)
 		if (isOpen) {
 			// run onUpdate when items updated
 			opts.onUpdate?.(container, activeItem)
@@ -80,8 +71,6 @@
 		if (!inline && html.scrollHeight > html.clientHeight) {
 			html.classList.add('bp-lock')
 		}
-
-		hasThumbs = opts.thumbs && opts.items?.length > 1
 
 		// update trigger element to restore focus
 		focusTrigger = document.activeElement
@@ -230,6 +219,8 @@
 			item.height = dimensions[1];
 			item.scaled = 1;
 
+			activeDimensions = dimensions;
+
 		}
 
 	};
@@ -241,10 +232,11 @@
 	 * @returns {Array} [width: number, height: number]
 	 */
 	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
+		const activeGap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
 		const { scale = 1 } = opts
 		const ratio = Math.min(
-			(containerWidth / width) * scale,
-			(containerHeight / height) * scale
+			((containerWidth - 2 * activeGap) / width) * scale,
+			((containerHeight - 2 * activeGap) / height) * scale
 		)
 		// round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)]
@@ -329,25 +321,19 @@
 			containerHeight = ruler.clientHeight;
 		}
 
-		let gap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
-
-		if (isNaN(gap)) {
-			gap = 0;
-		}
-
-		if (activeItemIsHtml()) {
+		if (!activeItem.img && !activeItem.sources && !activeItem.iframe) {
 			const bpItem = node.firstChild.firstChild
 			dimensions = [bpItem.clientWidth, bpItem.clientHeight]
 		} else {
-			dimensions = calculateDimensions(activeItem)
+			dimensions = activeDimensions;
 		}
 
 		// rect is bounding rect of trigger element
 		const rect = (activeItem.element || focusTrigger).getBoundingClientRect()
-		const leftOffset = rect.left - gap - (containerWidth - rect.width) / 2
-		const centerTop = rect.top - gap - (containerHeight - rect.height) / 2
-		const scaleWidth = rect.width / dimensions[0]
-		const scaleHeight = rect.height / dimensions[1]
+		const leftOffset = rect.left - (containerWidth - rect.width) / 2
+		const centerTop = rect.top - (containerHeight - rect.height) / 2
+		const scaleWidth = rect.width / dimensions[0];
+		const scaleHeight = rect.height / dimensions[1];
 
 		if (activeItem.fit === 'cover') {
 			const scale = Math.max(scaleHeight, scaleWidth),
@@ -378,7 +364,6 @@
 	/** provides object w/ needed funcs / data to child components  */
 	const getChildProps = () => ({
 		calculateDimensions,
-		setResizeFunc,
 		preloadNext,
 		activeItem,
 		loadImage,
@@ -402,23 +387,8 @@
 			window.addEventListener('keydown', onKeydown)
 		}
 
-		/**
-		 * Set up the resize observer for the container node
-		 */
-		const containerObserver = new ResizeObserver((entries) => {
-			// run child component resize function
-			if (!activeItemIsHtml()) {
-				resizeFunc?.()
-			}
-			// run user defined onResize function
-			opts.onResize?.(container, activeItem)
-		})
-
-		containerObserver.observe(node)
-
 		return {
 			destroy() {
-				containerObserver.disconnect()
 				window.removeEventListener('keydown', onKeydown)
 				closing.set(false)
 				// remove class hiding scroll
@@ -431,15 +401,27 @@
 	$: smallScreen = containerWidth < 769
 
 	/**
-	 * Ruler is required to measure available width and height
+	 * Ruler is required to get accurate dimensions and handle container resize
 	 */
 	const rulerActions = (node) => {
 
 		ruler = node
 
 		const rulerObserver = new ResizeObserver((entries) => {
-			containerWidth = entries[0].contentRect.width
-			containerHeight = entries[0].contentRect.height
+
+			const rect = entries[0].contentRect;
+
+			if (rect.width !== containerWidth || rect.height !== containerHeight) {
+				containerWidth = rect.width;
+				containerHeight = rect.height;
+				activeDimensions = calculateDimensions(activeItem);
+			}
+
+			/**
+			 * Run the user-defined resize function
+			 */
+			opts.onResize?.(container, activeItem);
+
 		});
 
 		rulerObserver.observe(node)
@@ -481,20 +463,20 @@
 					>
 						{#if containerWidth > 0 && containerHeight > 0}
 							{#if activeItem.img}
-								<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} />
+								<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} {activeDimensions} />
 							{:else if activeItem.sources}
-								<Video props={getChildProps()} />
+								<Video props={getChildProps()} {activeDimensions} />
 							{:else if activeItem.iframe}
-								<Iframe props={getChildProps()} />
+								<Iframe props={getChildProps()} {activeDimensions} />
 							{:else}
 								<div class="bp-html">
 									{@html activeItem.html ?? activeItem.element.outerHTML}
 								</div>
 							{/if}
 						{/if}
-						<div class="bp-ruler" use:rulerActions></div>
 					</div>
 				{/key}
+				<div class="bp-ruler" use:rulerActions></div>
 			</div>
 			{#if activeItem.caption}
 				<div class="bp-caption" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}>
@@ -526,7 +508,7 @@
 				></button>
 			{/if}
 		</div>
-		{#if hasThumbs}
+		{#if opts.thumbs && items.length > 1}
 			<Thumbs {position} {setPosition} {items} />
 		{/if}
 	</div>
