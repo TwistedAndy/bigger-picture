@@ -1,17 +1,19 @@
 <script>
-	import { addAttributes } from '../stores'
-	import Loading from './loading.svelte'
+	import { addAttributes } from '../stores';
+	import Loading from './loading.svelte';
 
-	const { activeItem } = props
-
+	export let props;
 	export let activeDimensions;
 
-	let loaded;
+	let loaded = false;
+
+	const { activeItem } = props;
 
 	const addSrc = (node) => {
-		addAttributes(node, activeItem.attr)
-		node.src = activeItem.iframe
-	}
+		addAttributes(node, activeItem.attr);
+		node.src = activeItem.iframe;
+	};
+
 </script>
 
 <div

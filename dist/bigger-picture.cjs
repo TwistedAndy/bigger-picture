@@ -1179,37 +1179,31 @@ function cubicOut(t) {
 /** true if gallery is in the process of closing */
 const closing = writable(false);
 
-/** if user prefers reduced motion  */
-const prefersReducedMotion = window.matchMedia?.(
-	'(prefers-reduced-motion: reduce)'
-).matches;
-
 /** default options for tweens / transitions
  * @param {number} duration
  */
 const defaultTweenOptions = (duration) => ({
 	easing: cubicOut,
-	duration: prefersReducedMotion ? 0 : duration,
+	duration: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : duration
 });
 
-const getThumbBackground = (activeItem) =>
-	!activeItem.thumb || `url(${activeItem.thumb})`;
+const getThumbBackground = (activeItem) => !activeItem.thumb || `url(${activeItem.thumb})`;
 
 /**
  * Adds attributes to the given node based on the provided object.
  *
  * @param {HTMLElement} node - The node to which attributes will be added
- * @param {Record<string, string | boolean> | string} obj - The object containing key-value pairs of attributes to be added
+ * @param {Record<string, string | boolean> | string} attributes - The object containing key-value pairs of attributes to be added
  */
-const addAttributes = (node, obj) => {
-	if (!obj) {
-		return
+const addAttributes = (node, attributes) => {
+	if (!attributes) {
+		return;
 	}
-	if (typeof obj === 'string') {
-		obj = JSON.parse(obj);
+	if (typeof attributes === 'string') {
+		attributes = JSON.parse(attributes);
 	}
-	for (const key in obj) {
-		node.setAttribute(key, obj[key]);
+	for (let key in attributes) {
+		node.setAttribute(key, attributes[key]);
 	}
 };
 
@@ -1337,7 +1331,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (140:3) {#each items as item (item.i)}
+// (134:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
@@ -1888,7 +1882,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (380:10) {#if showLoader}
+// (351:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -2126,9 +2120,8 @@ function instance$3($$self, $$props, $$invalidate) {
 	/** calculate translate position with bounds */
 	const boundTranslateValues = ([x, y], newDimensions = $imageDimensions) => {
 		// image drag translate bounds
-		const maxTranslateX = (newDimensions[0] - containerWidth) / 2;
-
-		const maxTranslateY = (newDimensions[1] - containerHeight) / 2;
+		let maxTranslateX = (newDimensions[0] - containerWidth) / 2,
+			maxTranslateY = (newDimensions[1] - containerHeight) / 2;
 
 		// x max drag
 		if (maxTranslateX < 0) {
@@ -2183,9 +2176,9 @@ function instance$3($$self, $$props, $$invalidate) {
 			return;
 		}
 
-		const maxWidth = activeDimensions[0] * maxZoom;
-		let newWidth = $imageDimensions[0] + $imageDimensions[0] * amt;
-		let newHeight = $imageDimensions[1] + $imageDimensions[1] * amt;
+		let maxWidth = activeDimensions[0] * maxZoom,
+			newWidth = $imageDimensions[0] + $imageDimensions[0] * amt,
+			newHeight = $imageDimensions[1] + $imageDimensions[1] * amt;
 
 		if (amt > 0) {
 			if (newWidth > maxWidth) {
@@ -2211,12 +2204,12 @@ function instance$3($$self, $$props, $$invalidate) {
 		let { x, y, width, height } = bpImg.getBoundingClientRect();
 
 		// distance clicked from center of image
-		const offsetX = e ? e.clientX - x - width / 2 : 0;
+		let offsetX = e ? e.clientX - x - width / 2 : 0,
+			offsetY = e ? e.clientY - y - height / 2 : 0;
 
-		const offsetY = e ? e.clientY - y - height / 2 : 0;
 		x = -offsetX * (newWidth / width) + offsetX;
 		y = -offsetY * (newHeight / height) + offsetY;
-		const newDimensions = [newWidth, newHeight];
+		let newDimensions = [newWidth, newHeight];
 
 		// set new dimensions and update sizes property
 		imageDimensions.set(newDimensions).then(() => {
@@ -2540,7 +2533,7 @@ function create_fragment$2(ctx) {
 			if (!mounted) {
 				dispose = [
 					action_destroyer(/*addSrc*/ ctx[3].call(null, iframe)),
-					listen(iframe, "load", /*load_handler*/ ctx[4])
+					listen(iframe, "load", /*load_handler*/ ctx[5])
 				];
 
 				mounted = true;
@@ -2581,9 +2574,10 @@ function create_fragment$2(ctx) {
 }
 
 function instance$2($$self, $$props, $$invalidate) {
-	const { activeItem } = props;
+	let { props } = $$props;
 	let { activeDimensions } = $$props;
-	let loaded;
+	let loaded = false;
+	const { activeItem } = props;
 
 	const addSrc = node => {
 		addAttributes(node, activeItem.attr);
@@ -2593,16 +2587,17 @@ function instance$2($$self, $$props, $$invalidate) {
 	const load_handler = () => $$invalidate(1, loaded = true);
 
 	$$self.$$set = $$props => {
+		
 		if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
 	};
 
-	return [activeDimensions, loaded, activeItem, addSrc, load_handler];
+	return [activeDimensions, loaded, activeItem, addSrc, props, load_handler];
 }
 
 class Iframe extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance$2, create_fragment$2, not_equal, { activeDimensions: 0 });
+		init(this, options, instance$2, create_fragment$2, not_equal, { props: 4, activeDimensions: 0 });
 	}
 }
 
@@ -2628,7 +2623,7 @@ function create_fragment$1(ctx) {
 		c() {
 			div = element("div");
 			create_component(loading.$$.fragment);
-			attr(div, "class", "bp-vid");
+			attr(div, "class", "bp-video");
 			set_style(div, "width", style_width);
 			set_style(div, "height", style_height);
 			set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
@@ -2680,23 +2675,23 @@ function create_fragment$1(ctx) {
 function instance$1($$self, $$props, $$invalidate) {
 	let { props } = $$props;
 	let { activeDimensions } = $$props;
-	let loaded;
+	let loaded = false;
 	const { activeItem, opts, container } = props;
 
-	/** create audo / video element */
+	/** create audio / video element */
 	const onMount = node => {
 		let mediaElement;
 
 		/** takes supplied object and creates elements in video */
-		const appendToVideo = (tag, arr) => {
-			if (!Array.isArray(arr)) {
-				arr = JSON.parse(arr);
+		const appendToVideo = (tag, list) => {
+			if (!Array.isArray(list)) {
+				list = JSON.parse(list);
 			}
 
-			for (const obj of arr) {
+			for (let item of list) {
 				// create media element if it doesn't exist
 				if (!mediaElement) {
-					mediaElement = document.createElement((obj.type?.includes('audio')) ? 'audio' : 'video');
+					mediaElement = document.createElement((item.type?.includes('audio')) ? 'audio' : 'video');
 
 					addAttributes(mediaElement, {
 						controls: true,
@@ -2709,9 +2704,9 @@ function instance$1($$self, $$props, $$invalidate) {
 				}
 
 				// add sources / tracks to media element
-				const el = document.createElement(tag);
+				let el = document.createElement(tag);
 
-				addAttributes(el, obj);
+				addAttributes(el, item);
 
 				if (tag === 'source') {
 					el.onError = error => opts.onError?.(container, activeItem, error);
@@ -2722,7 +2717,11 @@ function instance$1($$self, $$props, $$invalidate) {
 		};
 
 		appendToVideo('source', activeItem.sources);
-		appendToVideo('track', activeItem.tracks || []);
+
+		if (activeItem.tracks) {
+			appendToVideo('track', activeItem.tracks);
+		}
+
 		mediaElement.oncanplay = () => $$invalidate(1, loaded = true);
 		node.append(mediaElement);
 	};
@@ -2954,7 +2953,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (451:6) {#if containerWidth > 0 && containerHeight > 0}
+// (756:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -3029,7 +3028,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (451:340) {:else}
+// (756:340) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3055,7 +3054,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (451:287) 
+// (756:287) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3095,7 +3094,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (451:207) 
+// (756:207) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3135,7 +3134,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (451:53) {#if activeItem.img}
+// (756:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3181,7 +3180,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (440:159) {#key activeItem.i}
+// (745:159) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let div_intro;
@@ -3267,7 +3266,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (451:502) {#if activeItem.caption}
+// (756:502) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3314,7 +3313,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (451:885) {#if items.length > 1}
+// (756:885) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[5] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3366,7 +3365,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (461:25) {#if opts.thumbs && items.length > 1}
+// (766:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3473,7 +3472,7 @@ function instance($$self, $$props, $$invalidate) {
 	const html = document.documentElement;
 
 	/** index of current active item */
-	let position;
+	let position = 0;
 
 	/** options passed via open method */
 	let opts;
@@ -3502,7 +3501,7 @@ function instance($$self, $$props, $$invalidate) {
 	let containerHeight;
 
 	/** active item object */
-	let activeItem;
+	let activeItem = null;
 
 	let activeDimensions;
 
@@ -3515,12 +3514,16 @@ function instance($$self, $$props, $$invalidate) {
 		$$invalidate(6, opts = options);
 		$$invalidate(10, inline = opts.inline);
 
-		// add class to hide scroll if not inline gallery
+		/**
+ * Lock the scroll unless gallery is inline
+ */
 		if (!inline && html.scrollHeight > html.clientHeight) {
 			html.classList.add('bp-lock');
 		}
 
-		// update trigger element to restore focus
+		/**
+ * Update trigger element to restore focus
+ */
 		focusTrigger = document.activeElement;
 
 		if (target) {
@@ -3534,37 +3537,40 @@ function instance($$self, $$props, $$invalidate) {
 
 		$$invalidate(5, position = opts.position || 0);
 
-		// set items
-		$$invalidate(0, items = []);
+		/**
+ * Set the gallery items
+ */
+		const list = [];
 
-		for (let i = 0; i < (opts.items.length || 1); i++) {
-			let item = opts.items[i] || opts.items;
-
-			if ('dataset' in item) {
-				items.push({ element: item, i, ...item.dataset });
-			} else {
-				item.i = i;
-				items.push(item);
-
-				// set item to element for position check below
-				item = item.element;
-			}
-
-			// override gallery position if needed
-			if (opts.el && opts.el === item) {
-				$$invalidate(5, position = i);
-			}
+		if (opts.items instanceof HTMLElement) {
+			$$invalidate(6, opts.items = [opts.items], opts);
+		} else {
+			$$invalidate(6, opts.items = Array.from(opts.items), opts);
 		}
 
-		items.forEach(normalizeItem);
+		opts.items.forEach((item, i) => {
+			item = prepareItem(item);
+
+			if (typeof item !== 'object') {
+				return;
+			}
+
+			item.i = i;
+
+			if (opts.el && opts.el === item.element) {
+				$$invalidate(5, position = i);
+			}
+
+			list.push(item);
+		});
+
+		$$invalidate(0, items = list);
 	};
 
 	const close = () => {
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
 		$$invalidate(0, items = null);
-
-		// restore focus to trigger element
 		focusTrigger?.focus({ preventScroll: true });
 	};
 
@@ -3577,11 +3583,19 @@ function instance($$self, $$props, $$invalidate) {
 	};
 
 	/**
- * returns next gallery position (looped if neccessary)
+ * Get the next gallery position
+ *
  * @param {number} index
  */
 	const getNextPosition = index => (index + items.length) % items.length;
 
+	/**
+ * Handle the keyboard events
+ *
+ * @param e
+ *
+ * @returns {Object|false}
+ */
 	const onKeydown = e => {
 		const { key, shiftKey } = e;
 
@@ -3592,10 +3606,14 @@ function instance($$self, $$props, $$invalidate) {
 		} else if (key === 'ArrowLeft') {
 			prev();
 		} else if (key === 'Tab') {
-			// trap focus on tab press
+			/**
+ * Trap the focus on tab press
+ */
 			const { activeElement } = document;
 
-			// allow browser to handle tab into video controls only
+			/**
+ * Allow browser to handle tab into video controls only
+ */
 			if (shiftKey || !activeElement.controls) {
 				e.preventDefault();
 				const { focusWrap = container } = opts;
@@ -3612,34 +3630,270 @@ function instance($$self, $$props, $$invalidate) {
  *
  * @param {Object} item
  */
-	const normalizeItem = item => {
-		if (item.thumb instanceof HTMLImageElement) {
-			setDimensions(item, item.thumb);
-			item.fit = window.getComputedStyle(item.thumb).objectFit;
-			item.thumb = item.thumb.src;
-		} else {
-			let thumbElement;
+	const prepareItem = item => {
+		if (item instanceof HTMLElement) {
+			item = { element: item, ...item.dataset };
+		}
 
-			if (item.element) {
-				thumbElement = item.element.querySelector('img');
+		item.attr = item.attr || {};
+
+		[
+			'link',
+			'thumb',
+			'iframe',
+			'html',
+			'img',
+			'sources',
+			'caption',
+			'alt',
+			'fit',
+			'attr'
+		].forEach(key => {
+			if (typeof item[key] === 'function') {
+				item[key] = item[key](item);
+			}
+		});
+
+		if (item.sources && typeof item.sources === 'string') {
+			item.sources = JSON.parse(item.sources);
+		}
+
+		if (item.sources) {
+			item.type = 'video';
+		} else if (item.iframe) {
+			item.type = 'iframe';
+		} else if (item.img) {
+			item.type = 'image';
+		} else if (item.html) {
+			item.type = 'html';
+		} else {
+			let link = item.element?.link || item.element?.href || '';
+
+			if (link) {
+				item = parseLink(link, item);
+			} else {
+				return false;
+			}
+		}
+
+		if (opts.types && opts.types.indexOf(item.type) === -1) {
+			return false;
+		} else {
+			return parseThumbnail(item);
+		}
+	};
+
+	/**
+ * Parse the link and detect the content type
+ *
+ * @param {string} link
+ * @param {Object} item
+ *
+ * @returns {Object}
+ */
+	const parseLink = (link, item) => {
+		let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#].*)?$/i);
+
+		if (match) {
+			item.type = 'image';
+			item.img = link;
+			return item;
+		}
+
+		/**
+ * HTML5 Video
+ */
+		match = link.match(/\.(mp4|mpeg|mov|ogv|webm|avi|h264)((\?|#).*)?$/i);
+
+		if (match) {
+			item.type = 'video';
+			let ext = match[1].toLowerCase();
+
+			let mimeMap = {
+				ogv: 'ogg',
+				mov: 'quicktime',
+				avi: 'x-msvideo'
+			};
+
+			item.sources = [
+				{
+					'src': link,
+					'type': 'video/' + (mimeMap[ext] || ext)
+				}
+			];
+
+			return item;
+		}
+
+		/**
+ * HTML5 Audio
+ */
+		match = link.match(/\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid)((\?|#).*)?$/i);
+
+		if (match) {
+			let ext = match[1].toLowerCase();
+
+			let mimeMap = {
+				mp3: 'mpeg',
+				m4a: 'mp4',
+				oga: 'ogg',
+				opus: 'ogg',
+				mid: 'midi',
+				weba: 'webm'
+			};
+
+			item.type = 'video';
+
+			item.sources = [
+				{
+					src: link,
+					type: 'audio/' + (mimeMap[ext] || ext)
+				}
+			];
+		}
+
+		/**
+ * YouTube Video
+ */
+		match = link.match(/(youtube\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|embed\/?)?(videoseries\?list=(?:.*)|[\w-]{11}|\?listType=(?:.*)&list=(?:.*))(?:.*)/i);
+
+		if (match) {
+			let videoID = encodeURIComponent(match[2]),
+				sourceURL = new URL(link),
+				targetURL = new URL('https://www.youtube.com/embed/' + videoID + '?autoplay=1&playsinline=1&controls=1&rel=0');
+
+			sourceURL.searchParams.delete('v');
+
+			for (let [key, value] of sourceURL.searchParams) {
+				if (key === 't') {
+					let timeMatch = value.match(/((\d*)m)?(\d*)s?/);
+
+					if (timeMatch) {
+						key = 'start';
+						value = 60 * parseInt(timeMatch[2] || '0') + parseInt(timeMatch[3] || '0');
+					}
+				}
+
+				targetURL.searchParams.set(key, value);
 			}
 
-			if (thumbElement && !item.fit) {
+			item.type = 'iframe';
+			item.iframe = targetURL.toString();
+			item.preview = 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
+			return item;
+		}
+
+		/**
+ * Vimeo Video
+ */
+		match = link.match(/^.+vimeo.com\/(?:\/)?(video\/)?([\d]+)((\/|\?h=)([a-z0-9]+))?(.*)?/);
+
+		if (match) {
+			let videoID = encodeURIComponent(match[2]),
+				sourceURL = new URL(link),
+				targetURL = new URL('https://player.vimeo.com/video/' + videoID + '?autoplay=1&playsinline=1');
+
+			for (let [key, value] of sourceURL.searchParams) {
+				targetURL.searchParams.set(key, value);
+			}
+
+			if (match[5]) {
+				targetURL.searchParams.set('h', match[5]);
+			} else {
+				item.preview = 'https://vumbnail.com/' + videoID + '.jpg';
+			}
+
+			if (sourceURL.hash && sourceURL.hash.startsWith('#t=')) {
+				targetURL.hash = sourceURL.hash;
+			}
+
+			item.type = 'iframe';
+			item.iframe = targetURL.toString();
+			return item;
+		}
+
+		/**
+ * SoundCloud Widget
+ */
+		match = link.match(/^(https?:\/\/)?(www\.)?(m\.)?soundcloud\.com\/([a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+.*)$/);
+
+		if (match) {
+			let targetURL = new URL('https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0');
+			targetURL.searchParams.set('url', link);
+			item.type = 'iframe';
+			item.iframe = targetURL.toString();
+			return item;
+		}
+
+		/**
+ * Google Drive, Dropbox, and PDF files
+ */
+		match = link.match(/(drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+))|(dropbox\.com\/s\/)|(\.pdf($|\?|#))/i);
+
+		if (match) {
+			if (match[1] && match[2]) {
+				// Google Drive
+				item.iframe = `https://drive.google.com/file/d/${match[2]}/preview`;
+			} else if (match[3]) {
+				// Dropbox
+				const url = new URL(link);
+
+				url.searchParams.set('raw', '1');
+				url.searchParams.delete('dl');
+				item.iframe = url.toString();
+			} else if (match[4]) {
+				// PDF Files
+				item.iframe = link;
+			}
+
+			if (!item.width || !item.height) {
+				item.width = containerWidth;
+				item.height = containerHeight;
+			}
+		}
+
+		return item;
+	};
+
+	/**
+ * Parse a thumbnail, update dimensions, and the fit option
+ *
+ * @param {Object} item
+ */
+	const parseThumbnail = item => {
+		let thumbElement = false;
+
+		if (item.thumb instanceof HTMLImageElement) {
+			thumbElement = item.thumb;
+		} else if (item.element) {
+			thumbElement = item.element.querySelector('img');
+		}
+
+		if (thumbElement) {
+			if (!item.fit) {
 				item.fit = window.getComputedStyle(thumbElement).objectFit;
 			}
 
-			if (thumbElement && (!item.thumb || item.thumb === thumbElement.src)) {
-				setDimensions(item, thumbElement);
+			if (!item.thumb || item.thumb === thumbElement.src) {
 				item.thumb = thumbElement.src;
-			} else if (item.thumb) {
-				thumbElement = new Image();
-				thumbElement.src = item.thumb;
-
-				thumbElement.onload = () => {
-					setDimensions(item, thumbElement);
-				};
+				setDimensions(item, thumbElement);
 			}
+
+			return item;
 		}
+
+		let thumbLink = item.thumb || item.preview;
+
+		if (thumbLink) {
+			thumbElement = new Image();
+			thumbElement.src = thumbLink;
+
+			thumbElement.onload = () => {
+				setDimensions(item, thumbElement);
+			};
+		}
+
+		return item;
 	};
 
 	/**
@@ -3697,21 +3951,47 @@ function instance($$self, $$props, $$invalidate) {
  */
 	const loadImage = item => {
 		if (item.img) {
-			const image = document.createElement('img');
-			const src = decodeURIComponent(item.img);
+			let image = document.createElement('img'),
+				src = decodeURIComponent(item.img),
+				srcset = '';
 
 			if ((/\s+\d+[wx]/).test(src)) {
-				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
-				image.srcset = src;
+				let match = '',
+					parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
+						url: match[1],
+						value: parseInt(match[2]),
+						type: match[3]
+					}));
 
-				item.attr = {
-					sizes: image.sizes,
-					srcset: image.srcset,
-					...item.attr
-				};
+				srcset = src;
+
+				if (parts.length > 1) {
+					if (parts[0].type === 'w') {
+						parts.sort((a, b) => a.value - b.value);
+						match = parts.find(c => c.value >= containerWidth) || parts[parts.length - 1];
+					} else {
+						let dpr = window.devicePixelRatio || 1;
+						match = parts.find(c => c.value >= dpr) || parts[parts.length - 1];
+					}
+				}
+
+				if (!match && parts[0]) {
+					match = parts[0];
+				}
+
+				if (match && match.url) {
+					image.src = match.url;
+					item.attr.src = match.url;
+				} else {
+					image.srcset = srcset;
+				}
+
+				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
+				item.attr.sizes = image.sizes;
+				item.attr.srcset = srcset;
 			} else {
 				image.src = src;
-				item.attr = { src, ...item.attr };
+				item.attr.src = src;
 			}
 
 			image.preload = true;
@@ -3720,6 +4000,13 @@ function instance($$self, $$props, $$invalidate) {
 				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
 					item.width = image.naturalWidth;
 					item.height = image.naturalHeight;
+				}
+
+				/**
+ * It's important to set srcset after we read the image dimensions
+ */
+				if (image.src && srcset) {
+					image.srcset = srcset;
 				}
 			}).catch(error => {
 				
@@ -3883,14 +4170,14 @@ function instance($$self, $$props, $$invalidate) {
 
 	$$self.$$.update = () => {
 		if ($$self.$$.dirty[0] & /*items, position, activeItem, isOpen, opts, container*/ 12583265) {
-			if (items) {
-				// update active item when position changes
+			/**
+ * Update the active item and dimensions on position change
+ */
+			if (items && items[position]) {
 				$$invalidate(8, activeItem = items[position]);
-
 				$$invalidate(13, activeDimensions = calculateDimensions(activeItem));
 
 				if (isOpen) {
-					// run onUpdate when items updated
 					opts.onUpdate?.(container, activeItem);
 				}
 			}

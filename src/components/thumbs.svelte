@@ -1,7 +1,7 @@
 <script>
-	import {tweened} from 'svelte/motion';
-	import {fly} from 'svelte/transition';
-	import {defaultTweenOptions} from '../stores.js';
+	import { tweened } from 'svelte/motion';
+	import { fly } from 'svelte/transition';
+	import { defaultTweenOptions } from '../stores.js';
 
 	export let items;
 	export let position;
@@ -13,9 +13,7 @@
 	let initialTranslate = 0;
 	let thumbsTranslate = tweened(0, defaultTweenOptions(250));
 
-	let isPointerDown,
-		pointerDownX,
-		hasDragged;
+	let isPointerDown, pointerDownX, hasDragged;
 
 	let dragPositions = [];
 
@@ -26,13 +24,9 @@
 		if (!activeBtn) {
 			return;
 		}
-		let {
-			left,
-			right,
-			width
-		} = activeBtn.getBoundingClientRect();
+		let { left, right, width } = activeBtn.getBoundingClientRect();
 		let margin = 3;
-		let {offsetLeft} = activeBtn;
+		let { offsetLeft } = activeBtn;
 		if (left + width > thumbsPanelWidth) {
 			$thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin);
 		} else if (right - width < 0) {
@@ -118,7 +112,7 @@
 			destroy() {
 				resizeObserver.unobserve(node);
 			}
-		}
+		};
 
 	};
 
