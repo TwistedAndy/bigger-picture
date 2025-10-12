@@ -16,7 +16,7 @@ import FlexMasonry from 'flexmasonry/src/flexmasonry.js'
 
 let { body } = document
 
-let bodyBp = BiggerPicture({ target: document.body })
+let bodyBp = BiggerPicture({ target: document.body, dialog: true })
 
 let bpThumbnails = new BiggerPictureThumbnails({
 	target: body,

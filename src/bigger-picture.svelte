@@ -17,6 +17,9 @@
 	/** element the gallery is mounted within (passed during initialization)*/
 	export let target = undefined
 
+	/** usage of HTML dialog element and showModal method */
+	export let dialog = false
+
 	const html = document.documentElement;
 
 	/** index of current active item */
@@ -130,8 +133,11 @@
 	export const close = () => {
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
-		items = null;
-		focusTrigger?.focus({ preventScroll: true });
+
+		setTimeout(() => {
+			items = null
+			focusTrigger?.focus({ preventScroll: true })
+		}, 1)
 	};
 
 	/**
@@ -683,6 +689,16 @@
 	 */
 	const containerActions = (node) => {
 		container = node;
+
+		// Use the top layer API for proper modal behavior
+		if (dialog) {
+			if (!inline) {
+				node.showModal()
+			} else {
+				node.show()
+			}
+		}
+
 		opts.onOpen?.(container, activeItem);
 
 		// don't use keyboard events for inline galleries
@@ -692,6 +708,10 @@
 
 		return {
 			destroy() {
+				// Close the dialog properly to remove it from top layer
+				if (node.open) {
+					node.close()
+				}
 				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
 				// remove class hiding scroll
@@ -740,15 +760,19 @@
 </script>
 
 {#if items}
-	<div
+	<svelte:element
+		this={dialog ? 'dialog' : 'div'}
 		use:containerActions
 		class="bp-wrap"
 		class:bp-zoomed={$zoomed}
 		class:bp-inline={inline}
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.noClose}
+		class:bp-closing={$closing}
 	>
-		<div class="bp-overlay" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}></div>
+		{#if !dialog}
+			<div class="bp-overlay" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}></div>
+		{/if}
 		<div class="bp-stage">
 			<div class="bp-inner">
 				{#key activeItem.i}
@@ -814,5 +838,5 @@
 		{#if opts.thumbs && items.length > 1}
 			<Thumbs {position} {setPosition} {items} />
 		{/if}
-	</div>
+	</svelte:element>
 {/if}
