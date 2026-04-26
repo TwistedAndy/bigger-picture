@@ -2335,9 +2335,10 @@ function instance$3($$self, $$props, $$invalidate) {
 		let x = e.clientX;
 		let y = e.clientY;
 
-		// store positions in dragPositions for inertia
-		// set hasDragged if > 2 pointer move events
-		hasDragged = dragPositions.push({ x, y }) > 2;
+		// store positions for drag inertia, flag drag by distance
+		dragPositions.push({ x, y });
+
+		hasDragged = hasDragged || Math.hypot(x - dragStartX, y - dragStartY) > 5;
 
 		// overall drag diff from start location
 		x = x - dragStartX;
@@ -3362,7 +3363,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (758:20) <svelte:element    this={dialog ? 'dialog' : 'div'}    use:containerActions    class="bp-wrap"    class:bp-zoomed={$zoomed}    class:bp-inline={inline}    class:bp-small={smallScreen}    class:bp-noclose={opts.noClose}    class:bp-closing={$closing}   >
+// (758:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
