@@ -1,19 +1,18 @@
-import svelte from 'rollup-plugin-svelte'
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import terser from '@rollup/plugin-terser'
-import size from 'rollup-plugin-size'
-import modify from 'rollup-plugin-modify'
+import svelte from 'rollup-plugin-svelte';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
+import size from 'rollup-plugin-size';
+import modify from 'rollup-plugin-modify';
 
-const production = !process.env.ROLLUP_WATCH
+const production = !process.env.ROLLUP_WATCH;
 
 const terserOptions = {
 	ecma: 2015,
 	mangle: {
 		properties: {
-			regex:
-				/^(duration|easing|delay|activeItem|calculateDimensions|dirty|tick|preloadNext|opts|prev|next|close|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|\$\$)$/,
-		},
+			regex: /^(duration|easing|delay|activeItem|calculateDimensions|dirty|tick|preloadNext|opts|prev|next|close|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|\$\$)$/
+		}
 	},
 	compress: {
 		booleans_as_integers: true,
@@ -29,24 +28,23 @@ const terserOptions = {
 		unsafe_proto: true,
 		unsafe_regexp: true,
 		unsafe_undefined: true,
-		passes: 3,
-	},
-}
+		passes: 3
+	}
+};
 
-/*
-rm unneeded svelte stuff for vanilla scripts (hacky but saves a few bytes)
-need to re-test / modify if svelte is updated
-*/
+/**
+ * Clean some redundant Svelte code to reduce the size by ~0.5KB
+ */
 const cleanSvelteWhitespace = {
 	markup: ({ content }) => {
-		const code = content
-			.replace(/(>)[\s]*([<{])/g, '$1$2')
-			.replace(/({[/:][a-z]+})[\s]*([<{])/g, '$1$2')
-			.replace(/({[#:][a-z]+ .+?})[\s]*([<{])/g, '$1$2')
-			.replace(/([>}])[\s]+(<|{[/#:][a-z][^}]*})/g, '$1$2')
-		return { code }
-	},
-}
+		const code = content.replace(/(>)[\s]*([<{])/g, '$1$2').replace(/({[/:][a-z]+})[\s]*([<{])/g, '$1$2').replace(/({[#:][a-z]+ .+?})[\s]*([<{])/g, '$1$2').replace(/([>}])[\s]+(<|{[/#:][a-z][^}]*})/g, '$1$2');
+		return { code };
+	}
+};
+
+/**
+ * Reduce the size of scripts
+ */
 const findReplaceOptions = [
 	[/^\s*validate_store.+$|throw.+interpolate.+$/gm, ''],
 	['if (options.hydrate)', 'if (false)'],
@@ -70,7 +68,7 @@ let config = [
 		input: 'src/demo/demo.js',
 		output: {
 			format: 'iife',
-			file: 'public/demo.js',
+			file: 'public/demo.js'
 		},
 		plugins: [
 			commonjs(),
@@ -79,42 +77,43 @@ let config = [
 				compilerOptions: {
 					dev: !production,
 					immutable: true,
-					css: false,
-				},
+					css: false
+				}
 			}),
 			resolve({ browser: true }),
 			...findReplaceOptions,
-			production && terser(terserOptions),
-		],
-	},
-]
+			production && terser(terserOptions)
+		]
+	}
+];
 
 if (production) {
 	// remove unneeded setters in library
-	findReplaceOptions.push(
-		modify({ find: /^\sset .+{$\n\s+this.+[^}]+}/gm, replace: '' })
-	)
+	findReplaceOptions.push(modify({
+		find: /^\sset .+{$\n\s+this.+[^}]+}/gm,
+		replace: ''
+	}));
 	// unminified dist files
 	config.push({
 		input: 'src/bigger-picture.js',
 		output: [
 			{
 				format: 'es',
-				file: 'dist/bigger-picture.mjs',
+				file: 'dist/bigger-picture.mjs'
 			},
 			{
 				format: 'umd',
 				name: 'BiggerPicture',
 				file: 'dist/bigger-picture.umd.js',
-				strict: false,
+				strict: false
 			},
 			{
 				format: 'cjs',
 				name: 'BiggerPicture',
 				file: 'dist/bigger-picture.cjs',
 				strict: false,
-				exports: 'default',
-			},
+				exports: 'default'
+			}
 		],
 		plugins: [
 			commonjs(),
@@ -122,13 +121,13 @@ if (production) {
 				preprocess: [cleanSvelteWhitespace],
 				compilerOptions: {
 					immutable: true,
-					css: false,
-				},
+					css: false
+				}
 			}),
 			resolve({ browser: true }),
-			...findReplaceOptions,
-		],
-	})
+			...findReplaceOptions
+		]
+	});
 	// minified dist files
 	config.push({
 		input: 'src/bigger-picture.js',
@@ -137,12 +136,12 @@ if (production) {
 				format: 'iife',
 				name: 'BiggerPicture',
 				file: 'dist/bigger-picture.min.js',
-				strict: false,
+				strict: false
 			},
 			{
 				format: 'es',
-				file: 'dist/bigger-picture.min.mjs',
-			},
+				file: 'dist/bigger-picture.min.mjs'
+			}
 		],
 		plugins: [
 			commonjs(),
@@ -150,15 +149,15 @@ if (production) {
 				preprocess: [cleanSvelteWhitespace],
 				compilerOptions: {
 					immutable: true,
-					css: false,
-				},
+					css: false
+				}
 			}),
 			resolve({ browser: true }),
 			...findReplaceOptions,
 			terser(terserOptions),
-			size(),
-		],
-	})
+			size()
+		]
+	});
 }
 
-export default config
+export default config;
