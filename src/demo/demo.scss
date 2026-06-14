@@ -450,6 +450,9 @@ h3 {
 		flex-grow: 0;
 		flex-shrink: 0;
 		max-height: 300px;
+		padding: 10px;
+		border: 1px solid #d0d0d0;
+		background-color: #ffffff;
 
 		&:nth-child(n + 5) {
 			max-height: none;

@@ -439,7 +439,8 @@
 	 */
 	const parseThumbnail = (item) => {
 
-		let thumbElement = false;
+		let thumbLink = item.preview,
+			thumbElement = false;
 
 		if (item.thumb instanceof HTMLImageElement) {
 			thumbElement = item.thumb;
@@ -448,21 +449,18 @@
 		}
 
 		if (thumbElement) {
-
 			if (!item.fit) {
 				item.fit = window.getComputedStyle(thumbElement).objectFit;
 			}
 
 			if (!item.thumb || item.thumb === thumbElement.src) {
-				item.thumb = thumbElement.src;
+				item.thumb = thumbElement;
+				thumbLink = thumbElement.src;
 				setDimensions(item, thumbElement);
 			}
 
 			return item;
-
 		}
-
-		let thumbLink = item.thumb || item.preview;
 
 		if (thumbLink) {
 			thumbElement = new Image();
@@ -470,6 +468,9 @@
 			thumbElement.onload = () => {
 				setDimensions(item, thumbElement);
 			};
+			item.thumb = thumbElement;
+		} else {
+			item.thumb = false;
 		}
 
 		return item;
@@ -638,7 +639,7 @@
 		}
 
 		// rect is bounding rect of trigger element
-		const rect = (activeItem.element || focusTrigger).getBoundingClientRect();
+		const rect = (activeItem.thumb || activeItem.element || focusTrigger).getBoundingClientRect();
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
 		const scaleWidth = rect.width / dimensions[0];

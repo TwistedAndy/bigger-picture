@@ -140,7 +140,7 @@
 				<button
 					title={item.caption}
 					aria-label={item.caption || `View image ${item.i + 1}`}
-					style:background-image={item.thumb ? `url(${item.thumb})` : 'none'}
+					style:background-image={item.thumb ? `url(${item.thumb.src})` : 'none'}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}
 					on:click={() => !hasDragged && setPosition(item.i)}

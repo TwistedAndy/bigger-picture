@@ -1418,7 +1418,7 @@ function create_each_block(key_1, ctx) {
 			toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
 
 			set_style(button, "background-image", /*item*/ ctx[21].thumb
-			? `url(${/*item*/ ctx[21].thumb})`
+			? `url(${/*item*/ ctx[21].thumb.src})`
 			: 'none');
 
 			this.first = button;
@@ -1452,7 +1452,7 @@ function create_each_block(key_1, ctx) {
 
 			if (dirty & /*items*/ 1) {
 				set_style(button, "background-image", /*item*/ ctx[21].thumb
-				? `url(${/*item*/ ctx[21].thumb})`
+				? `url(${/*item*/ ctx[21].thumb.src})`
 				: 'none');
 			}
 		},
@@ -2866,7 +2866,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (767:2) {#if !dialog}
+// (770:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 	let div_intro;
@@ -2909,7 +2909,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (778:6) {#if containerWidth > 0 && containerHeight > 0}
+// (781:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2984,7 +2984,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (778:340) {:else}
+// (781:340) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[9].html ?? /*activeItem*/ ctx[9].element.outerHTML) + "";
@@ -3010,7 +3010,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (778:287) 
+// (781:287) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3050,7 +3050,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (778:207) 
+// (781:207) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3090,7 +3090,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (778:53) {#if activeItem.img}
+// (781:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3136,7 +3136,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (767:177) {#key activeItem.i}
+// (770:177) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let div_intro;
@@ -3222,7 +3222,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (778:502) {#if activeItem.caption}
+// (781:502) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[9].caption + "";
@@ -3269,7 +3269,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (778:885) {#if items.length > 1}
+// (781:885) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3321,7 +3321,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (788:25) {#if opts.thumbs && items.length > 1}
+// (791:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3363,7 +3363,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (758:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+// (761:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -4052,7 +4052,7 @@ function instance($$self, $$props, $$invalidate) {
  * @param {Object} item
  */
 	const parseThumbnail = item => {
-		let thumbElement = false;
+		let thumbLink = item.preview, thumbElement = false;
 
 		if (item.thumb instanceof HTMLImageElement) {
 			thumbElement = item.thumb;
@@ -4066,14 +4066,13 @@ function instance($$self, $$props, $$invalidate) {
 			}
 
 			if (!item.thumb || item.thumb === thumbElement.src) {
-				item.thumb = thumbElement.src;
+				item.thumb = thumbElement;
+				thumbLink = thumbElement.src;
 				setDimensions(item, thumbElement);
 			}
 
 			return item;
 		}
-
-		let thumbLink = item.thumb || item.preview;
 
 		if (thumbLink) {
 			thumbElement = new Image();
@@ -4082,6 +4081,10 @@ function instance($$self, $$props, $$invalidate) {
 			thumbElement.onload = () => {
 				setDimensions(item, thumbElement);
 			};
+
+			item.thumb = thumbElement;
+		} else {
+			item.thumb = false;
 		}
 
 		return item;
@@ -4244,7 +4247,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		// rect is bounding rect of trigger element
-		const rect = (activeItem.element || focusTrigger).getBoundingClientRect();
+		const rect = (activeItem.thumb || activeItem.element || focusTrigger).getBoundingClientRect();
 
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
