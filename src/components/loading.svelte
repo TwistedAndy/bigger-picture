@@ -1,7 +1,6 @@
 <script>
 	import { fly } from 'svelte/transition';
-	import { closing, getThumbBackground } from '../stores';
-	import { defaultTweenOptions } from '../stores.js';
+	import { closing, getThumbBackground, defaultTweenOptions } from '../stores';
 
 	export let activeItem;
 	export let loaded;

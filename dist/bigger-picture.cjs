@@ -1396,7 +1396,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (134:3) {#each items as item (item.i)}
+// (127:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
@@ -1606,15 +1606,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		initialTranslate = $thumbsTranslate;
 	};
 
-	const boundTranslate = int => {
-		if (int >= 0) {
-			int = 0;
-		} else if (int < thumbsPanelWidth - thumbsWidth - 1) {
-			int = thumbsPanelWidth - thumbsWidth - 1;
-		}
-
-		return int;
-	};
+	const boundTranslate = int => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
 	const pointerDown = e => {
 		if (thumbsWidth >= thumbsPanelWidth) {
@@ -1768,7 +1760,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (12:67) {#if $closing}
+// (11:67) {#if $closing}
 function create_if_block$2(ctx) {
 	let div;
 	let div_intro;
@@ -1947,7 +1939,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (351:10) {#if showLoader}
+// (344:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -1991,7 +1983,6 @@ function create_fragment$3(ctx) {
 	let div1;
 	let div0;
 	let if_block0_anchor;
-	let style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`;
 	let current;
 	let mounted;
 	let dispose;
@@ -2008,10 +1999,10 @@ function create_fragment$3(ctx) {
 			attr(div0, "class", "bp-img");
 			set_style(div0, "width", /*$imageDimensions*/ ctx[0][0] + "px");
 			set_style(div0, "height", /*$imageDimensions*/ ctx[0][1] + "px");
+			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
+			set_style(div0, "transform", "translate3d(" + (/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]) + "px, " + (/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]) + "px, 0)");
 			toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
 			toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
-			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
-			set_style(div0, "transform", style_transform);
 			attr(div1, "class", "bp-img-wrap");
 			toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[5]);
 		},
@@ -2081,22 +2072,16 @@ function create_fragment$3(ctx) {
 				set_style(div0, "height", /*$imageDimensions*/ ctx[0][1] + "px");
 			}
 
+			if (!current || dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 129) {
+				set_style(div0, "transform", "translate3d(" + (/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]) + "px, " + (/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]) + "px, 0)");
+			}
+
 			if (!current || dirty[0] & /*pointerDown*/ 16) {
 				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
 			}
 
 			if (!current || dirty[0] & /*maxZoom, $imageDimensions, naturalWidth*/ 4161) {
 				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
-			}
-
-			const style_changed = dirty[0] & /*$imageDimensions*/ 1;
-
-			if (dirty[0] & /*$imageDimensions*/ 1 || style_changed) {
-				set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
-			}
-
-			if (dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 129 && style_transform !== (style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`) || style_changed) {
-				set_style(div0, "transform", style_transform);
 			}
 
 			if (!current || dirty[0] & /*closingWhileZoomed*/ 32) {
@@ -2672,8 +2657,6 @@ class Iframe extends SvelteComponent {
 function create_fragment$1(ctx) {
 	let div;
 	let loading;
-	let style_width = `${/*activeDimensions*/ ctx[0][0]}px`;
-	let style_height = `${/*activeDimensions*/ ctx[0][1]}px`;
 	let current;
 	let mounted;
 	let dispose;
@@ -2690,8 +2673,8 @@ function create_fragment$1(ctx) {
 			div = element("div");
 			create_component(loading.$$.fragment);
 			attr(div, "class", "bp-video");
-			set_style(div, "width", style_width);
-			set_style(div, "height", style_height);
+			set_style(div, "width", /*activeDimensions*/ ctx[0][0] + "px");
+			set_style(div, "height", /*activeDimensions*/ ctx[0][1] + "px");
 			set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
 		},
 		m(target, anchor) {
@@ -2709,12 +2692,12 @@ function create_fragment$1(ctx) {
 			if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
 			loading.$set(loading_changes);
 
-			if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
-				set_style(div, "width", style_width);
+			if (!current || dirty & /*activeDimensions*/ 1) {
+				set_style(div, "width", /*activeDimensions*/ ctx[0][0] + "px");
 			}
 
-			if (dirty & /*activeDimensions*/ 1 && style_height !== (style_height = `${/*activeDimensions*/ ctx[0][1]}px`)) {
-				set_style(div, "height", style_height);
+			if (!current || dirty & /*activeDimensions*/ 1) {
+				set_style(div, "height", /*activeDimensions*/ ctx[0][1] + "px");
 			}
 		},
 		i(local) {
@@ -2866,7 +2849,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (770:2) {#if !dialog}
+// (780:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 	let div_intro;
@@ -2909,7 +2892,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (781:6) {#if containerWidth > 0 && containerHeight > 0}
+// (791:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2984,7 +2967,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (781:340) {:else}
+// (791:340) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[9].html ?? /*activeItem*/ ctx[9].element.outerHTML) + "";
@@ -3010,7 +2993,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (781:287) 
+// (791:287) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3050,7 +3033,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (781:207) 
+// (791:207) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3090,7 +3073,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (781:53) {#if activeItem.img}
+// (791:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3136,7 +3119,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (770:177) {#key activeItem.i}
+// (780:177) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let div_intro;
@@ -3222,7 +3205,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (781:502) {#if activeItem.caption}
+// (791:502) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[9].caption + "";
@@ -3269,7 +3252,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (781:885) {#if items.length > 1}
+// (791:885) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3321,7 +3304,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (791:25) {#if opts.thumbs && items.length > 1}
+// (801:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3363,7 +3346,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (761:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+// (771:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -4052,29 +4035,36 @@ function instance($$self, $$props, $$invalidate) {
  * @param {Object} item
  */
 	const parseThumbnail = item => {
-		let thumbLink = item.preview, thumbElement = false;
+		let thumbLink = '', thumbElement = false;
 
-		if (item.thumb instanceof HTMLImageElement) {
-			thumbElement = item.thumb;
-		} else if (item.element) {
+		if (item.element) {
 			thumbElement = item.element.querySelector('img');
 		}
 
+		if (item.type === 'image') {
+			thumbLink = item.element?.href || '';
+		}
+
+		if (item.thumb instanceof HTMLImageElement) {
+			thumbElement = item.thumb;
+		} else if (item.thumb) {
+			thumbLink = item.thumb;
+		} else if (item.preview) {
+			thumbLink = item.preview;
+		}
+
+		item.source = item.element;
+		item.thumb = false;
+
 		if (thumbElement) {
+			item.thumb = thumbElement;
+			item.source = item.thumb;
+			setDimensions(item, thumbElement);
+
 			if (!item.fit) {
 				item.fit = window.getComputedStyle(thumbElement).objectFit;
 			}
-
-			if (!item.thumb || item.thumb === thumbElement.src) {
-				item.thumb = thumbElement;
-				thumbLink = thumbElement.src;
-				setDimensions(item, thumbElement);
-			}
-
-			return item;
-		}
-
-		if (thumbLink) {
+		} else if (thumbLink) {
 			thumbElement = new Image();
 			thumbElement.src = thumbLink;
 
@@ -4083,8 +4073,6 @@ function instance($$self, $$props, $$invalidate) {
 			};
 
 			item.thumb = thumbElement;
-		} else {
-			item.thumb = false;
 		}
 
 		return item;
@@ -4247,7 +4235,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		// rect is bounding rect of trigger element
-		const rect = (activeItem.thumb || activeItem.element || focusTrigger).getBoundingClientRect();
+		const rect = (activeItem.source || activeItem.element || focusTrigger).getBoundingClientRect();
 
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;

@@ -22,7 +22,7 @@ let bpThumbnails = new BiggerPictureThumbnails({
 	target: body,
 })
 
-let imageLinks = document.querySelectorAll('#images a')
+let imageLinks = document.querySelectorAll('#images a, a.file')
 let coverLinks = document.querySelectorAll('#cover a')
 let vidIframeLinks = document.querySelectorAll('#vids a')
 let htmlLinks = document.querySelectorAll('[data-html]')
@@ -83,10 +83,7 @@ function openBiggerPictureVids(e) {
 		items: currentTarget,
 		onOpen(container, activeItem) {
 			currentTarget.classList.add('hide-icon')
-			if (activeItem.thumb.includes('327')) {
-				// turn volume to 50% on agent 327 vid
-				container.querySelector('video').volume = 0.5
-			} else if (activeItem.sources?.includes('audio')) {
+			if (activeItem.sources?.includes('audio')) {
 				container.classList.add('bp-audio')
 				// play / pause on audio image click
 				const audio = container.querySelector('audio')

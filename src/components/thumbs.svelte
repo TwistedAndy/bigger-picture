@@ -37,14 +37,7 @@
 
 	};
 
-	const boundTranslate = (int) => {
-		if (int >= 0) {
-			int = 0;
-		} else if (int < thumbsPanelWidth - thumbsWidth - 1) {
-			int = thumbsPanelWidth - thumbsWidth - 1;
-		}
-		return int;
-	};
+	const boundTranslate = (int) => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
 	const pointerDown = (e) => {
 		if (thumbsWidth >= thumbsPanelWidth) {

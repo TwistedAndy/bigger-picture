@@ -15,10 +15,10 @@
 	export let items = undefined;
 
 	/** element the gallery is mounted within (passed during initialization)*/
-	export let target = undefined
+	export let target = undefined;
 
 	/** usage of HTML dialog element and showModal method */
-	export let dialog = false
+	export let dialog = false;
 
 	const html = document.documentElement;
 
@@ -135,9 +135,9 @@
 		closing.set(true);
 
 		setTimeout(() => {
-			items = null
-			focusTrigger?.focus({ preventScroll: true })
-		}, 1)
+			items = null;
+			focusTrigger?.focus({ preventScroll: true });
+		}, 1);
 	};
 
 	/**
@@ -175,7 +175,10 @@
 	 * @returns {Object|false}
 	 */
 	const onKeydown = (e) => {
-		const { key, shiftKey } = e;
+		const {
+			key,
+			shiftKey
+		} = e;
 		if (key === 'Escape') {
 			!opts.noClose && close();
 		} else if (key === 'ArrowRight') {
@@ -211,8 +214,7 @@
 
 		if (item instanceof HTMLElement) {
 			item = {
-				element: item,
-				...item.dataset
+				element: item, ...item.dataset
 			};
 		}
 
@@ -287,10 +289,12 @@
 				avi: 'x-msvideo'
 			};
 
-			item.sources = [{
-				'src': link,
-				'type': 'video/' + (mimeMap[ext] || ext)
-			}];
+			item.sources = [
+				{
+					'src': link,
+					'type': 'video/' + (mimeMap[ext] || ext)
+				}
+			];
 
 			return item;
 
@@ -312,10 +316,12 @@
 				weba: 'webm'
 			};
 			item.type = 'video';
-			item.sources = [{
-				src: link,
-				type: 'audio/' + (mimeMap[ext] || ext)
-			}];
+			item.sources = [
+				{
+					src: link,
+					type: 'audio/' + (mimeMap[ext] || ext)
+				}
+			];
 		}
 
 		/**
@@ -439,38 +445,43 @@
 	 */
 	const parseThumbnail = (item) => {
 
-		let thumbLink = item.preview,
+		let thumbLink = '',
 			thumbElement = false;
 
-		if (item.thumb instanceof HTMLImageElement) {
-			thumbElement = item.thumb;
-		} else if (item.element) {
+		if (item.element) {
 			thumbElement = item.element.querySelector('img');
 		}
 
+		if (item.type === 'image') {
+			thumbLink = item.element?.href || '';
+		}
+
+		if (item.thumb instanceof HTMLImageElement) {
+			thumbElement = item.thumb;
+		} else if (item.thumb) {
+			thumbLink = item.thumb;
+		} else if (item.preview) {
+			thumbLink = item.preview;
+		}
+
+		item.source = item.element;
+		item.thumb = false;
+
 		if (thumbElement) {
+			item.thumb = thumbElement;
+			item.source = item.thumb;
+			setDimensions(item, thumbElement);
+
 			if (!item.fit) {
 				item.fit = window.getComputedStyle(thumbElement).objectFit;
 			}
-
-			if (!item.thumb || item.thumb === thumbElement.src) {
-				item.thumb = thumbElement;
-				thumbLink = thumbElement.src;
-				setDimensions(item, thumbElement);
-			}
-
-			return item;
-		}
-
-		if (thumbLink) {
+		} else if (thumbLink) {
 			thumbElement = new Image();
 			thumbElement.src = thumbLink;
 			thumbElement.onload = () => {
 				setDimensions(item, thumbElement);
 			};
 			item.thumb = thumbElement;
-		} else {
-			item.thumb = false;
 		}
 
 		return item;
@@ -508,16 +519,16 @@
 	 * @param {object} item object with height / width properties
 	 * @returns {Array} [width: number, height: number]
 	 */
-	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
+	const calculateDimensions = ({
+		width = 1920,
+		height = 1080
+	}) => {
 		const activeGap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
-		const { scale = 1 } = opts
-		const ratio = Math.min(
-			((containerWidth - 2 * activeGap) / width) * scale,
-			((containerHeight - 2 * activeGap) / height) * scale
-		)
+		const { scale = 1 } = opts;
+		const ratio = Math.min(((containerWidth - 2 * activeGap) / width) * scale, ((containerHeight - 2 * activeGap) / height) * scale);
 		// round number so we don't use a float as the sizes attribute
-		return [Math.round(width * ratio), Math.round(height * ratio)]
-	}
+		return [Math.round(width * ratio), Math.round(height * ratio)];
+	};
 
 	/** preloads images for previous and next items in gallery */
 	const preloadNext = () => {
@@ -571,12 +582,12 @@
 					image.src = match.url;
 					item.attr.src = match.url;
 				} else {
-					image.srcset = srcset
+					image.srcset = srcset;
 				}
 
 				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
 				item.attr.sizes = image.sizes;
-				item.attr.srcset = srcset
+				item.attr.srcset = srcset;
 
 			} else {
 				image.src = src;
@@ -599,7 +610,8 @@
 					image.srcset = srcset;
 				}
 
-			}).catch((error) => {});
+			}).catch((error) => {
+			});
 
 		}
 	};
@@ -639,7 +651,7 @@
 		}
 
 		// rect is bounding rect of trigger element
-		const rect = (activeItem.thumb || activeItem.element || focusTrigger).getBoundingClientRect();
+		const rect = (activeItem.source || activeItem.element || focusTrigger).getBoundingClientRect();
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
 		const scaleWidth = rect.width / dimensions[0];
@@ -694,9 +706,9 @@
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
 			if (!inline) {
-				node.showModal()
+				node.showModal();
 			} else {
-				node.show()
+				node.show();
 			}
 		}
 
@@ -711,7 +723,7 @@
 			destroy() {
 				// Close the dialog properly to remove it from top layer
 				if (node.open) {
-					node.close()
+					node.close();
 				}
 				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
