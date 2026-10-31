@@ -39,7 +39,7 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 />
 <script
   src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.1/dist/bigger-picture.umd.js"
-  integrity="sha384-EbhpKN3BnO87tMzz4zcvzAHaYAYV/uSElMKORxTmT9wNO3bnPgXDx1M9ejv76gFn"
+  integrity="sha384-vsCOtteIZL9HS6fiqmBFM+UbN4YH22rw9MkpnGcDeC0KnlX6NBBX6yIDP8NREzHi"
   crossorigin="anonymous"
 ></script>
 ```
