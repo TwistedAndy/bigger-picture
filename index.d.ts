@@ -1,5 +1,5 @@
 interface options {
-	/** The data source for the displayed items. See [Item Properties](https://github.com/henrygd/bigger-picture#item-properties) for details.
+	/** The data source for the displayed items. See [Item Properties](https://github.com/TwistedAndy/bigger-picture#item-properties) for details.
 	 *
 	 * If using NodeList or Node, the information is passed via data attributes. If using Array, the information is passed via object. */
 	items: HTMLElement | HTMLCollection | NodeList | item[]
@@ -13,11 +13,15 @@ interface options {
 	position?: number
 	/** Controls the size of the displayed item. Use `1` to fill item to screen edges. */
 	scale?: number
+	/** Shows a strip of thumbnails at the bottom of the gallery when it has more than one item. */
+	thumbs?: boolean
+	/** Sets the sizes attribute for all images using `srcset`. By default it is updated automatically when an image is zoomed. */
+	sizes?: string
 	/** Overrides the default intro animation. Currently `fadeup` is the only alternative. */
 	intro?: string
 	/** Specifies that the lightbox is inline. Interaction events are modified to avoid hijacking scroll and tab press. */
 	inline?: boolean
-	/** Hides the close button and prevents the lightbox from closing unless the [`close`](https://github.com/henrygd/bigger-picture#close) method is called. Recommended to use in combination with an inline gallery. */
+	/** Hides the close button and prevents the lightbox from closing unless the [`close`](https://github.com/TwistedAndy/bigger-picture#close) method is called. Recommended to use in combination with an inline gallery. */
 	noClose?: boolean
 	/** Return a truthy value to disable pinch zoom. Function is executed at the time of the pinch. Supplies `container` - the gallery's wrapper element.
 	 *
@@ -64,13 +68,13 @@ interface item {
 	thumb?: string | HTMLImageElement | ((item: item) => string | HTMLImageElement)
 	/** URL or path to full image. Can be a `srcset` value.
 	 *
-	 * When using `srcset`, the `sizes` value will update automatically when an image is zoomed. You may override this behavior by setting the [`sizes`](https://github.com/henrygd/bigger-picture#sizes) value. */
+	 * When using `srcset`, the `sizes` value will update automatically when an image is zoomed. You may override this behavior by setting the [`sizes`](https://github.com/TwistedAndy/bigger-picture#sizes) value. */
 	img?: string | ((item: item) => string)
 	/** For native video and audio, an array of objects specifying [`src`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#attr-src) (required) and [`type`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#attr-type) (optional). A string may be used if it is JSON parsable. Each object will create a `source` element, and all key / value pairs in the object will be added as attributes. */
 	sources?: object[] | string | ((item: item) => string | object[])
 	/** HTML that will be rendered in the container. When using HTML, please control dimensions with CSS. No need to pass `width` or `height`.
    * 
-   * For advanced use, you can pass an empty string, then mount a component using the [`onOpen`](https://github.com/henrygd/bigger-picture#onopen) method:
+   * For advanced use, you can pass an empty string, then mount a component using the [`onOpen`](https://github.com/TwistedAndy/bigger-picture#onopen) method:
    * 
    * ```js
    * // mounting svelte component (firewatch example from demo site)
@@ -128,11 +132,13 @@ export interface BiggerPictureInstance {
 }
 
 interface initObject {
-	/** Specifies parent element inside which the gallery will be mounted */
+	/** Specifies parent element inside which the gallery will be mounted. Call `BiggerPicture()` without options to mount it in `document.body`. */
 	target: HTMLElement
+	/** Renders the gallery as a `<dialog>` opened with `showModal()`, placing it in the browser's top layer above other modals. */
+	dialog?: boolean
 }
 
 /** Initializes BiggerPicture instance */
-declare function BiggerPicture(options: initObject): BiggerPictureInstance
+declare function BiggerPicture(options?: initObject): BiggerPictureInstance
 
 export default BiggerPicture

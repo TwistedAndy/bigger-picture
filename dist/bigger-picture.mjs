@@ -2761,7 +2761,7 @@ function instance$1($$self, $$props, $$invalidate) {
 				addAttributes(el, item);
 
 				if (tag === 'source') {
-					el.onError = error => opts.onError?.(container, activeItem, error);
+					el.onerror = error => opts.onError?.(container, activeItem, error);
 				}
 
 				mediaElement.append(el);
@@ -2852,7 +2852,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (782:2) {#if !dialog}
+// (818:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 	let div_intro;
@@ -2895,7 +2895,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (793:6) {#if containerWidth > 0 && containerHeight > 0}
+// (829:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2970,7 +2970,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (793:340) {:else}
+// (829:340) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -2996,7 +2996,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (793:287) 
+// (829:287) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3036,7 +3036,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (793:207) 
+// (829:207) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3076,7 +3076,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (793:53) {#if activeItem.img}
+// (829:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3122,7 +3122,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (782:177) {#key activeItem.i}
+// (818:177) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let div_intro;
@@ -3208,7 +3208,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (793:502) {#if activeItem.caption}
+// (829:502) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3255,7 +3255,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (793:885) {#if items.length > 1}
+// (829:885) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3307,7 +3307,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (803:25) {#if opts.thumbs && items.length > 1}
+// (839:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3349,7 +3349,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (773:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+// (809:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3681,16 +3681,20 @@ function instance($$self, $$props, $$invalidate) {
 
 	component_subscribe($$self, zoomed, value => $$invalidate(15, $zoomed = value));
 
+	/** true while the gallery runs its outro animation */
+	let isClosing;
+
+	/** options of an open call made while closing, applied once the gallery is removed */
+	let pendingOptions;
+
 	const open = options => {
+		if (isClosing) {
+			pendingOptions = options;
+			return;
+		}
+
 		$$invalidate(9, opts = options);
 		$$invalidate(11, inline = opts.inline);
-
-		/**
- * Lock the scroll unless gallery is inline
- */
-		if (!inline && html.scrollHeight > html.clientHeight) {
-			html.classList.add('bp-lock');
-		}
 
 		/**
  * Update trigger element to restore focus
@@ -3736,10 +3740,27 @@ function instance($$self, $$props, $$invalidate) {
 			list.push(item);
 		});
 
+		// nothing to show, e.g. every item was filtered out
+		if (!list.length) {
+			return;
+		}
+
+		/**
+ * Lock the scroll unless gallery is inline
+ */
+		if (!inline && html.scrollHeight > html.clientHeight) {
+			html.classList.add('bp-lock');
+		}
+
 		$$invalidate(0, items = list);
 	};
 
 	const close = () => {
+		if (!items || isClosing) {
+			return;
+		}
+
+		isClosing = true;
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
 
@@ -3847,10 +3868,10 @@ function instance($$self, $$props, $$invalidate) {
 			item.type = 'iframe';
 		} else if (item.img) {
 			item.type = 'image';
-		} else if (item.html) {
+		} else if (item.html != null) {
 			item.type = 'html';
 		} else {
-			let link = item.element?.link || item.element?.href || '';
+			let link = item.link || item.element?.href || '';
 
 			if (link) {
 				item = parseLink(link, item);
@@ -4243,8 +4264,19 @@ function instance($$self, $$props, $$invalidate) {
 			dimensions = activeDimensions;
 		}
 
-		// rect is bounding rect of trigger element
-		const rect = (activeItem.source || activeItem.element || focusTrigger).getBoundingClientRect();
+		// rect is the content box of the trigger element, the image is drawn inside its padding and border
+		const source = activeItem.source || activeItem.element || focusTrigger;
+
+		const style = window.getComputedStyle(source);
+		const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
+		const bounds = source.getBoundingClientRect();
+
+		const rect = {
+			left: bounds.left + edge('Left'),
+			top: bounds.top + edge('Top'),
+			width: bounds.width - edge('Left') - edge('Right'),
+			height: bounds.height - edge('Top') - edge('Bottom')
+		};
 
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
@@ -4298,6 +4330,9 @@ function instance($$self, $$props, $$invalidate) {
 
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
+			// keep the dialog open on Escape, the keydown handler closes it with the outro animation
+			node.oncancel = e => e.preventDefault();
+
 			if (!inline) {
 				node.showModal();
 			} else {
@@ -4321,11 +4356,17 @@ function instance($$self, $$props, $$invalidate) {
 
 				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
+				isClosing = false;
 
 				// remove class hiding scroll
 				html.classList.remove('bp-lock');
 
 				opts.onClosed?.();
+
+				if (pendingOptions) {
+					open(pendingOptions);
+					pendingOptions = null;
+				}
 			}
 		};
 	};

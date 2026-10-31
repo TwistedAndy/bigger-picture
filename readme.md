@@ -1,22 +1,16 @@
-[npm-image]: https://flat.badgen.net/npm/v/bigger-picture?color=blue
-[npm-url]: https://www.npmjs.com/package/bigger-picture
-[size-image]: https://flat.badgen.net/static/gzip%20size/12.3%20KB/green
-
-<!-- [size-image]: https://flat.badgen.net/badgesize/gzip/henrygd/bigger-picture/master/dist/bigger-picture.min.mjs?color=green -->
-
-[license-image]: https://flat.badgen.net/github/license/henrygd/bigger-picture?color=purple
+[size-image]: https://flat.badgen.net/static/gzip%20size/12.8%20KB/green
+[license-image]: https://flat.badgen.net/github/license/TwistedAndy/bigger-picture?color=purple
 [license-url]: /license
-
-> [!NOTE]
-> I no longer have time to maintain this project outside of bug fixes. Check out [TwistedAndy/bigger-picture](https://github.com/TwistedAndy/bigger-picture) if you're interested in a fork with additional features and more recent development.
 
 # Bigger Picture
 
-[![npm][npm-image]][npm-url] ![File Size][size-image] [![MIT license][license-image]][license-url]
+![File Size][size-image] [![MIT license][license-image]][license-url]
 
-Pretty good JavaScript lightbox gallery with a small footprint. Demo: https://biggerpicture.henrygd.me
+Pretty good JavaScript lightbox gallery with a small footprint. Supports images, video, audio, iframes, embeds and HTML with no plugins.
 
-https://user-images.githubusercontent.com/8519632/165216178-bd9a0b03-6ee5-42fd-b303-f92d281eb494.mp4
+Documentation and live examples: open [`index.html`](index.html) after running `npm run build`.
+
+> Originally created by [Hank Dollman](https://github.com/henrygd/bigger-picture). This fork is maintained by [Andrii Toniievych](https://github.com/TwistedAndy) and adds automatic link detection, built-in thumbnails, dialog (top layer) mode, type filtering and more.
 
 ## Features
 
@@ -31,13 +25,20 @@ https://user-images.githubusercontent.com/8519632/165216178-bd9a0b03-6ee5-42fd-b
 
 ## Install
 
+Load the UMD build and the stylesheet directly:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.css" />
+<script src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.umd.js"></script>
 ```
-npm install bigger-picture
+
+Or install it from GitHub and import it:
+
+```
+npm install github:TwistedAndy/bigger-picture
 ```
 
 Add the required [CSS](dist/bigger-picture.css) or [SCSS](dist/bigger-picture.scss) to your project. You can `import "bigger-picture/css"` to avoid manually replacing styles when you update.
-
-Alternatively, you can load from a CDN like [jsDelivr](https://www.jsdelivr.com/package/npm/bigger-picture?path=dist).
 
 ## Usage
 
@@ -52,7 +53,7 @@ For passing data via object, see [Passing Item Data via Object](#passing-item-da
 ```js
 import BiggerPicture from 'bigger-picture'
 
-// initialize
+// initialize (mounts in document.body, same as BiggerPicture())
 let bp = BiggerPicture({
   target: document.body,
 })
@@ -76,6 +77,17 @@ bp.open({
     <img src="example_thumb.jpg" alt="Example" />
   </a>
 </div>
+```
+
+## Initialization
+
+`BiggerPicture(options)` creates an instance. Without options it mounts in `document.body`.
+
+- `target` - element the gallery is mounted in.
+- `dialog` - renders the gallery as a `<dialog>` opened with `showModal()`, so it appears in the browser's top layer above other modals.
+
+```js
+let bp = BiggerPicture({ target: document.body, dialog: true })
 ```
 
 ## Methods
@@ -136,9 +148,23 @@ Defines which types should be included to the gallery. Supported values: `video`
 ### scale
 
 Type: `number`<br>
-Default: `0.99`
+Default: `1`
 
 Controls the size of the displayed item. Use `1` to fill item to screen edges.
+
+### thumbs
+
+Type: `boolean`<br>
+Default: `false`
+
+Shows a strip of thumbnails at the bottom of the gallery when it has more than one item.
+
+### sizes
+
+Type: `string`<br>
+Default: `undefined`
+
+Sets the `sizes` attribute for all images using `srcset`. By default it is updated automatically when an image is zoomed.
 
 ### intro
 

@@ -4,8 +4,12 @@ import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import size from 'rollup-plugin-size';
 import modify from 'rollup-plugin-modify';
+import * as sass from 'sass';
+import { copyFileSync, writeFileSync } from 'node:fs';
 
 const production = !process.env.ROLLUP_WATCH;
+
+const stylesSource = 'src/bigger-picture.scss';
 
 const terserOptions = {
 	ecma: 2015,
@@ -63,29 +67,24 @@ const findReplaceOptions = [
 	[/get_root_for_style\(node\),/g, 'document,'],
 ].map(([find, replace]) => modify({ find, replace }))
 
-let config = [
-	{
-		input: 'src/demo/demo.js',
-		output: {
-			format: 'iife',
-			file: 'public/demo.js'
-		},
-		plugins: [
-			commonjs(),
-			svelte({
-				preprocess: [cleanSvelteWhitespace],
-				compilerOptions: {
-					dev: !production,
-					immutable: true,
-					css: false
-				}
-			}),
-			resolve({ browser: true }),
-			...findReplaceOptions,
-			production && terser(terserOptions)
-		]
+/**
+ * Compile the library styles to dist, and copy the SCSS source
+ */
+const styles = {
+	name: 'styles',
+	buildStart() {
+		this.addWatchFile(stylesSource);
+	},
+	writeBundle() {
+		const { css } = sass.compile(stylesSource, {
+			style: 'compressed',
+			charset: false,
+			silenceDeprecations: ['import', 'global-builtin']
+		});
+		writeFileSync('dist/bigger-picture.css', css + '\n');
+		copyFileSync(stylesSource, 'dist/bigger-picture.scss');
 	}
-];
+};
 
 if (production) {
 	// remove unneeded setters in library
@@ -93,8 +92,11 @@ if (production) {
 		find: /^\sset .+{$\n\s+this.+[^}]+}/gm,
 		replace: ''
 	}));
-	// unminified dist files
-	config.push({
+}
+
+// unminified dist files, the UMD build is also used by index.html
+let config = [
+	{
 		input: 'src/bigger-picture.js',
 		output: [
 			{
@@ -125,9 +127,13 @@ if (production) {
 				}
 			}),
 			resolve({ browser: true }),
-			...findReplaceOptions
+			...findReplaceOptions,
+			styles
 		]
-	});
+	}
+];
+
+if (production) {
 	// minified dist files
 	config.push({
 		input: 'src/bigger-picture.js',

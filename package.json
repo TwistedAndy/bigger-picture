@@ -1,6 +1,6 @@
 {
 	"name": "bigger-picture",
-	"version": "1.1.20",
+	"version": "1.2.0",
 	"type": "module",
 	"exports": {
 		".": {
@@ -60,12 +60,12 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/henrygd/bigger-picture.git"
+		"url": "https://github.com/TwistedAndy/bigger-picture.git"
 	},
 	"bugs": {
-		"url": "https://github.com/henrygd/bigger-picture/issues"
+		"url": "https://github.com/TwistedAndy/bigger-picture/issues"
 	},
-	"homepage": "https://biggerpicture.henrygd.me",
+	"homepage": "https://github.com/TwistedAndy/bigger-picture#readme",
 	"keywords": [
 		"gallery",
 		"lightbox",
@@ -84,13 +84,13 @@
 		"vimeo"
 	],
 	"scripts": {
-		"start": "run-p dev sass-watch-demo serve",
+		"start": "run-p dev sass-watch serve",
 		"build": "run-p rollup-build sass-build",
 		"dev": "rollup -c -w",
-		"serve": "live-server public",
+		"serve": "live-server",
 		"rollup-build": "rollup -c",
-		"sass-watch-demo": "sass --watch --no-source-map src/demo/demo.scss:public/demo.css",
-		"sass-build": "sass --style=compressed --no-charset --no-source-map --silence-deprecation=import,global-builtin src/demo/_bigger-picture.scss:dist/bigger-picture.css && sass --style compressed --no-source-map src/demo/demo.scss:public/demo.css && cp src/demo/_bigger-picture.scss dist/bigger-picture.scss"
+		"sass-watch": "sass --watch --no-source-map demo/demo.scss:demo/demo.css",
+		"sass-build": "sass --style=compressed --no-source-map demo/demo.scss:demo/demo.css"
 	},
 	"packageManager": "pnpm@10.13.1",
 	"devDependencies": {

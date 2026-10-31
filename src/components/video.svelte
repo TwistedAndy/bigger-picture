@@ -38,7 +38,7 @@
 				let el = document.createElement(tag);
 				addAttributes(el, item);
 				if (tag === 'source') {
-					el.onError = (error) => opts.onError?.(container, activeItem, error);
+					el.onerror = (error) => opts.onError?.(container, activeItem, error);
 				}
 				mediaElement.append(el);
 			}

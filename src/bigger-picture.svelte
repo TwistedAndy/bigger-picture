@@ -66,17 +66,21 @@
 		activeDimensions = calculateDimensions(activeItem);
 	}
 
+	/** true while the gallery runs its outro animation */
+	let isClosing;
+
+	/** options of an open call made while closing, applied once the gallery is removed */
+	let pendingOptions;
+
 	/** receives options and opens gallery */
 	export const open = (options) => {
+		if (isClosing) {
+			pendingOptions = options;
+			return;
+		}
+
 		opts = options;
 		inline = opts.inline;
-
-		/**
-		 * Lock the scroll unless gallery is inline
-		 */
-		if (!inline && html.scrollHeight > html.clientHeight) {
-			html.classList.add('bp-lock');
-		}
 
 		/**
 		 * Update trigger element to restore focus
@@ -121,6 +125,18 @@
 
 		});
 
+		// nothing to show, e.g. every item was filtered out
+		if (!list.length) {
+			return;
+		}
+
+		/**
+		 * Lock the scroll unless gallery is inline
+		 */
+		if (!inline && html.scrollHeight > html.clientHeight) {
+			html.classList.add('bp-lock');
+		}
+
 		items = list;
 
 	};
@@ -129,6 +145,10 @@
 	 * Close the gallery
 	 */
 	export const close = () => {
+		if (!items || isClosing) {
+			return;
+		}
+		isClosing = true;
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
 
@@ -238,10 +258,10 @@
 			item.type = 'iframe';
 		} else if (item.img) {
 			item.type = 'image';
-		} else if (item.html) {
+		} else if (item.html != null) {
 			item.type = 'html';
 		} else {
-			let link = item.element?.link || item.element?.href || '';
+			let link = item.link || item.element?.href || '';
 			if (link) {
 				item = parseLink(link, item);
 			} else {
@@ -652,8 +672,17 @@
 			dimensions = activeDimensions;
 		}
 
-		// rect is bounding rect of trigger element
-		const rect = (activeItem.source || activeItem.element || focusTrigger).getBoundingClientRect();
+		// rect is the content box of the trigger element, the image is drawn inside its padding and border
+		const source = activeItem.source || activeItem.element || focusTrigger;
+		const style = window.getComputedStyle(source);
+		const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
+		const bounds = source.getBoundingClientRect();
+		const rect = {
+			left: bounds.left + edge('Left'),
+			top: bounds.top + edge('Top'),
+			width: bounds.width - edge('Left') - edge('Right'),
+			height: bounds.height - edge('Top') - edge('Bottom')
+		};
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
 		const scaleWidth = rect.width / dimensions[0];
@@ -707,6 +736,8 @@
 
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
+			// keep the dialog open on Escape, the keydown handler closes it with the outro animation
+			node.oncancel = (e) => e.preventDefault();
 			if (!inline) {
 				node.showModal();
 			} else {
@@ -729,9 +760,14 @@
 				}
 				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
+				isClosing = false;
 				// remove class hiding scroll
 				html.classList.remove('bp-lock');
 				opts.onClosed?.();
+				if (pendingOptions) {
+					open(pendingOptions);
+					pendingOptions = null;
+				}
 			}
 		};
 	};

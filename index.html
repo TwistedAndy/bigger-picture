@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Bigger Picture - JavaScript lightbox gallery</title>
+	<meta name="description" content="Fast, lightweight JavaScript lightbox gallery for images, video, audio, embeds and HTML, with zoom, thumbnails and smooth transitions." />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Bigger Picture - JavaScript lightbox gallery" />
+	<meta property="og:description" content="Fast, lightweight JavaScript lightbox gallery for images, video, audio, embeds and HTML, with zoom, thumbnails and smooth transitions." />
+	<meta property="og:image" content="https://assets.henrygd.me/bp/images/bp-social.png" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<link rel="icon" href="demo/assets/favicon.png" />
+	<link rel="stylesheet" href="dist/bigger-picture.css" />
+	<link rel="stylesheet" href="demo/demo.css" />
+</head>
+<body>
+	<header class="topbar">
+		<a class="topbar-logo" href="#top" aria-label="Bigger Picture"><img src="demo/assets/bp.svg" alt="Bigger Picture" width="190" height="21" /></a>
+		<nav class="topbar-nav" aria-label="Sections">
+			<a href="#installation">Docs</a>
+			<a href="#image-gallery">Examples</a>
+			<a href="#options">API</a>
+		</nav>
+		<a class="topbar-github" href="https://github.com/TwistedAndy/bigger-picture" aria-label="GitHub repository">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.4.5 0 5.8 0 12.3c0 5.2 3.4 9.6 8.2 11.2.6 0 .8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.3-1.4-1.7-1.4-1.7-1-.7.1-.7.1-.7C5 16.9 5.6 18 5.6 18c1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.8 0-1.3.5-2.4 1.3-3.2-.2-.3-.6-1.5 0-3.1 0 0 1-.3 3.4 1.2a11.7 11.7 0 016 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8 0 3.1.9.8 1.3 1.9 1.3 3.2 0 4.5-2.8 5.5-5.5 5.8.5.3.9 1 .9 2.2v3.2c0 .3.1.7.8.6 4.8-1.6 8.2-6 8.2-11.2C24 5.8 18.6.5 12 .5z"/></svg>
+			<span>TwistedAndy/bigger-picture</span>
+		</a>
+	</header>
+
+	<section class="hero" id="top">
+		<div class="hero-inner">
+			<h1>
+				<picture>
+					<source media="(max-width: 500px)" srcset="demo/assets/bp-stacked.svg" />
+					<img src="demo/assets/bp.svg" alt="Bigger Picture" width="950" height="105" />
+				</picture>
+			</h1>
+			<p class="hero-lead">A fast, lightweight lightbox for images, video, audio, embeds and HTML. Smooth zoom from the thumbnail and back, deep zoom with responsive images, and no dependencies.</p>
+			<div class="badges">
+				<img src="https://flat.badgen.net/static/gzip/12.8%20KB/green" alt="12.8 KB gzipped" height="20" />
+				<img src="https://flat.badgen.net/github/license/TwistedAndy/bigger-picture?color=purple" alt="MIT license" height="20" />
+				<img src="https://flat.badgen.net/github/last-commit/TwistedAndy/bigger-picture" alt="Last commit" height="20" />
+			</div>
+			<div class="hero-actions">
+				<a class="button" href="#installation">Get started</a>
+				<a class="button button-light" href="https://github.com/TwistedAndy/bigger-picture">View on GitHub</a>
+			</div>
+			<div class="hero-gallery" id="hero_gallery"><a class="hero-tile" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg 1667w" data-alt="Antelope Canyon"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a><a class="hero-tile" href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg 3000w" data-alt="Palm trees under a clear blue sky"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a><a class="hero-tile" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-img="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-alt="Mountains clouded in purple fog"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="hero-tile" href="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg 3000w" data-alt="Brown bear cub in the grass"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></a><a class="hero-tile" href="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg 1667w" data-alt="Close up of a yellow and blue macaw"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></a></div>
+			<ul class="features">
+				<li><b>Smooth</b>Zooms out of the thumbnail and back into it, keeping its crop.</li>
+				<li><b>Everything</b>Images, video, audio, YouTube, Vimeo, SoundCloud, PDF, iframes and HTML.</li>
+				<li><b>Zoom</b>Click, wheel and pinch zoom up to native resolution with srcset.</li>
+				<li><b>Accessible</b>Keyboard navigation, focus trap, alt text, captions, reduced motion.</li>
+			</ul>
+		</div>
+	</section>
+
+	<div class="layout">
+		<aside class="toc" aria-label="Table of contents">
+			<nav><p class="toc-title">Getting started</p><ul><li><a href="#installation">Installation</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#providing-items">Providing items</a></li></ul><p class="toc-title">Examples</p><ul><li><a href="#image-gallery">Image gallery</a></li><li><a href="#link-detection">Link detection</a></li><li><a href="#javascript-items">Items from JavaScript</a></li><li><a href="#video-audio">Video and audio</a></li><li><a href="#embeds">Embeds and iframes</a></li><li><a href="#thumbnail-fit">Cropped thumbnails</a></li><li><a href="#responsive-images">Responsive images</a></li><li><a href="#captions">Captions</a></li><li><a href="#html-content">HTML content</a></li><li><a href="#inline-gallery">Inline gallery</a></li><li><a href="#api">Controlling the gallery</a></li><li><a href="#filtering">Filtering by type</a></li><li><a href="#dialog-mode">Dialog mode</a></li><li><a href="#theming">Styling and theming</a></li></ul><p class="toc-title">Reference</p><ul><li><a href="#options">Options</a></li><li><a href="#item-properties">Item properties</a></li><li><a href="#methods">Methods</a></li><li><a href="#interaction">Keyboard and touch</a></li></ul></nav>
+		</aside>
+		<main class="content">
+
+<section class="doc" id="installation">
+	<p class="kicker">Getting started</p><h2><a href="#installation">Installation</a></h2>
+	<p class="lead">Bigger Picture ships as a UMD bundle for a plain <code>&lt;script&gt;</code> tag, as ES and CommonJS modules for bundlers, and as Svelte source. Every build needs the stylesheet.</p>
+	
+	<h3>Script tag (UMD)</h3>
+	<p>The UMD build exposes a global <code>BiggerPicture</code> function. This page loads the library exactly this way.</p>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;link rel="stylesheet" href="dist/bigger-picture.css" /&gt;
+&lt;script src="dist/bigger-picture.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const bp = BiggerPicture()
+&lt;/script&gt;</code></pre></div>
+	<p>Or load it from jsDelivr straight from GitHub. Pin a tag or a commit instead of <code>@main</code> in production.</p>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.css" /&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.umd.js"&gt;&lt;/script&gt;</code></pre></div>
+	<h3>npm and bundlers</h3>
+	<div class="code"><div class="code-head"><span>Terminal</span><button class="copy" type="button" aria-label="Copy Terminal code">Copy</button></div><pre><code class="language-bash">npm install github:TwistedAndy/bigger-picture</code></pre></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from 'bigger-picture'
+import 'bigger-picture/css'
+
+const bp = BiggerPicture()</code></pre></div>
+	<h3>Svelte</h3>
+	<p>If your app already uses Svelte 4, import the source components to share the Svelte runtime and get a smaller bundle.</p>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from 'bigger-picture/svelte'</code></pre></div>
+	<h3>Files</h3>
+	<div class="table-wrap"><table class=""><thead><tr><th>File</th><th>Format</th><th>Use it for</th></tr></thead><tbody><tr><td><code>bigger-picture.umd.js</code></td><td>UMD</td><td>Script tags, AMD and CommonJS loaders. Global <code>BiggerPicture</code>.</td></tr><tr><td><code>bigger-picture.min.js</code></td><td>IIFE, minified</td><td>Script tags in production. Global <code>BiggerPicture</code>.</td></tr><tr><td><code>bigger-picture.mjs</code> / <code>bigger-picture.min.mjs</code></td><td>ES module</td><td>Bundlers and <code>&lt;script type="module"&gt;</code>.</td></tr><tr><td><code>bigger-picture.cjs</code></td><td>CommonJS</td><td>Node based tooling and older bundlers.</td></tr><tr><td><code>bigger-picture.css</code> / <code>bigger-picture.scss</code></td><td>Styles</td><td>Required by every build. Use the SCSS file to change the source.</td></tr></tbody></table></div>
+	
+</section>
+
+<section class="doc" id="quick-start">
+	<h2><a href="#quick-start">Quick start</a></h2>
+	<p class="lead">Create one instance and open it from a click handler. Links to images need nothing else: the type is detected from <code>href</code>, and the image inside the link is used as the thumbnail the gallery zooms from.</p>
+	<div class="demo "><div class="grid grid-4" id="quick_start"><a class="tile" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a></div></div>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;div class="gallery"&gt;
+  &lt;a href="canyon.jpg"&gt;&lt;img src="canyon-thumb.jpg" alt="Antelope Canyon" /&gt;&lt;/a&gt;
+  &lt;a href="macaw.jpg"&gt;&lt;img src="macaw-thumb.jpg" alt="Macaw" /&gt;&lt;/a&gt;
+  &lt;a href="bear.jpg"&gt;&lt;img src="bear-thumb.jpg" alt="Bear cub" /&gt;&lt;/a&gt;
+&lt;/div&gt;</code></pre></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture()
+const links = document.querySelectorAll('.gallery a')
+
+links.forEach((link) =&gt; {
+  link.addEventListener('click', (event) =&gt; {
+    event.preventDefault()
+    bp.open({
+      items: links,
+      el: link,
+    })
+  })
+})</code></pre></div>
+	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>el</code> to start at the clicked item; the open and close animations then run from that link's image.</p>
+	
+</section>
+
+<section class="doc" id="providing-items">
+	<h2><a href="#providing-items">Providing items</a></h2>
+	<p class="lead">Each gallery item can come from a link, from <code>data-*</code> attributes, or from a JavaScript object. They can be mixed in one gallery.</p>
+	<div class="table-wrap"><table class=""><thead><tr><th>Source</th><th>How it works</th><th>Good for</th></tr></thead><tbody><tr><td><a href="#link-detection">Links</a></td><td>Only <code>href</code>. The type is detected from the URL.</td><td>Content from a CMS, articles, existing markup.</td></tr><tr><td><a href="#image-gallery">Data attributes</a></td><td><code>data-img</code>, <code>data-thumb</code>, <code>data-caption</code> and the other <a href="#item-properties">item properties</a>.</td><td>Galleries with srcset, captions and exact sizes.</td></tr><tr><td><a href="#javascript-items">Objects</a></td><td>An array of objects with the same <a href="#item-properties">properties</a>. Any property can be a function.</td><td>Data from an API, generated galleries.</td></tr></tbody></table></div>
+	<h3>How the type is chosen</h3>
+	<p>Explicit properties win, in this order: <code>sources</code> (video or audio), <code>iframe</code>, <code>img</code>, <code>html</code>. Without them, <code>link</code> or the element's <code>href</code> is parsed:</p>
+	<div class="table-wrap"><table class=""><thead><tr><th>URL</th><th>Opens as</th></tr></thead><tbody><tr><td><code>.jpg .jpeg .png .gif .webp .avif .svg .bmp .tiff .ico</code></td><td>Image</td></tr><tr><td><code>.mp4 .webm .mov .ogv .mpeg .avi .h264</code></td><td>HTML5 video</td></tr><tr><td><code>.mp3 .wav .ogg .oga .m4a .aac .flac .opus .weba .wma .mid</code></td><td>HTML5 audio</td></tr><tr><td>YouTube: <code>watch?v=</code>, <code>youtu.be</code>, <code>shorts/</code>, <code>embed/</code>, playlists</td><td>Embed with autoplay. <code>t=1m30s</code> becomes the start time.</td></tr><tr><td>Vimeo, including private links with a hash</td><td>Embed with autoplay</td></tr><tr><td>SoundCloud tracks</td><td>SoundCloud player</td></tr><tr><td>Google Drive files, Dropbox links, <code>.pdf</code></td><td>Full size iframe</td></tr><tr><td>Anything else</td><td>The element itself, as HTML</td></tr></tbody></table></div>
+	<p>Use the <a href="#filtering"><code>types</code></a> option to keep only some of them.</p>
+	
+</section>
+
+<section class="doc" id="image-gallery">
+	<p class="kicker">Examples</p><h2><a href="#image-gallery">Image gallery</a></h2>
+	<p class="lead">Data attributes give the gallery everything up front: a responsive <code>srcset</code>, a thumbnail to show while loading, and the full resolution so zoom stops at native size. <code>thumbs: true</code> adds a thumbnail strip.</p>
+	<div class="demo "><ul class="masonry" id="image_gallery"><li><a class="tile" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg 1667w" data-thumb="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" data-alt="Antelope Canyon" data-width="1667" data-height="2500"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg 2400w" data-thumb="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" data-alt="Brown and white mountain under a gray sky" data-width="2400" data-height="2400"><img src="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" alt="Brown and white mountain under a gray sky" width="2400" height="2400" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" data-alt="Brown bear cub in the grass" data-width="3000" data-height="2000"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" data-alt="Palm trees under a clear blue sky" data-width="3000" data-height="2000"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg 1667w" data-thumb="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" data-alt="Close up of a yellow and blue macaw" data-width="1667" data-height="2500"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-img="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-thumb="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" data-alt="Mountains clouded in purple fog" data-width="2400" data-height="2400"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg 2400w" data-thumb="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_thumb.jpg" data-alt="Three leopards hiding in the grass" data-width="2400" data-height="2400"><img src="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_thumb.jpg" alt="Three leopards hiding in the grass" width="2400" height="2400" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" data-alt="People standing under dragon trees on Socotra" data-width="3000" data-height="2000"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg 1667w" data-thumb="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" data-alt="Two deer beside trees and a mountain" data-width="1667" data-height="2500"><img src="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" alt="Two deer beside trees and a mountain" width="1667" height="2500" loading="lazy" /></a></li></ul></div><p class="demo-note">Click an image, then use the arrow keys, the thumbnails, or swipe. Click or scroll to zoom.</p>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;div id="gallery"&gt;
+  &lt;a
+    href="bear.jpg"
+    data-img="bear-1800.jpg 1800w, bear.jpg 3000w"
+    data-thumb="bear-thumb.jpg"
+    data-alt="Brown bear cub in the grass"
+    data-width="3000"
+    data-height="2000"
+  &gt;
+    &lt;img src="bear-thumb.jpg" alt="Brown bear cub in the grass" /&gt;
+  &lt;/a&gt;
+  &lt;!-- more links --&gt;
+&lt;/div&gt;</code></pre></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture()
+const gallery = document.getElementById('gallery')
+
+gallery.addEventListener('click', (event) =&gt; {
+  const link = event.target.closest('a')
+  if (!link) return
+  event.preventDefault()
+  bp.open({
+    items: gallery.querySelectorAll('a'),
+    el: link,
+    thumbs: true,
+  })
+})</code></pre></div>
+	<ul class="notes">
+		<li><code>data-width</code> and <code>data-height</code> are the full resolution. Without them, the size is read from the thumbnail and updated once the image loads.</li>
+		<li>The <code>sizes</code> attribute is updated as you zoom, so the browser picks a larger file from <code>srcset</code> only when it is needed.</li>
+		<li>One delegated listener on the container also works for links added later.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="link-detection">
+	<h2><a href="#link-detection">Automatic link detection</a></h2>
+	<p class="lead">Point the gallery at ordinary links and it works out what each one is: images, video and audio files, YouTube, Vimeo, SoundCloud, PDF documents and more. This fits content you don't control, such as articles from a CMS.</p>
+	<div class="demo ">
+	<article class="article" id="link_article">
+		<figure class="article-figure">
+			<a href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a>
+			<a href="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg"><img src="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" alt="Brown and white mountain under a gray sky" width="2400" height="2400" loading="lazy" /></a>
+		</figure>
+		<p>Every link below is a plain <code>&lt;a href&gt;</code> with no data attributes. Watch the
+		<a href="https://www.youtube.com/watch?v=286jXjwdst0&amp;t=40s">YouTube video from 0:40</a>, the same one through a
+		<a href="https://youtu.be/286jXjwdst0">youtu.be short link</a>, or a
+		<a href="https://vimeo.com/76979871">Vimeo video</a>. Native files work too: an
+		<a href="https://assets.henrygd.me/bp/videos/agent-327.webm">animated short (.webm)</a> and a
+		<a href="https://assets.henrygd.me/bp/audio/1998-12-17.mp3">live recording (.mp3)</a>.
+		There is also a <a href="https://soundcloud.com/yung-chomsky/neoliberalism">SoundCloud track</a>, a
+		<a href="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf">PDF paper</a> and a
+		<a href="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg">photo linked from text</a>.</p>
+		<p>This link is ignored because it doesn't match the selector: <a href="#providing-items">providing items</a>.</p>
+	</article></div><p class="demo-note">Thumbnails for YouTube and Vimeo are fetched automatically. Text links zoom from the link itself.</p>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture()
+
+const selector = [
+  'a[href$=".jpg"]', 'a[href$=".png"]', 'a[href$=".webp"]',
+  'a[href$=".webm"]', 'a[href$=".mp4"]', 'a[href$=".mp3"]', 'a[href$=".pdf"]',
+  'a[href*="youtube.com"]', 'a[href*="youtu.be"]',
+  'a[href*="vimeo.com"]', 'a[href*="soundcloud.com"]',
+].join(', ')
+
+const article = document.querySelector('.article')
+
+article.addEventListener('click', (event) =&gt; {
+  const link = event.target.closest(selector)
+  if (!link) return
+  event.preventDefault()
+  bp.open({
+    items: article.querySelectorAll(selector),
+    el: link,
+    thumbs: true,
+  })
+})</code></pre></div>
+	<ul class="notes">
+		<li>Query parameters of YouTube and Vimeo links are passed to the player, and <code>t=40s</code> or <code>t=1m30s</code> becomes the start time.</li>
+		<li>A link with an <code>&lt;img&gt;</code> inside uses that image as its thumbnail and copies its <code>object-fit</code> for the animation.</li>
+		<li>A text link to an image uses the full image as its thumbnail. Add <code>data-thumb</code> to avoid loading every full image when the gallery opens.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="javascript-items">
+	<h2><a href="#javascript-items">Items from JavaScript</a></h2>
+	<p class="lead">Pass an array of objects when the data comes from code. Set <code>element</code> on each item so the gallery can zoom from it and back. Any property can be a function that receives the item.</p>
+	<div class="demo "><div class="grid grid-4" id="object_items"><button class="tile" type="button" data-index="0"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></button><button class="tile" type="button" data-index="1"><img src="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_thumb.jpg" alt="Three leopards hiding in the grass" width="2400" height="2400" loading="lazy" /></button><button class="tile" type="button" data-index="2"><img src="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" alt="Two deer beside trees and a mountain" width="1667" height="2500" loading="lazy" /></button><button class="tile" type="button" data-index="3"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></button></div></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture()
+const buttons = document.querySelectorAll('#photos button')
+
+const photos = [
+  { img: 'macaw.jpg', thumb: 'macaw-thumb.jpg', alt: 'Macaw', width: 1667, height: 2500 },
+  { img: 'leopards.jpg', thumb: 'leopards-thumb.jpg', alt: 'Leopards', width: 2400, height: 2400 },
+  // ...
+]
+
+const items = photos.map((photo, index) =&gt; ({
+  ...photo,
+  element: buttons[index],
+  caption: (item) =&gt; `${item.alt}, ${item.width} × ${item.height}`,
+}))
+
+buttons.forEach((button) =&gt; {
+  button.addEventListener('click', () =&gt; {
+    bp.open({ items, el: button, thumbs: true })
+  })
+})</code></pre></div>
+	<ul class="notes">
+		<li><code>el</code> matches the clicked button against each item's <code>element</code>. Use <code>position</code> instead when there is no element.</li>
+		<li>Use <code>link</code> instead of <code>img</code>, <code>iframe</code> or <code>sources</code> to let the URL decide the type, as in <a href="#link-detection">link detection</a>.</li>
+		<li>Strings with numbers are fine for <code>width</code> and <code>height</code>, so values from <code>dataset</code> can be passed as they are.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="video-audio">
+	<h2><a href="#video-audio">Video and audio</a></h2>
+	<p class="lead">Native video and audio use <code>sources</code>: one <code>&lt;source&gt;</code> per entry, so the browser picks the first format it supports. Add subtitles with <code>tracks</code> and extra attributes with <code>attr</code>.</p>
+	<div class="demo ">
+	<div class="grid grid-media" id="media">
+		<a class="tile media video" href="https://assets.henrygd.me/bp/videos/agent-327.webm"
+			data-sources='[{&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327.webm&quot;, &quot;type&quot;: &quot;video/webm&quot;}, {&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327-x265.mp4&quot;, &quot;type&quot;: &quot;video/mp4&quot;}]'
+			data-tracks='[{&quot;label&quot;: &quot;English&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;en&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-en.vtt&quot;, &quot;default&quot;: &quot;true&quot;}, {&quot;label&quot;: &quot;العربية&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;ar&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-ar.vtt&quot;}, {&quot;label&quot;: &quot;Español&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;es&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-es.vtt&quot;}, {&quot;label&quot;: &quot;日本語&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;ja&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-ja.vtt&quot;}, {&quot;label&quot;: &quot;Монгол&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;mn&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-mn.vtt&quot;}, {&quot;label&quot;: &quot;Português&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;pt&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-pt.vtt&quot;}, {&quot;label&quot;: &quot;Türkçe&quot;, &quot;kind&quot;: &quot;subtitles&quot;, &quot;srclang&quot;: &quot;tr&quot;, &quot;src&quot;: &quot;demo/assets/agent-327-tr.vtt&quot;}]'
+			data-thumb="https://assets.henrygd.me/bp/images/agent-327.jpg"
+			data-width="1920" data-height="804">
+			<img src="https://assets.henrygd.me/bp/images/agent-327.jpg" alt="Agent 327: Operation Barbershop" width="1920" height="804" loading="lazy" />
+			<span class="badge">Video · 7 subtitle tracks</span>
+		</a>
+		<a class="tile media audio" href="https://assets.henrygd.me/bp/audio/1998-12-17.mp3"
+			data-sources='[{&quot;src&quot;: &quot;https://assets.henrygd.me/bp/audio/1998-12-17.mp3&quot;, &quot;type&quot;: &quot;audio/mpeg&quot;}]'
+			data-attr='{"loop": true}'
+			data-thumb="https://assets.henrygd.me/bp/images/lysflath.webp"
+			data-width="800" data-height="800">
+			<img src="https://assets.henrygd.me/bp/images/lysflath.webp" alt="Godspeed You! Black Emperor, live in Monheim, 1998" width="800" height="800" loading="lazy" />
+			<span class="badge">Audio · looped</span>
+		</a>
+	</div></div>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;a
+  href="agent-327.webm"
+  data-sources='[{"src": "agent-327.webm", "type": "video/webm"}, {"src": "agent-327.mp4", "type": "video/mp4"}]'
+  data-tracks='[{"label": "English", "kind": "subtitles", "srclang": "en", "src": "en.vtt", "default": "true"}]'
+  data-thumb="agent-327.jpg"
+  data-width="1920"
+  data-height="804"
+&gt;
+  &lt;img src="agent-327.jpg" alt="Agent 327" /&gt;
+&lt;/a&gt;
+
+&lt;a
+  href="live.mp3"
+  data-sources='[{"src": "live.mp3", "type": "audio/mpeg"}]'
+  data-attr='{"loop": true}'
+  data-thumb="cover.webp"
+  data-width="800"
+  data-height="800"
+&gt;
+  &lt;img src="cover.webp" alt="Live recording" /&gt;
+&lt;/a&gt;</code></pre></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">document.querySelectorAll('.media').forEach((link) =&gt; {
+  link.addEventListener('click', (event) =&gt; {
+    event.preventDefault()
+    bp.open({ items: link, el: link })
+  })
+})</code></pre></div>
+	<ul class="notes">
+		<li>An audio source creates an <code>&lt;audio&gt;</code> element over the thumbnail; anything else creates a <code>&lt;video&gt;</code>. Both start with <code>controls</code>, <code>autoplay</code> and <code>playsinline</code>.</li>
+		<li>Passing a single element as <code>items</code> opens it on its own.</li>
+		<li>A bare link to a <code>.mp4</code> or <code>.mp3</code> file works too, see <a href="#link-detection">link detection</a>.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="embeds">
+	<h2><a href="#embeds">Embeds and iframes</a></h2>
+	<p class="lead">YouTube, Vimeo and SoundCloud links become players with autoplay. Anything else that can be framed works through <code>iframe</code>: maps, documents, demos, your own pages.</p>
+	<div class="demo ">
+	<div class="grid grid-4" id="embeds_grid">
+		<a class="tile embed" href="https://www.youtube.com/watch?v=286jXjwdst0" data-title="Uebok on YouTube">
+			<img src="https://assets.henrygd.me/bp/images/uebok.jpg" alt="Uebok on YouTube" width="1920" height="1012" loading="lazy" />
+			<span class="badge">YouTube</span>
+		</a>
+		<a class="tile embed" href="https://vimeo.com/76979871" data-title="The New Vimeo Player">
+			<img src="https://vumbnail.com/76979871.jpg" alt="The New Vimeo Player" width="640" height="360" loading="lazy" />
+			<span class="badge">Vimeo</span>
+		</a>
+		<a class="tile embed" href="https://soundcloud.com/yung-chomsky/neoliberalism" data-title="Neoliberalism on SoundCloud">
+			<img src="https://assets.henrygd.me/bp/images/neoliberalism.jpg" alt="Neoliberalism on SoundCloud" width="1200" height="1200" loading="lazy" />
+			<span class="badge">SoundCloud</span>
+		</a>
+		<a class="tile embed placeholder map" href="https://www.openstreetmap.org/#map=13/50.4501/30.5234"
+			data-iframe="https://www.openstreetmap.org/export/embed.html?bbox=30.43%2C50.40%2C30.63%2C50.50&amp;layer=mapnik"
+			data-title="Map of Kyiv" data-width="1600" data-height="1000">
+			<span class="placeholder-label">OpenStreetMap<small>data-iframe</small></span>
+		</a>
+	</div></div>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;!-- detected from the link, the thumbnail comes from the image inside --&gt;
+&lt;a href="https://www.youtube.com/watch?v=286jXjwdst0" data-title="Uebok"&gt;
+  &lt;img src="uebok.jpg" alt="Uebok" /&gt;
+&lt;/a&gt;
+
+&lt;!-- any page that allows framing --&gt;
+&lt;a
+  href="https://www.openstreetmap.org/#map=13/50.4501/30.5234"
+  data-iframe="https://www.openstreetmap.org/export/embed.html?bbox=30.43,50.40,30.63,50.50"
+  data-title="Map of Kyiv"
+  data-width="1600"
+  data-height="1000"
+&gt;OpenStreetMap&lt;/a&gt;</code></pre></div>
+	<ul class="notes">
+		<li><code>data-title</code> sets the iframe's title for screen readers.</li>
+		<li>Without a thumbnail image, YouTube and Vimeo previews are loaded from <code>i.ytimg.com</code> and <code>vumbnail.com</code>.</li>
+		<li>Iframes default to 1920 × 1080, scaled to fit. Set <code>data-width</code> and <code>data-height</code> for another aspect ratio; PDF, Drive and Dropbox fill the screen.</li>
+		<li>Add attributes such as <code>referrerpolicy</code> or <code>allow</code> with <code>data-attr</code>.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="thumbnail-fit">
+	<h2><a href="#thumbnail-fit">Cropped and letterboxed thumbnails</a></h2>
+	<p class="lead">Thumbnails are often cropped with <code>object-fit: cover</code> or letterboxed with <code>contain</code>. The gallery reads the thumbnail's <code>object-fit</code> and animates the crop, so the full image unfolds from exactly what was visible.</p>
+	<div class="demo ">
+	<p class="demo-label"><code>object-fit: cover</code></p>
+	<div class="grid grid-4 fit-cover" id="fit_cover"><a class="tile" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg 1667w" data-alt="Antelope Canyon"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg 3000w" data-alt="Brown bear cub in the grass"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg 1667w" data-alt="Close up of a yellow and blue macaw"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg 2400w" data-alt="Three leopards hiding in the grass"><img src="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_thumb.jpg" alt="Three leopards hiding in the grass" width="2400" height="2400" loading="lazy" /></a></div>
+	<p class="demo-label"><code>object-fit: contain</code></p>
+	<div class="grid grid-4 fit-contain" id="fit_contain"><a class="tile" href="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg 2400w" data-alt="Brown and white mountain under a gray sky"><img src="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" alt="Brown and white mountain under a gray sky" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg 3000w" data-alt="Palm trees under a clear blue sky"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-img="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-alt="Mountains clouded in purple fog"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg 3000w" data-alt="People standing under dragon trees on Socotra"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a></div></div><p class="demo-note">Open an image and close it again to compare the two animations.</p>
+	<div class="code"><div class="code-head"><span>CSS</span><button class="copy" type="button" aria-label="Copy CSS code">Copy</button></div><pre><code class="language-css">.thumbs a {
+  aspect-ratio: 1;
+}
+
+.thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* or contain */
+}</code></pre></div>
+	<p>To force a mode, set <code>fit</code> on the item (<code>data-fit</code>) to <code>cover</code>, <code>contain</code> or <code>fill</code>. When the thumbnail's shape matches the image, the default <code>fill</code> is all you need.</p>
+	
+</section>
+
+<section class="doc" id="responsive-images">
+	<h2><a href="#responsive-images">Responsive images and deep zoom</a></h2>
+	<p class="lead">Give <code>img</code> a <code>srcset</code> and the gallery starts with the smallest file that looks sharp, then switches to larger files only as you zoom in. Raise <code>maxZoom</code> for maps and detailed artwork.</p>
+	<div class="demo ">
+	<a class="tile wide" id="responsive_map" href="https://assets.henrygd.me/bp/images/exandria-2500.webp"
+		data-img="https://assets.henrygd.me/bp/images/exandria-1300.webp 1300w, https://assets.henrygd.me/bp/images/exandria-2500.webp 2500w, https://assets.henrygd.me/bp/images/exandria-6000.webp 6000w"
+		data-thumb="https://assets.henrygd.me/bp/images/exandria-1300.webp"
+		data-max-zoom="50" data-width="6000" data-height="3376"
+		data-alt="Map of Exandria">
+		<img src="https://assets.henrygd.me/bp/images/exandria-1300.webp" alt="Map of Exandria" width="6000" height="3376" loading="lazy" />
+	</a></div><p class="demo-note">Zoom in on the map and watch the Network panel: the 6000px file loads only when you need it.</p>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;a
+  href="map-2500.webp"
+  data-img="map-1300.webp 1300w, map-2500.webp 2500w, map-6000.webp 6000w"
+  data-thumb="map-1300.webp"
+  data-max-zoom="50"
+  data-width="6000"
+  data-height="3376"
+  data-alt="Map of Exandria"
+&gt;
+  &lt;img src="map-1300.webp" alt="Map of Exandria" /&gt;
+&lt;/a&gt;</code></pre></div>
+	<ul class="notes">
+		<li><code>maxZoom</code> is a multiple of the starting size, and zoom never goes past <code>data-width</code>. Set it per item with <code>data-max-zoom</code> or for the whole gallery in the options.</li>
+		<li>Set the <code>sizes</code> option to take control of the <code>sizes</code> attribute yourself.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="captions">
+	<h2><a href="#captions">Captions</a></h2>
+	<p class="lead">Add <code>data-caption</code> (or <code>caption</code>) to show text under the item. It can contain HTML such as links. Captions hide while an image is zoomed.</p>
+	<div class="demo "><ul class="masonry masonry-3" id="captions_gallery"><li><a class="tile" href="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" data-alt="Brown bear cub in the grass" data-width="3000" data-height="2000" data-caption="Brown bear cub in the grass. Photo by Janko Ferlič on &lt;a href=&quot;https://unsplash.com/photos/SDivo1PTBDs&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Unsplash&lt;/a&gt;"><img src="https://assets.henrygd.me/bp/images/janko-ferlic-SDivo1PTBDs-unsplash_thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" data-alt="Palm trees under a clear blue sky" data-width="3000" data-height="2000" data-caption="Palm trees under a clear blue sky. Photo by Corey Agopian on &lt;a href=&quot;https://unsplash.com/photos/5y4ljzRrDFA&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Unsplash&lt;/a&gt;"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a></li><li><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" data-alt="People standing under dragon trees on Socotra" data-width="3000" data-height="2000" data-caption="People standing under dragon trees on Socotra. Photo by Andrew Svk on &lt;a href=&quot;https://unsplash.com/photos/REwZEYzw19g&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Unsplash&lt;/a&gt;"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a></li></ul></div>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;a
+  href="bear.jpg"
+  data-img="bear-1800.jpg 1800w, bear.jpg 3000w"
+  data-caption="Brown bear cub. Photo by Janko Ferlič on &lt;a href='https://unsplash.com/photos/SDivo1PTBDs'&gt;Unsplash&lt;/a&gt;"
+&gt;
+  &lt;img src="bear-thumb.jpg" alt="Brown bear cub" /&gt;
+&lt;/a&gt;</code></pre></div>
+	<div class="code"><div class="code-head"><span>CSS</span><button class="copy" type="button" aria-label="Copy CSS code">Copy</button></div><pre><code class="language-css">.bp-caption {
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.6);
+}</code></pre></div>
+	<p>Captions are inserted as HTML, so escape text that comes from users before passing it in.</p>
+	
+</section>
+
+<section class="doc" id="html-content">
+	<h2><a href="#html-content">HTML content</a></h2>
+	<p class="lead">Any HTML can be shown in the gallery: dialogs, cards, slides, or a whole component mounted in <code>onOpen</code>. Size HTML items with CSS; <code>width</code> and <code>height</code> are not used.</p>
+	<div class="demo ">
+	<div class="grid grid-3" id="html_grid">
+		<button class="tile placeholder html-dialog" type="button" id="html_dialog">
+			<img src="https://assets.henrygd.me/bp/images/location-service.svg" alt="" width="400" height="240" />
+			<span class="badge">Dialog</span>
+		</button>
+		<button class="tile placeholder html-slides" type="button" id="html_slides">
+			<span class="slides-preview"><b>1</b><b>2</b><b>3</b></span>
+			<span class="badge">HTML slides</span>
+		</button>
+		<button class="tile html-firewatch" type="button" id="html_firewatch">
+			<img src="https://assets.henrygd.me/bp/images/firewatch-2.png" alt="Firewatch" width="1520" height="855" loading="lazy" />
+			<span class="badge">Mounted component</span>
+		</button>
+	</div></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">// a string of HTML
+bp.open({
+  el: button,
+  items: [{ html: document.getElementById('dialog-template').innerHTML, element: button }],
+  onOpen(container) {
+    container.querySelectorAll('.dialog button').forEach((btn) =&gt; {
+      btn.addEventListener('click', bp.close)
+    })
+  },
+})
+
+// several HTML items make a gallery of slides
+bp.open({ items: slides.map((html) =&gt; ({ html, element: button })) })
+
+// an empty item, filled in onOpen
+bp.open({
+  el: button,
+  items: [{ html: '', element: button }],
+  onOpen(container) {
+    mountParallax(container.querySelector('.bp-html'))
+  },
+})</code></pre></div>
+	<ul class="notes">
+		<li>When an element has no <code>img</code>, <code>sources</code>, <code>iframe</code> or <code>html</code> and its link isn't recognized, the element itself is shown as HTML. Elements without any link are skipped.</li>
+		<li>Several items can share one <code>element</code>; open them with <code>position</code> instead of <code>el</code>.</li>
+		<li>HTML items zoom from their element too; the size is taken from the rendered content.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="inline-gallery">
+	<h2><a href="#inline-gallery">Inline gallery</a></h2>
+	<p class="lead">Mount an instance inside any element to embed the gallery in the page. Inline galleries don't lock scrolling or listen to the keyboard. Here, clicking the image opens it full screen, and the two instances stay in sync.</p>
+	<div class="demo demo-flush"><div class="inline-gallery" id="inline_gallery"></div></div>
+	<div class="code"><div class="code-head"><span>HTML</span><button class="copy" type="button" aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;div id="inline-gallery" style="position: relative; aspect-ratio: 3 / 2"&gt;&lt;/div&gt;</code></pre></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const wrap = document.getElementById('inline-gallery')
+const inline = BiggerPicture({ target: wrap })
+
+inline.open({
+  items,
+  inline: true,
+  noClose: true,
+  thumbs: true,
+  onImageClick(container, activeItem) {
+    // open the same items full screen, zooming from the inline image
+    const element = container.querySelector('.bp-img:last-child')
+    bp.open({
+      items: items.map((item) =&gt; ({ ...item, element })),
+      position: activeItem.i,
+      onUpdate: (_, item) =&gt; inline.setPosition(item.i),
+    })
+    return true // prevents the inline zoom
+  },
+})</code></pre></div>
+	<ul class="notes">
+		<li>The target needs <code>position: relative</code> and a height.</li>
+		<li><code>noClose</code> hides the close button. The <a href="#api"><code>close</code> method</a> still works.</li>
+		<li>Open the gallery when it scrolls into view with an <code>IntersectionObserver</code> to avoid loading images early.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="api">
+	<h2><a href="#api">Controlling the gallery</a></h2>
+	<p class="lead">Every instance can be driven from code with <code>next</code>, <code>prev</code>, <code>setPosition</code> and <code>close</code>, and reports what happens through callbacks. The log below shows the callbacks as you use the gallery.</p>
+	<div class="demo demo-flush">
+	<div class="api-demo">
+		<div class="inline-gallery api-gallery" id="api_gallery"></div>
+		<div class="api-side">
+			<div class="api-buttons">
+				<button type="button" data-api="prev">prev()</button>
+				<button type="button" data-api="next">next()</button>
+				<button type="button" data-api="position">setPosition(0)</button>
+				<button type="button" data-api="zoom">activeItem.zoom</button>
+				<button type="button" data-api="toggle">close()</button>
+			</div>
+			<ol class="api-log" id="api_log" aria-live="polite"></ol>
+		</div>
+	</div></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">let activeItem
+
+const bp = BiggerPicture({ target: wrap })
+
+bp.open({
+  items,
+  inline: true,
+  onOpen: (container, item) =&gt; (activeItem = item),
+  onUpdate: (container, item) =&gt; (activeItem = item),
+  onResize: (container, item) =&gt; log('onResize'),
+  onImageClick: (container, item) =&gt; log('onImageClick'),
+  onClose: () =&gt; log('onClose'),
+  onClosed: () =&gt; log('onClosed'),
+})
+
+nextButton.onclick = () =&gt; bp.next()
+prevButton.onclick = () =&gt; bp.prev()
+firstButton.onclick = () =&gt; bp.setPosition(0)
+zoomButton.onclick = () =&gt; (activeItem.zoom = !activeItem.zoom)
+closeButton.onclick = () =&gt; bp.close()</code></pre></div>
+	<p><code>activeItem</code> is the normalized item: <code>i</code> is its index, <code>type</code> is <code>image</code>, <code>video</code>, <code>iframe</code> or <code>html</code>, and images have a <code>zoom</code> property you can read and set.</p>
+	
+</section>
+
+<section class="doc" id="filtering">
+	<h2><a href="#filtering">Filtering by type</a></h2>
+	<p class="lead"><code>types</code> keeps only the item types you list. Point every gallery on a page at the same links and let each one decide what it shows.</p>
+	<div class="demo ">
+	<div class="segmented" role="radiogroup" aria-label="Types" id="type_filter">
+		<label><input type="radio" name="types" value="" checked /> All</label>
+		<label><input type="radio" name="types" value="image" /> image</label>
+		<label><input type="radio" name="types" value="video,iframe" /> video, iframe</label>
+	</div>
+	<div class="grid grid-3" id="filter_grid"><a class="tile" data-type="image" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg 1667w" data-thumb="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" data-alt="Antelope Canyon" data-width="1667" data-height="2500"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a><a class="tile" data-type="video" href="https://assets.henrygd.me/bp/videos/agent-327.webm" data-sources='[{&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327.webm&quot;, &quot;type&quot;: &quot;video/webm&quot;}, {&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327-x265.mp4&quot;, &quot;type&quot;: &quot;video/mp4&quot;}]' data-width="1920" data-height="804"><img src="https://assets.henrygd.me/bp/images/agent-327.jpg" alt="Agent 327" width="1920" height="804" loading="lazy" /><span class="badge">video</span></a><a class="tile" data-type="image" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-img="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-thumb="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" data-alt="Mountains clouded in purple fog" data-width="2400" data-height="2400"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="tile" data-type="iframe" href="https://www.youtube.com/watch?v=286jXjwdst0"><img src="https://assets.henrygd.me/bp/images/uebok.jpg" alt="Uebok on YouTube" width="1920" height="1012" loading="lazy" /><span class="badge">iframe</span></a><a class="tile" data-type="image" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" data-alt="People standing under dragon trees on Socotra" data-width="3000" data-height="2000"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a><a class="tile" data-type="iframe" href="https://vimeo.com/76979871"><img src="https://vumbnail.com/76979871.jpg" alt="Vimeo video" width="640" height="360" loading="lazy" /><span class="badge">iframe</span></a></div></div><p class="demo-note">Dimmed items are excluded by the current filter.</p>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">bp.open({
+  items: grid.querySelectorAll('a'),
+  el: link,
+  types: ['video', 'iframe'],
+})</code></pre></div>
+	<p>Positions refer to the filtered list, so <code>el</code>, the counter and the thumbnails always agree. An excluded <code>el</code> opens the first remaining item.</p>
+	
+</section>
+
+<section class="doc" id="dialog-mode">
+	<h2><a href="#dialog-mode">Dialog mode</a></h2>
+	<p class="lead">With <code>dialog: true</code> the gallery is a <code>&lt;dialog&gt;</code> opened with <code>showModal()</code>. It joins the browser's top layer, so it shows above other modal dialogs, makes the rest of the page inert, and needs no <code>z-index</code>.</p>
+	<div class="demo ">
+	<button class="button" type="button" id="open_modal">Open a modal dialog</button>
+	<dialog class="native-modal" id="native_modal">
+		<h3>A native modal</h3>
+		<p>This is a <code>&lt;dialog&gt;</code> opened with <code>showModal()</code>. Open an image from inside it.</p>
+		<div class="grid grid-3" id="modal_grid"><a class="tile" href="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash.jpg 2400w"><img src="https://assets.henrygd.me/bp/images/harshil-gudka-9GptkQwAAsc-unsplash_thumb.jpg" alt="Three leopards hiding in the grass" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg 1667w"><img src="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" alt="Two deer beside trees and a mountain" width="1667" height="2500" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash.jpg 3000w"><img src="https://assets.henrygd.me/bp/images/corey-agopian-5y4ljzRrDFA-unsplash_thumb.jpg" alt="Palm trees under a clear blue sky" width="3000" height="2000" loading="lazy" /></a></div>
+		<label class="check"><input type="checkbox" id="use_dialog" checked /> Open with <code>dialog: true</code></label>
+		<form method="dialog"><button class="button button-ghost">Close</button></form>
+	</dialog></div><p class="demo-note">Uncheck the option and open an image again: a regular gallery is drawn under the modal, because the modal sits in the top layer.</p>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture({
+  target: document.body,
+  dialog: true,
+})</code></pre></div>
+	<ul class="notes">
+		<li>The backdrop is the dialog's <code>::backdrop</code>, faded in and out with the gallery.</li>
+		<li>Inline galleries open with <code>show()</code>, so they stay in the page flow.</li>
+	</ul>
+	
+</section>
+
+<section class="doc" id="theming">
+	<h2><a href="#theming">Styling and theming</a></h2>
+	<p class="lead">All styles live in one small stylesheet. Change sizes with CSS variables and add a class in <code>onOpen</code> to theme a single gallery.</p>
+	<div class="demo "><div class="grid grid-4" id="theme_grid"><a class="tile" href="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg 2400w" data-alt="Brown and white mountain under a gray sky"><img src="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" alt="Brown and white mountain under a gray sky" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg 1667w" data-alt="Close up of a yellow and blue macaw"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-img="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-alt="Mountains clouded in purple fog"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="tile" href="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg" data-img="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg 1667w" data-alt="Two deer beside trees and a mountain"><img src="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" alt="Two deer beside trees and a mountain" width="1667" height="2500" loading="lazy" /></a></div></div><p class="demo-note">This gallery uses a light theme and larger square thumbnails.</p><div class="table-wrap"><table class=""><thead><tr><th>Variable</th><th>Default</th><th>Controls</th></tr></thead><tbody><tr><td><code>--bp-stage-gap</code></td><td><code>10px</code></td><td>Space around the item. Set to 0 while zoomed and in inline galleries.</td></tr><tr><td><code>--bp-thumb-height</code></td><td><code>70px</code></td><td>Height of the thumbnail strip.</td></tr><tr><td><code>--bp-thumb-gap</code></td><td><code>5px</code></td><td>Space between thumbnails.</td></tr><tr><td><code>--bp-thumb-ratio</code></td><td><code>1.25</code></td><td>Width to height ratio of each thumbnail.</td></tr></tbody></table></div>
+	<div class="code"><div class="code-head"><span>JavaScript</span><button class="copy" type="button" aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">bp.open({
+  items: links,
+  el: link,
+  thumbs: true,
+  onOpen: (container) =&gt; container.classList.add('light-theme'),
+})</code></pre></div>
+	<div class="code"><div class="code-head"><span>CSS</span><button class="copy" type="button" aria-label="Copy CSS code">Copy</button></div><pre><code class="language-css">.light-theme {
+  --bp-thumb-height: 90px;
+  --bp-thumb-ratio: 1;
+}
+
+.light-theme .bp-overlay {
+  background: rgba(246, 247, 250, 0.96);
+}
+
+.light-theme .bp-thumbs {
+  background: #e4e8ef;
+}
+
+.light-theme .bp-controls button {
+  background-color: rgba(20, 24, 33, 0.55);
+}
+
+.light-theme .bp-count {
+  color: #1d2330;
+}</code></pre></div>
+	<p>Useful classes: <code>.bp-wrap</code> (container), <code>.bp-overlay</code>, <code>.bp-caption</code>, <code>.bp-controls</code>, <code>.bp-thumbs</code>. State classes on the container: <code>.bp-zoomed</code>, <code>.bp-inline</code>, <code>.bp-small</code>, <code>.bp-closing</code>. Animations are disabled when the visitor prefers reduced motion.</p>
+	
+</section>
+
+<section class="doc" id="options">
+	<p class="kicker">Reference</p><h2><a href="#options">Options</a></h2>
+	<p class="lead">Options are passed to <code>open()</code>. The two initialization options go to <code>BiggerPicture()</code>.</p>
+	
+	<h3>Initialization</h3>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>target</code></td><td>HTMLElement</td><td><code>document.body</code></td><td>Element the gallery is mounted in. Calling <code>BiggerPicture()</code> without options mounts it in <code>document.body</code>.</td></tr><tr><td><code>dialog</code></td><td>boolean</td><td><code>false</code></td><td>Render as a <code>&lt;dialog&gt;</code> in the top layer. See <a href="#dialog-mode">dialog mode</a>.</td></tr></tbody></table></div>
+	<h3>open(options)</h3>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code id="option-items">items</code></td><td>Element, NodeList, Array</td><td></td><td>The items to show: elements with <a href="#item-properties">data attributes</a> or links, or an array of objects. Required.</td></tr><tr><td><code id="option-el">el</code></td><td>Element</td><td></td><td>Start at the item whose element is <code>el</code>. The open and close animations run from that element.</td></tr><tr><td><code id="option-position">position</code></td><td>number</td><td><code>0</code></td><td>Start at this index of <code>items</code>. Ignored when <code>el</code> is set.</td></tr><tr><td><code id="option-types">types</code></td><td>string, string[]</td><td></td><td>Keep only these types: <code>image</code>, <code>video</code>, <code>iframe</code>, <code>html</code>.</td></tr><tr><td><code id="option-thumbs">thumbs</code></td><td>boolean</td><td><code>false</code></td><td>Show a thumbnail strip when there is more than one item.</td></tr><tr><td><code id="option-scale">scale</code></td><td>number</td><td><code>1</code></td><td>Size of the item relative to the available space.</td></tr><tr><td><code id="option-maxZoom">maxZoom</code></td><td>number</td><td><code>10</code></td><td>Maximum zoom as a multiple of the starting size, never beyond the full resolution.</td></tr><tr><td><code id="option-sizes">sizes</code></td><td>string</td><td></td><td>Fixed <code>sizes</code> attribute for <code>srcset</code> images instead of the automatic one.</td></tr><tr><td><code id="option-intro">intro</code></td><td>string</td><td></td><td><code>fadeup</code> replaces the zoom from the thumbnail with a fade.</td></tr><tr><td><code id="option-inline">inline</code></td><td>boolean</td><td><code>false</code></td><td>Inline gallery: no scroll lock and no keyboard handling.</td></tr><tr><td><code id="option-noClose">noClose</code></td><td>boolean</td><td><code>false</code></td><td>Hide the close button and ignore Escape, backdrop clicks and swipes.</td></tr><tr><td><code id="option-noPinch">noPinch</code></td><td>function</td><td></td><td>Return a truthy value to disable pinch zoom. Receives <code>container</code>.</td></tr><tr><td><code id="option-focusWrap">focusWrap</code></td><td>Element</td><td>container</td><td>Element that keeps focus inside it on Tab.</td></tr></tbody></table></div>
+	<h3 id="callbacks">Callbacks</h3>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Callback</th><th>Arguments</th><th>Called</th></tr></thead><tbody><tr><td><code>onOpen</code></td><td><code>container, activeItem</code></td><td>Before the intro animation.</td></tr><tr><td><code>onUpdate</code></td><td><code>container, activeItem</code></td><td>After the active item changes.</td></tr><tr><td><code>onResize</code></td><td><code>container, activeItem</code></td><td>When the gallery (not the window) changes size.</td></tr><tr><td><code>onImageClick</code></td><td><code>container, activeItem</code></td><td>When an image is clicked. Return a truthy value to prevent zooming.</td></tr><tr><td><code>onError</code></td><td><code>container, activeItem, event</code></td><td>When an image, video or audio source fails to load.</td></tr><tr><td><code>onClose</code></td><td><code>container, activeItem</code></td><td>Before the outro animation.</td></tr><tr><td><code>onClosed</code></td><td></td><td>After the gallery is removed from the page.</td></tr></tbody></table></div>
+	
+</section>
+
+<section class="doc" id="item-properties">
+	<h2><a href="#item-properties">Item properties</a></h2>
+	<p class="lead">Set these as <code>data-*</code> attributes on elements or as properties on objects. On objects, <code>img</code>, <code>thumb</code>, <code>link</code>, <code>alt</code>, <code>caption</code>, <code>sources</code>, <code>iframe</code>, <code>html</code>, <code>attr</code> and <code>fit</code> can also be functions that receive the item and return the value.</p>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Property</th><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><code>img</code></td><td><code>data-img</code></td><td>string</td><td>Image URL or a <code>srcset</code> value.</td></tr><tr><td><code>thumb</code></td><td><code>data-thumb</code></td><td>string, HTMLImageElement</td><td>Image shown while loading and in the thumbnail strip. Defaults to the <code>&lt;img&gt;</code> inside the element.</td></tr><tr><td><code>link</code></td><td><code>data-link</code></td><td>string</td><td>URL whose type is detected automatically. Defaults to the element's <code>href</code>.</td></tr><tr><td><code>alt</code></td><td><code>data-alt</code></td><td>string</td><td>Alternative text for images.</td></tr><tr><td><code>caption</code></td><td><code>data-caption</code></td><td>string</td><td>Caption, may contain HTML.</td></tr><tr><td><code>width</code></td><td><code>data-width</code></td><td>number, string</td><td>Full width in pixels. Default <code>1920</code>.</td></tr><tr><td><code>height</code></td><td><code>data-height</code></td><td>number, string</td><td>Full height in pixels. Default <code>1080</code>.</td></tr><tr><td><code>sources</code></td><td><code>data-sources</code></td><td>object[], JSON</td><td>Video or audio sources. Each object becomes a <code>&lt;source&gt;</code> with those attributes.</td></tr><tr><td><code>tracks</code></td><td><code>data-tracks</code></td><td>object[], JSON</td><td>Text tracks for video. Each object becomes a <code>&lt;track&gt;</code>.</td></tr><tr><td><code>iframe</code></td><td><code>data-iframe</code></td><td>string</td><td>URL to show in an iframe.</td></tr><tr><td><code>title</code></td><td><code>data-title</code></td><td>string</td><td>Title of the iframe.</td></tr><tr><td><code>html</code></td><td><code>data-html</code></td><td>string</td><td>HTML to show. Size it with CSS.</td></tr><tr><td><code>attr</code></td><td><code>data-attr</code></td><td>object, JSON</td><td>Extra attributes for the <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code> or <code>&lt;iframe&gt;</code>.</td></tr><tr><td><code>fit</code></td><td><code>data-fit</code></td><td>string</td><td><code>cover</code>, <code>contain</code> or <code>fill</code> for the open and close animation. Defaults to the thumbnail's <code>object-fit</code>.</td></tr><tr><td><code>maxZoom</code></td><td><code>data-max-zoom</code></td><td>number</td><td>Overrides the <code>maxZoom</code> option for this item.</td></tr><tr><td><code>element</code></td><td></td><td>Element</td><td>Element the item animates from and back to. Set automatically for elements.</td></tr></tbody></table></div>
+</section>
+
+<section class="doc" id="methods">
+	<h2><a href="#methods">Methods and properties</a></h2>
+	<p class="lead"><code>BiggerPicture()</code> returns an instance. It can be opened again with new items after it closes.</p>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Member</th><th>Description</th></tr></thead><tbody><tr><td><code>open(options)</code></td><td>Opens the gallery with the given <a href="#options">options</a>.</td></tr><tr><td><code>close()</code></td><td>Closes the gallery with the outro animation. Works even with <code>noClose</code>.</td></tr><tr><td><code>next()</code></td><td>Shows the next item, wrapping around at the end.</td></tr><tr><td><code>prev()</code></td><td>Shows the previous item, wrapping around at the start.</td></tr><tr><td><code>setPosition(index)</code></td><td>Shows the item at <code>index</code> of the filtered list.</td></tr><tr><td><code>items</code></td><td>The normalized items of the open gallery, or <code>null</code> when closed.</td></tr><tr><td><code>target</code></td><td>The element the instance is mounted in.</td></tr></tbody></table></div>
+	<h3>Normalized items</h3>
+	<p>Callbacks and <code>items</code> give you normalized objects with every property above, plus <code>i</code> (index in the gallery), <code>type</code> and, for images, a <code>zoom</code> property that reads and sets the zoom state.</p>
+	
+</section>
+
+<section class="doc" id="interaction">
+	<h2><a href="#interaction">Keyboard, mouse and touch</a></h2>
+	<p class="lead">Full screen galleries handle these out of the box. Inline galleries handle the pointer and touch gestures but leave the keyboard to the page.</p>
+	<div class="table-wrap"><table class="ref"><thead><tr><th>Input</th><th>Action</th></tr></thead><tbody><tr><td><kbd>Esc</kbd></td><td>Close (unless <code>noClose</code>)</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous and next item</td></tr><tr><td><kbd>Tab</kbd></td><td>Moves focus between the gallery controls only</td></tr><tr><td>Click or tap an image</td><td>Zoom in to full size, click again to zoom out</td></tr><tr><td>Mouse wheel, pinch</td><td>Zoom in and out around the pointer</td></tr><tr><td>Drag</td><td>Move a zoomed image; flicks keep their momentum</td></tr><tr><td>Swipe left or right</td><td>Previous and next item</td></tr><tr><td>Swipe up, click the backdrop</td><td>Close</td></tr></tbody></table></div>
+</section>
+		</main>
+	</div>
+
+	<footer class="footer">
+		<p>Bigger Picture is <a href="https://github.com/TwistedAndy/bigger-picture/blob/main/license">MIT licensed</a>. Originally created by <a href="https://github.com/henrygd">Hank Dollman</a>, maintained by <a href="https://github.com/TwistedAndy">Andrii Toniievych</a>.</p>
+		<p>Photos from <a href="https://unsplash.com">Unsplash</a>. Agent 327: Operation Barbershop by Blender Studio (<a href="https://creativecommons.org/licenses/by-nd/2.0/">CC BY-ND</a>). Firewatch artwork by Campo Santo.</p>
+	</footer>
+
+	<template id="dialog_template">
+		<div class="dialog">
+			<span class="dialog-art"></span>
+			<h2>Use location services?</h2>
+			<p>To give directions, we need your location. You can change this later in the settings.</p>
+			<div class="dialog-buttons">
+				<button type="button">Not now</button>
+				<button type="button" class="cta">Allow</button>
+			</div>
+		</div>
+	</template>
+
+	<script src="dist/bigger-picture.umd.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js" integrity="sha384-zLRFO4dwowZvh8kzutOb5AWhH7f39HeJp+N7PtHF1SQtTBnifRx0AtmvTYs3F4YV" crossorigin="anonymous" defer data-manual></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js" integrity="sha384-HkMr0bZB9kBW4iVtXn6nd35kO/L/dQtkkUBkL9swzTEDMdIe5ExJChVDSnC79aNA" crossorigin="anonymous" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js" integrity="sha384-0mV13Neu0xhJFylI+HV43C+XiR13bGSeL7D0/7e6hK7sJgvyvK6HVjeQwmvXTstY" crossorigin="anonymous" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js" integrity="sha384-7LHwxHIDSHTBleLmgDWZbC/IMJsfYfFVOihKhvsrxYW4j47YQcRwZja4ToFE3bA8" crossorigin="anonymous" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js" integrity="sha384-D44bgYYKvaiDh4cOGlj1dbSDpSctn2FSUj118HZGmZEShZcO2v//Q5vvhNy206pp" crossorigin="anonymous" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js" integrity="sha384-9WmlN8ABpoFSSHvBGGjhvB3E/D8UkNB9HpLJjBQFC2VSQsM1odiQDv4NbEo+7l15" crossorigin="anonymous" defer></script>
+	<script src="demo/demo.js" defer></script>
+</body>
+</html>
