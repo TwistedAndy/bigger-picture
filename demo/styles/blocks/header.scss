@@ -1,0 +1,99 @@
+// equal side columns keep the menu centered on the page
+.header_box {
+	--width-logo: 190px;
+	display: grid;
+	position: sticky;
+	top: 0;
+	align-items: center;
+	height: var(--height-header);
+	padding: 0 var(--gap-section-side);
+	border-bottom: 1px solid var(--color-border);
+	background: #{rgbo(--color-section, 88%)};
+	backdrop-filter: saturate(1.6) blur(12px);
+	z-index: 50;
+	grid-template-columns: 1fr auto 1fr;
+	gap: 28px;
+
+	.logo img {
+		display: block;
+		width: var(--width-logo);
+		// on narrow phones keep the logo readable, the menu moves off center instead
+		max-width: none;
+		height: auto;
+	}
+
+	.menu {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		gap: 22px;
+
+		a {
+			color: var(--color-muted);
+			font-weight: 500;
+			text-decoration: none;
+
+			@include hover {
+				&:hover {
+					color: var(--color-heading);
+				}
+			}
+
+		}
+
+	}
+
+	.link {
+		--mask-image: url('assets/ico_github.svg');
+		display: flex;
+		align-items: center;
+		justify-self: end;
+		color: var(--color-heading);
+		font-size: var(--size-small);
+		font-weight: 500;
+		text-decoration: none;
+		gap: 8px;
+
+		&:before {
+			content: '';
+			width: var(--width-icon);
+			height: var(--height-icon);
+			background: currentColor;
+			mask: var(--mask-image) 50% 50% / contain no-repeat;
+		}
+
+		@include hover {
+			&:hover {
+				color: var(--color-primary-alt);
+			}
+		}
+
+	}
+
+	@include tablet_large {
+		--width-logo: 136px;
+		gap: 16px;
+
+		.menu {
+			font-size: var(--size-small);
+			gap: 14px;
+		}
+
+		.link span {
+			display: none;
+		}
+
+	}
+
+	@include phone_large {
+		--width-logo: 124px;
+		gap: 12px;
+
+		.menu li:first-child {
+			display: none;
+		}
+
+	}
+
+}

@@ -1,0 +1,71 @@
+// native <dialog> of the dialog mode example, opened with showModal()
+.modal_box {
+	width: min(560px, calc(100% - 32px));
+	padding: var(--gap-contents);
+	border: 0;
+	border-radius: var(--radius-large);
+	box-shadow: var(--shadow-large);
+	color: var(--color-text);
+
+	&::backdrop {
+		background: #{rgbo(--color-shadow, 55%)};
+		backdrop-filter: blur(4px);
+	}
+
+	.contents {
+		max-width: none;
+		margin-bottom: var(--gap-content);
+		text-align: left;
+
+		h2 {
+			margin-bottom: 6px;
+			font-size: var(--size-h3);
+		}
+
+		.content {
+			color: var(--color-muted);
+		}
+
+	}
+
+	.items {
+		cursor: zoom-in;
+	}
+
+	.item {
+		overflow: hidden;
+		border-radius: var(--radius-regular);
+		aspect-ratio: 1;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+	}
+
+	.checkbox {
+		display: flex;
+		align-items: center;
+		margin-top: var(--gap-content);
+		font-size: var(--size-small);
+		cursor: pointer;
+		gap: 8px;
+
+		input {
+			width: 18px;
+			height: 18px;
+			margin: 0;
+			accent-color: var(--color-primary);
+		}
+
+	}
+
+	.buttons {
+		justify-content: flex-end;
+		margin-top: 18px;
+	}
+
+}

@@ -1,0 +1,16 @@
+.footer_box {
+	padding: 36px var(--gap-section-side);
+	background: var(--color-section);
+	color: var(--color-muted);
+	font-size: var(--size-small);
+	text-align: center;
+
+	.content {
+		--gap-content: 6px;
+	}
+
+	a {
+		color: var(--color-heading);
+	}
+
+}

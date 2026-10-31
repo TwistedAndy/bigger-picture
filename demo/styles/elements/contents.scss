@@ -1,0 +1,14 @@
+%contents {
+	max-width: var(--width-contents);
+	margin: 0 auto var(--gap-contents);
+	text-align: center;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	h1, h2 {
+		margin: 0 0 var(--gap-heading);
+	}
+
+}

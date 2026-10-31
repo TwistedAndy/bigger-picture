@@ -1,0 +1,33 @@
+.cards_box {
+	--width-fixed: var(--width-fixed-small);
+
+	.items {
+		--gap-grid-x: var(--gap-card);
+		--gap-grid-y: var(--gap-card);
+
+		@include desktop_small {
+			--columns-count: 2;
+		}
+
+		@include tablet_large {
+			--columns-count: 1;
+		}
+
+	}
+
+	.item {
+		color: var(--color-muted);
+		font-size: var(--size-small);
+
+		h3 {
+			margin: 0 0 4px;
+			font-size: var(--size-base);
+		}
+
+	}
+
+	.text {
+		margin: 0;
+	}
+
+}

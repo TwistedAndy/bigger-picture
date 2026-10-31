@@ -89,8 +89,8 @@
 		"dev": "rollup -c -w",
 		"serve": "live-server",
 		"rollup-build": "rollup -c",
-		"sass-watch": "sass --watch --no-source-map demo/demo.scss:demo/demo.css",
-		"sass-build": "sass --style=compressed --no-source-map demo/demo.scss:demo/demo.css"
+		"sass-watch": "sass --watch --no-source-map --silence-deprecation=import demo/styles/demo.scss:demo/demo.css",
+		"sass-build": "sass --style=compressed --no-source-map --silence-deprecation=import demo/styles/demo.scss:demo/demo.css"
 	},
 	"packageManager": "pnpm@10.13.1",
 	"devDependencies": {

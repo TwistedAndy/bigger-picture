@@ -6,7 +6,7 @@
 	"singleQuote": true,
 	"overrides": [
     {
-      "files": "readme.md",
+      "files": "README.md",
       "options": {
         "useTabs": false
       }

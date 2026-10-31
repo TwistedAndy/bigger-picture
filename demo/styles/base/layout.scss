@@ -1,0 +1,49 @@
+html {
+	scroll-padding-top: var(--offset-scroll);
+
+	@media (prefers-reduced-motion: no-preference) {
+		scroll-behavior: smooth;
+	}
+
+}
+
+body {
+	margin: 0;
+	background: var(--color-section);
+	color: var(--color-text);
+	font-family: var(--font-main);
+	font-size: var(--size-base);
+	line-height: var(--line-base);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.fixed {
+	position: relative;
+	width: 100%;
+	max-width: var(--width-fixed);
+	margin: 0 auto;
+}
+
+section {
+	position: relative;
+	padding: var(--gap-section-top) var(--gap-section-side) var(--gap-section-bottom);
+	background-color: var(--color-section);
+	color: var(--color-text);
+}
+
+.is_dark {
+	--color-section: var(--theme-secondary);
+	--color-background: #{rgbo(--theme-white, 12%)};
+	--color-light: #{rgbo(--theme-white, 20%)};
+	--color-text: #{rgbo(--theme-white, 80%)};
+	--color-muted: #{rgbo(--theme-white, 70%)};
+	--color-heading: var(--theme-white);
+	--color-border: #{rgbo(--theme-white, 25%)};
+	--color-link: var(--theme-white);
+}
+
+.has_no_top {
+	--gap-section-top: 0px;
+}

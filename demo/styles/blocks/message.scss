@@ -1,0 +1,68 @@
+// HTML items of the gallery: a dialog and a slide
+.message_box {
+	--button-border: #0066FE;
+	--button-base: #0066FE;
+	--button-border-active: #1774FF;
+	--button-base-active: #1774FF;
+	width: 400px;
+	max-width: 92%;
+	padding: 22px 27px 27px;
+	border-radius: var(--radius-large);
+	background: var(--color-section);
+	color: var(--color-text);
+	text-align: center;
+
+	.image img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	h2 {
+		margin: 20px 0 10px;
+		font-size: rem(22);
+	}
+
+	.text {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: rem(15.5);
+		line-height: 1.6;
+	}
+
+	.buttons {
+		flex-wrap: nowrap;
+		margin-top: 26px;
+		gap: 10px;
+	}
+
+	.button {
+		flex: 1;
+		border-radius: var(--radius-regular);
+	}
+
+	&.is_slide {
+		width: 520px;
+		max-width: 88%;
+		padding: 44px 40px;
+		background: linear-gradient(135deg, var(--theme-white), #FFF4F2);
+		box-shadow: var(--shadow-large);
+		text-align: left;
+
+		.caption {
+			color: var(--color-primary);
+			font: 700 15px var(--font-code);
+		}
+
+		h3 {
+			margin: 12px 0 10px;
+			font-size: var(--size-h2);
+		}
+
+		.text {
+			font-size: var(--size-large);
+		}
+
+	}
+
+}

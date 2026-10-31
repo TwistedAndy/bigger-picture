@@ -1,0 +1,76 @@
+// parallax scene from the Firewatch website, mounted in a gallery item
+.parallax_box {
+	position: relative;
+	width: 1520px;
+	height: 855px;
+	max-width: 95%;
+	max-height: 95%;
+	overflow: hidden;
+	border-radius: var(--radius-small);
+	background: #FFAF1B url('https://assets.henrygd.me/bp/images/firewatch-2.png') 50% 0 / 1520px auto no-repeat;
+	contain: strict;
+
+	.images {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		width: 2800px;
+		transform: translateX(-50%);
+
+		img {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			will-change: transform;
+		}
+
+	}
+
+	.caption {
+		position: absolute;
+		width: 100%;
+		padding: 4em 0.5em 0.5em;
+		color: #DC712B;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	.wrapper {
+		position: absolute;
+		inset: 0;
+		overflow-y: scroll;
+	}
+
+	.content {
+		display: flex;
+		position: absolute;
+		top: 825px;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		background: #200001;
+		color: var(--theme-white);
+	}
+
+	// covers the scene while closing, so it shrinks back into the thumbnail
+	.cover {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		transition: opacity 0.3s;
+		pointer-events: none;
+		object-fit: cover;
+	}
+
+	&.is_closing .cover {
+		opacity: 1;
+	}
+
+}

@@ -102,7 +102,7 @@
 	delegate($('#html_grid'), '#html_dialog', (button) => ({
 		items: [{ html: $('#dialog_template').innerHTML, element: button }],
 		onOpen(container) {
-			for (const action of $$('.dialog button', container)) {
+			for (const action of $$('.message_box .button', container)) {
 				action.addEventListener('click', bp.close)
 			}
 		},
@@ -118,7 +118,7 @@
 	delegate($('#html_grid'), '#html_slides', (button) => ({
 		el: null,
 		items: slides.map(([number, title, text]) => ({
-			html: `<div class="slide"><span>${number}</span><h3>${title}</h3><p>${text}</p></div>`,
+			html: `<div class="message_box is_slide"><span class="caption">${number}</span><h3>${title}</h3><p class="text">${text}</p></div>`,
 			element: button,
 		})),
 	}))
@@ -131,7 +131,7 @@
 				parallax = mountParallax($('.bp-html', container))
 			},
 			onClose() {
-				parallax.classList.add('is-closing')
+				parallax.classList.add('is_closing')
 			},
 		}
 	})
@@ -141,23 +141,23 @@
 	 */
 	function mountParallax(target) {
 		const scene = document.createElement('div')
-		scene.className = 'firewatch'
+		scene.className = 'parallax_box'
 		scene.innerHTML =
-			'<div class="parallax-container">' +
+			'<div class="images">' +
 			Array.from(
 				{ length: 9 },
 				(_, i) => `<img src="https://assets.henrygd.me/bp/images/firewatch/parallax${i}.png" alt="" decoding="async" />`
 			).join('') +
-			'</div><span class="firewatch-hint">Scroll down</span>' +
-			'<div class="firewatch-scroll"><div class="foreground">You have scrolled <b>0</b> pixels</div></div>' +
-			'<img class="firewatch-cover" src="https://assets.henrygd.me/bp/images/firewatch-2.png" alt="" decoding="async" />'
+			'</div><span class="caption">Scroll down</span>' +
+			'<div class="wrapper"><div class="content">You have scrolled <b>0</b> pixels</div></div>' +
+			'<img class="cover" src="https://assets.henrygd.me/bp/images/firewatch-2.png" alt="" decoding="async" />'
 
-		const layers = $$('.parallax-container img', scene)
-		const hint = $('.firewatch-hint', scene)
-		const counter = $('.foreground b', scene)
+		const layers = $$('.images img', scene)
+		const hint = $('.caption', scene)
+		const counter = $('.content b', scene)
 		let frame
 
-		$('.firewatch-scroll', scene).addEventListener('scroll', (event) => {
+		$('.wrapper', scene).addEventListener('scroll', (event) => {
 			const y = event.target.scrollTop
 			cancelAnimationFrame(frame)
 			frame = requestAnimationFrame(() => {
@@ -270,7 +270,7 @@
 		toggle: () => (apiItem ? apiInstance.close() : openApi()),
 	}
 
-	$('.api-buttons')?.addEventListener('click', (event) => {
+	apiWrap?.parentElement.addEventListener('click', (event) => {
 		const action = event.target.closest('[data-api]')?.dataset.api
 		if (action && (apiItem || action === 'toggle')) {
 			apiActions[action]()
@@ -300,21 +300,25 @@
 	$('#type_filter')?.addEventListener('change', (event) => {
 		filterTypes = event.target.value ? event.target.value.split(',') : undefined
 		for (const link of $$('a', filterGrid)) {
-			link.classList.toggle('is-excluded', !!filterTypes && !filterTypes.includes(link.dataset.type))
+			link.classList.toggle('disabled', !!filterTypes && !filterTypes.includes(link.dataset.type))
 		}
 	})
 
 	delegate(filterGrid, 'a', (link) =>
-		link.classList.contains('is-excluded') ? null : { items: $$('a', filterGrid), types: filterTypes, thumbs: true }
+		link.classList.contains('disabled') ? null : { items: $$('a', filterGrid), types: filterTypes, thumbs: true }
 	)
 
 	// Dialog mode
 
 	const dialogBp = BiggerPicture({ target: document.body, dialog: true })
-	const nativeModal = $('#native_modal')
 	const useDialog = $('#use_dialog')
 
-	$('#open_modal')?.addEventListener('click', () => nativeModal.showModal())
+	document.addEventListener('click', (event) => {
+		const button = event.target.closest('[data-modal]')
+		if (button) {
+			document.getElementById(button.dataset.modal).showModal()
+		}
+	})
 
 	$('#modal_grid')?.addEventListener('click', (event) => {
 		const link = event.target.closest('a')
@@ -331,12 +335,12 @@
 	delegate($('#theme_grid'), 'a', () => ({
 		items: $$('#theme_grid a'),
 		thumbs: true,
-		onOpen: (container) => container.classList.add('light-theme'),
+		onOpen: (container) => container.classList.add('is_light'),
 	}))
 
 	// Table of contents: highlight the section in view
 
-	const toc = $('.toc')
+	const toc = $('.wrapper_box .sidebar')
 	const tocLinks = new Map($$('a', toc).map((link) => [link.hash.slice(1), link]))
 
 	const tocObserver = new IntersectionObserver(
@@ -347,7 +351,7 @@
 					continue
 				}
 				for (const link of tocLinks.values()) {
-					link.classList.toggle('active', link === active)
+					link.parentElement.classList.toggle('active', link === active)
 				}
 				// keep the active link visible without scrolling the page
 				const { offsetTop, offsetHeight } = active
@@ -359,14 +363,14 @@
 		{ rootMargin: '-80px 0px -65% 0px' }
 	)
 
-	for (const section of $$('.doc')) {
+	for (const section of $$('.wrapper_box .section')) {
 		tocObserver.observe(section)
 	}
 
 	// Copy buttons on code samples
 
 	document.addEventListener('click', (event) => {
-		const button = event.target.closest('.copy')
+		const button = event.target.closest('[data-copy]')
 		if (!button) {
 			return
 		}

@@ -1,0 +1,76 @@
+$desktop_large: 1420;
+$desktop_small: 1024;
+
+$tablet_large: 768;
+$tablet_small: 640;
+
+$phone_large: 480;
+$phone_small: 400;
+
+@function rem($size) {
+	@return ($size * 0.0625) + rem;
+}
+
+@function rgbo($property, $opacity) {
+	@return #{'rgb(from var(' + $property + ') r g b / ' + $opacity + ')'};
+}
+
+@mixin hover() {
+	@media (hover: hover) {
+		@content;
+	}
+}
+
+@mixin hoverless() {
+	@media (hover: none) {
+		@content;
+	}
+}
+
+@mixin media_min($width) {
+	@media (min-width: rem($width)) {
+		@content;
+	}
+}
+
+@mixin media_max($width) {
+	@media (max-width: rem($width)) {
+		@content;
+	}
+}
+
+@mixin desktop_large() {
+	@media (max-width: rem($desktop_large)) {
+		@content;
+	}
+}
+
+@mixin desktop_small() {
+	@media (max-width: rem($desktop_small)) {
+		@content;
+	}
+}
+
+@mixin tablet_large() {
+	@media (max-width: rem($tablet_large)) {
+		@content;
+	}
+}
+
+@mixin tablet_small() {
+	@media (max-width: rem($tablet_small)) {
+		@content;
+	}
+}
+
+@mixin phone_large() {
+	@media (max-width: rem($phone_large)) {
+		@content;
+	}
+}
+
+@mixin phone_small() {
+	@media (max-width: rem($phone_small)) {
+		@content;
+	}
+}

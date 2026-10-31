@@ -1,0 +1,111 @@
+img {
+	max-width: 100%;
+}
+
+a {
+	color: var(--color-link);
+	text-underline-offset: 2px;
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+
+h1, h2, h3 {
+	color: var(--color-heading);
+	line-height: var(--line-heading);
+}
+
+h2 {
+	font-size: var(--size-h2);
+	letter-spacing: -0.01em;
+}
+
+code, kbd {
+	font-family: var(--font-code);
+	font-size: 0.88em;
+}
+
+:not(pre) > code {
+	padding: 0.15em 0.4em;
+	border-radius: var(--radius-small);
+	background: var(--color-light);
+	color: var(--color-heading);
+	white-space: nowrap;
+}
+
+kbd {
+	display: inline-block;
+	min-width: 1.8em;
+	padding: 0.1em 0.45em;
+	border: 1px solid var(--color-border);
+	border-bottom-width: 2px;
+	border-radius: var(--radius-small);
+	background: var(--color-section);
+	text-align: center;
+}
+
+.button {
+	@extend %button;
+
+	&_outline {
+		@extend %button_outline;
+	}
+
+	&_code {
+		@extend %button_code;
+	}
+
+}
+
+.buttons {
+	@extend %buttons;
+}
+
+.contents {
+	@extend %contents;
+
+	.buttons {
+		justify-content: center;
+	}
+
+}
+
+.content {
+	@extend %content;
+}
+
+.items {
+	@extend %items;
+	--width-item: calc(100% / var(--columns-count));
+
+	.item {
+		@extend %item;
+	}
+
+	&_3 {
+		--columns-count: 3;
+	}
+
+	&_4 {
+		--columns-count: 4;
+	}
+
+	@include tablet_large {
+
+		&_4 {
+			--columns-count: 2;
+		}
+
+	}
+
+	@include phone_large {
+
+		&_3 {
+			--columns-count: 2;
+		}
+
+	}
+
+}

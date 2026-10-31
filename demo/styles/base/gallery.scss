@@ -1,0 +1,29 @@
+// light scheme of the lightbox, the theming example adds it in onOpen
+.bp-wrap.is_light {
+	--bp-thumb-height: 90px;
+	--bp-thumb-ratio: 1;
+
+	.bp-overlay {
+		background: #{rgbo(--theme-background, 96%)};
+	}
+
+	.bp-thumbs {
+		background: var(--theme-light);
+	}
+
+	.bp-controls button {
+		background-color: #{rgbo(--theme-shadow, 55%)};
+
+		@include hover {
+			&:hover {
+				background-color: #{rgbo(--theme-shadow, 70%)};
+			}
+		}
+
+	}
+
+	.bp-count {
+		color: var(--theme-heading);
+	}
+
+}
