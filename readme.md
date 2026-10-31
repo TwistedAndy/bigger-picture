@@ -8,7 +8,7 @@
 
 Pretty good JavaScript lightbox gallery with a small footprint. Supports images, video, audio, iframes, embeds and HTML with no plugins.
 
-Documentation and live examples: open [`index.html`](index.html) after running `npm run build`.
+Documentation and live examples: [twistedandy.github.io/bigger-picture](https://twistedandy.github.io/bigger-picture/). To run them locally, open [`index.html`](index.html) after `npm run build`.
 
 > Originally created by [Hank Dollman](https://github.com/henrygd/bigger-picture). This fork is maintained by [Andrii Toniievych](https://github.com/TwistedAndy) and adds automatic link detection, built-in thumbnails, dialog (top layer) mode, type filtering and more.
 
