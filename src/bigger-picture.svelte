@@ -64,9 +64,6 @@
 	$: if (items && items[position]) {
 		activeItem = items[position];
 		activeDimensions = calculateDimensions(activeItem);
-		if (isOpen) {
-			opts.onUpdate?.(container, activeItem);
-		}
 	}
 
 	/** receives options and opens gallery */
@@ -92,7 +89,7 @@
 			containerHeight = target === document.body ? window.innerHeight : target.clientHeight;
 		}
 
-		position = opts.position || 0;
+		position = 0;
 
 		/**
 		 * Set the gallery items
@@ -113,10 +110,11 @@
 				return;
 			}
 
-			item.i = i;
+			// index in the filtered list, used for position and thumbnails
+			item.i = list.length;
 
-			if (opts.el && opts.el === item.element) {
-				position = i;
+			if (opts.el ? opts.el === item.element : i === opts.position) {
+				position = item.i;
 			}
 
 			list.push(item);
@@ -156,8 +154,12 @@
 	 * @param {number} index
 	 */
 	export const setPosition = (index) => {
+		const nextPosition = getNextPosition(index);
 		movement = index - position;
-		position = getNextPosition(index);
+		if (nextPosition !== position) {
+			position = nextPosition;
+			opts.onUpdate?.(container, items[position]);
+		}
 	};
 
 	/**

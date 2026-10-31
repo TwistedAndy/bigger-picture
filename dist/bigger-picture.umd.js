@@ -1257,7 +1257,7 @@
 		duration: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : duration
 	});
 
-	const getThumbBackground = (activeItem) => !activeItem.thumb || `url(${activeItem.thumb})`;
+	const getThumbBackground = (activeItem) => activeItem.thumb ? `url(${activeItem.thumb.src})` : null;
 
 	/**
 	 * Adds attributes to the given node based on the provided object.
@@ -1421,11 +1421,7 @@
 				attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
 				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].caption || `View image ${/*item*/ ctx[21].i + 1}`);
 				toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
-
-				set_style(button, "background-image", /*item*/ ctx[21].thumb
-				? `url(${/*item*/ ctx[21].thumb.src})`
-				: 'none');
-
+				set_style(button, "background-image", getThumbBackground(/*item*/ ctx[21]));
 				this.first = button;
 			},
 			m(target, anchor) {
@@ -1456,9 +1452,7 @@
 				}
 
 				if (dirty & /*items*/ 1) {
-					set_style(button, "background-image", /*item*/ ctx[21].thumb
-					? `url(${/*item*/ ctx[21].thumb.src})`
-					: 'none');
+					set_style(button, "background-image", getThumbBackground(/*item*/ ctx[21]));
 				}
 			},
 			d(detaching) {
@@ -1944,7 +1938,7 @@
 		};
 	}
 
-	// (344:10) {#if showLoader}
+	// (351:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -1988,6 +1982,7 @@
 		let div1;
 		let div0;
 		let if_block0_anchor;
+		let style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`;
 		let current;
 		let mounted;
 		let dispose;
@@ -2004,10 +1999,10 @@
 				attr(div0, "class", "bp-img");
 				set_style(div0, "width", /*$imageDimensions*/ ctx[0][0] + "px");
 				set_style(div0, "height", /*$imageDimensions*/ ctx[0][1] + "px");
-				set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
-				set_style(div0, "transform", "translate3d(" + (/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]) + "px, " + (/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]) + "px, 0)");
 				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
 				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
+				set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
+				set_style(div0, "transform", style_transform);
 				attr(div1, "class", "bp-img-wrap");
 				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[5]);
 			},
@@ -2077,16 +2072,22 @@
 					set_style(div0, "height", /*$imageDimensions*/ ctx[0][1] + "px");
 				}
 
-				if (!current || dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 129) {
-					set_style(div0, "transform", "translate3d(" + (/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]) + "px, " + (/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]) + "px, 0)");
-				}
-
 				if (!current || dirty[0] & /*pointerDown*/ 16) {
 					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[4]);
 				}
 
 				if (!current || dirty[0] & /*maxZoom, $imageDimensions, naturalWidth*/ 4161) {
 					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[12] > 1 && /*$imageDimensions*/ ctx[0][0] < /*naturalWidth*/ ctx[6]);
+				}
+
+				const style_changed = dirty[0] & /*$imageDimensions*/ 1;
+
+				if (dirty[0] & /*$imageDimensions*/ 1 || style_changed) {
+					set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
+				}
+
+				if (dirty[0] & /*$imageDimensions, $zoomDragTranslate*/ 129 && style_transform !== (style_transform = `translate3d(${/*$imageDimensions*/ ctx[0][0] / -2 + /*$zoomDragTranslate*/ ctx[7][0]}px, ${/*$imageDimensions*/ ctx[0][1] / -2 + /*$zoomDragTranslate*/ ctx[7][1]}px, 0)`) || style_changed) {
+					set_style(div0, "transform", style_transform);
 				}
 
 				if (!current || dirty[0] & /*closingWhileZoomed*/ 32) {
@@ -2662,6 +2663,8 @@
 	function create_fragment$1(ctx) {
 		let div;
 		let loading;
+		let style_width = `${/*activeDimensions*/ ctx[0][0]}px`;
+		let style_height = `${/*activeDimensions*/ ctx[0][1]}px`;
 		let current;
 		let mounted;
 		let dispose;
@@ -2678,8 +2681,8 @@
 				div = element("div");
 				create_component(loading.$$.fragment);
 				attr(div, "class", "bp-video");
-				set_style(div, "width", /*activeDimensions*/ ctx[0][0] + "px");
-				set_style(div, "height", /*activeDimensions*/ ctx[0][1] + "px");
+				set_style(div, "width", style_width);
+				set_style(div, "height", style_height);
 				set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
 			},
 			m(target, anchor) {
@@ -2697,12 +2700,12 @@
 				if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
 				loading.$set(loading_changes);
 
-				if (!current || dirty & /*activeDimensions*/ 1) {
-					set_style(div, "width", /*activeDimensions*/ ctx[0][0] + "px");
+				if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
+					set_style(div, "width", style_width);
 				}
 
-				if (!current || dirty & /*activeDimensions*/ 1) {
-					set_style(div, "height", /*activeDimensions*/ ctx[0][1] + "px");
+				if (dirty & /*activeDimensions*/ 1 && style_height !== (style_height = `${/*activeDimensions*/ ctx[0][1]}px`)) {
+					set_style(div, "height", style_height);
 				}
 			},
 			i(local) {
@@ -2854,7 +2857,7 @@
 		};
 	}
 
-	// (780:2) {#if !dialog}
+	// (782:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 		let div_intro;
@@ -2897,7 +2900,7 @@
 		};
 	}
 
-	// (791:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (793:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2907,9 +2910,9 @@
 		const if_blocks = [];
 
 		function select_block_type(ctx, dirty) {
-			if (/*activeItem*/ ctx[9].img) return 0;
-			if (/*activeItem*/ ctx[9].sources) return 1;
-			if (/*activeItem*/ ctx[9].iframe) return 2;
+			if (/*activeItem*/ ctx[8].img) return 0;
+			if (/*activeItem*/ ctx[8].sources) return 1;
+			if (/*activeItem*/ ctx[8].iframe) return 2;
 			return 3;
 		}
 
@@ -2972,10 +2975,10 @@
 		};
 	}
 
-	// (791:340) {:else}
+	// (793:340) {:else}
 	function create_else_block(ctx) {
 		let div;
-		let raw_value = (/*activeItem*/ ctx[9].html ?? /*activeItem*/ ctx[9].element.outerHTML) + "";
+		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
 
 		return {
 			c() {
@@ -2987,7 +2990,7 @@
 				div.innerHTML = raw_value;
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*activeItem*/ 512 && raw_value !== (raw_value = (/*activeItem*/ ctx[9].html ?? /*activeItem*/ ctx[9].element.outerHTML) + "")) div.innerHTML = raw_value;		},
+				if (dirty[0] & /*activeItem*/ 256 && raw_value !== (raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "")) div.innerHTML = raw_value;		},
 			i: noop,
 			o: noop,
 			d(detaching) {
@@ -2998,7 +3001,7 @@
 		};
 	}
 
-	// (791:287) 
+	// (793:287) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -3038,7 +3041,7 @@
 		};
 	}
 
-	// (791:207) 
+	// (793:207) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -3078,7 +3081,7 @@
 		};
 	}
 
-	// (791:53) {#if activeItem.img}
+	// (793:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -3087,7 +3090,7 @@
 				props: {
 					props: /*getChildProps*/ ctx[19](),
 					smallScreen: /*smallScreen*/ ctx[10],
-					containerWidth: /*containerWidth*/ ctx[8],
+					containerWidth: /*containerWidth*/ ctx[7],
 					containerHeight: /*containerHeight*/ ctx[13],
 					activeDimensions: /*activeDimensions*/ ctx[14]
 				}
@@ -3104,7 +3107,7 @@
 			p(ctx, dirty) {
 				const imageitem_changes = {};
 				if (dirty[0] & /*smallScreen*/ 1024) imageitem_changes.smallScreen = /*smallScreen*/ ctx[10];
-				if (dirty[0] & /*containerWidth*/ 256) imageitem_changes.containerWidth = /*containerWidth*/ ctx[8];
+				if (dirty[0] & /*containerWidth*/ 128) imageitem_changes.containerWidth = /*containerWidth*/ ctx[7];
 				if (dirty[0] & /*containerHeight*/ 8192) imageitem_changes.containerHeight = /*containerHeight*/ ctx[13];
 				if (dirty[0] & /*activeDimensions*/ 16384) imageitem_changes.activeDimensions = /*activeDimensions*/ ctx[14];
 				imageitem.$set(imageitem_changes);
@@ -3124,7 +3127,7 @@
 		};
 	}
 
-	// (780:177) {#key activeItem.i}
+	// (782:177) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let div_intro;
@@ -3132,7 +3135,7 @@
 		let current;
 		let mounted;
 		let dispose;
-		let if_block = /*containerWidth*/ ctx[8] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
+		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
 
 		return {
 			c() {
@@ -3147,19 +3150,19 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(div, "pointerdown", /*pointerdown_handler*/ ctx[26]),
-						listen(div, "pointerup", /*pointerup_handler*/ ctx[27])
+						listen(div, "pointerdown", /*pointerdown_handler*/ ctx[24]),
+						listen(div, "pointerup", /*pointerup_handler*/ ctx[25])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (/*containerWidth*/ ctx[8] > 0 && /*containerHeight*/ ctx[13] > 0) {
+				if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0) {
 					if (if_block) {
 						if_block.p(ctx, dirty);
 
-						if (dirty[0] & /*containerWidth, containerHeight*/ 8448) {
+						if (dirty[0] & /*containerWidth, containerHeight*/ 8320) {
 							transition_in(if_block, 1);
 						}
 					} else {
@@ -3210,10 +3213,10 @@
 		};
 	}
 
-	// (791:502) {#if activeItem.caption}
+	// (793:502) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
-		let raw_value = /*activeItem*/ ctx[9].caption + "";
+		let raw_value = /*activeItem*/ ctx[8].caption + "";
 		let div_intro;
 		let div_outro;
 		let current;
@@ -3229,7 +3232,7 @@
 				current = true;
 			},
 			p(ctx, dirty) {
-				if ((!current || dirty[0] & /*activeItem*/ 512) && raw_value !== (raw_value = /*activeItem*/ ctx[9].caption + "")) div.innerHTML = raw_value;		},
+				if ((!current || dirty[0] & /*activeItem*/ 256) && raw_value !== (raw_value = /*activeItem*/ ctx[8].caption + "")) div.innerHTML = raw_value;		},
 			i(local) {
 				if (current) return;
 
@@ -3257,7 +3260,7 @@
 		};
 	}
 
-	// (791:885) {#if items.length > 1}
+	// (793:885) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3309,7 +3312,7 @@
 		};
 	}
 
-	// (801:25) {#if opts.thumbs && items.length > 1}
+	// (803:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -3351,12 +3354,12 @@
 		};
 	}
 
-	// (771:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+	// (773:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
 		let div1;
-		let previous_key = /*activeItem*/ ctx[9].i;
+		let previous_key = /*activeItem*/ ctx[8].i;
 		let div0;
 		let div3;
 		let button;
@@ -3367,9 +3370,9 @@
 		let dispose;
 		let if_block0 = !/*dialog*/ ctx[1] && create_if_block_8();
 		let key_block = create_key_block(ctx);
-		let if_block1 = /*activeItem*/ ctx[9].caption && create_if_block_3(ctx);
+		let if_block1 = /*activeItem*/ ctx[8].caption && create_if_block_3(ctx);
 		let if_block2 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
-		let if_block3 = /*opts*/ ctx[7].thumbs && /*items*/ ctx[0].length > 1 && create_if_block_1(ctx);
+		let if_block3 = /*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1 && create_if_block_1(ctx);
 
 		return {
 			c() {
@@ -3395,7 +3398,7 @@
 				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[15]);
 				toggle_class(svelte_element, "bp-inline", /*inline*/ ctx[11]);
 				toggle_class(svelte_element, "bp-small", /*smallScreen*/ ctx[10]);
-				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[7].noClose);
+				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].noClose);
 				toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[16]);
 			},
 			m(target, anchor) {
@@ -3444,7 +3447,7 @@
 					check_outros();
 				}
 
-				if (dirty[0] & /*activeItem*/ 512 && not_equal(previous_key, previous_key = /*activeItem*/ ctx[9].i)) {
+				if (dirty[0] & /*activeItem*/ 256 && not_equal(previous_key, previous_key = /*activeItem*/ ctx[8].i)) {
 					group_outros();
 					transition_out(key_block, 1, 1, noop);
 					check_outros();
@@ -3456,11 +3459,11 @@
 					key_block.p(ctx, dirty);
 				}
 
-				if (/*activeItem*/ ctx[9].caption) {
+				if (/*activeItem*/ ctx[8].caption) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 
-						if (dirty[0] & /*activeItem*/ 512) {
+						if (dirty[0] & /*activeItem*/ 256) {
 							transition_in(if_block1, 1);
 						}
 					} else {
@@ -3492,11 +3495,11 @@
 					if_block2 = null;
 				}
 
-				if (/*opts*/ ctx[7].thumbs && /*items*/ ctx[0].length > 1) {
+				if (/*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1) {
 					if (if_block3) {
 						if_block3.p(ctx, dirty);
 
-						if (dirty[0] & /*opts, items*/ 129) {
+						if (dirty[0] & /*opts, items*/ 513) {
 							transition_in(if_block3, 1);
 						}
 					} else {
@@ -3527,8 +3530,8 @@
 					toggle_class(svelte_element, "bp-small", /*smallScreen*/ ctx[10]);
 				}
 
-				if (!current || dirty[0] & /*opts*/ 128) {
-					toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[7].noClose);
+				if (!current || dirty[0] & /*opts*/ 512) {
+					toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].noClose);
 				}
 
 				if (!current || dirty[0] & /*$closing*/ 65536) {
@@ -3684,7 +3687,7 @@
 		component_subscribe($$self, zoomed, value => $$invalidate(15, $zoomed = value));
 
 		const open = options => {
-			$$invalidate(7, opts = options);
+			$$invalidate(9, opts = options);
 			$$invalidate(11, inline = opts.inline);
 
 			/**
@@ -3700,15 +3703,15 @@
 			focusTrigger = document.activeElement;
 
 			if (target) {
-				$$invalidate(25, container = target);
-				$$invalidate(8, containerWidth = target.offsetWidth);
+				container = target;
+				$$invalidate(7, containerWidth = target.offsetWidth);
 
 				$$invalidate(13, containerHeight = target === document.body
 				? window.innerHeight
 				: target.clientHeight);
 			}
 
-			$$invalidate(6, position = opts.position || 0);
+			$$invalidate(6, position = 0);
 
 			/**
 	 * Set the gallery items
@@ -3716,9 +3719,9 @@
 			const list = [];
 
 			if (opts.items instanceof HTMLElement) {
-				$$invalidate(7, opts.items = [opts.items], opts);
+				$$invalidate(9, opts.items = [opts.items], opts);
 			} else {
-				$$invalidate(7, opts.items = Array.from(opts.items), opts);
+				$$invalidate(9, opts.items = Array.from(opts.items), opts);
 			}
 
 			opts.items.forEach((item, i) => {
@@ -3728,10 +3731,11 @@
 					return;
 				}
 
-				item.i = i;
+				// index in the filtered list, used for position and thumbnails
+				item.i = list.length;
 
-				if (opts.el && opts.el === item.element) {
-					$$invalidate(6, position = i);
+				if (opts.el ? opts.el === item.element : i === opts.position) {
+					$$invalidate(6, position = item.i);
 				}
 
 				list.push(item);
@@ -3757,8 +3761,13 @@
 		const next = () => setPosition(position + 1);
 
 		const setPosition = index => {
+			const nextPosition = getNextPosition(index);
 			movement = index - position;
-			$$invalidate(6, position = getNextPosition(index));
+
+			if (nextPosition !== position) {
+				$$invalidate(6, position = nextPosition);
+				opts.onUpdate?.(container, items[position]);
+			}
 		};
 
 		/**
@@ -4205,7 +4214,7 @@
 		const mediaTransition = (node, isEntering) => {
 			if (!isOpen || !items) {
 				// entrance / exit transition
-				$$invalidate(24, isOpen = isEntering);
+				isOpen = isEntering;
 
 				return opts.intro
 				? fly(node, { y: isEntering ? 10 : -10 })
@@ -4228,7 +4237,7 @@
 	 * Update the container dimensions before triggering an animation
 	 */
 			if (ruler) {
-				$$invalidate(8, containerWidth = ruler.clientWidth);
+				$$invalidate(7, containerWidth = ruler.clientWidth);
 				$$invalidate(13, containerHeight = ruler.clientHeight);
 			}
 
@@ -4290,7 +4299,7 @@
 	 * Process the gallery mount and destroy
 	 */
 		const containerActions = node => {
-			$$invalidate(25, container = node);
+			container = node;
 
 			// Use the top layer API for proper modal behavior
 			if (dialog) {
@@ -4336,7 +4345,7 @@
 					const rect = entries[0].contentRect;
 
 					if (rect.width !== containerWidth || rect.height !== containerHeight) {
-						$$invalidate(8, containerWidth = rect.width);
+						$$invalidate(7, containerWidth = rect.width);
 						$$invalidate(13, containerHeight = rect.height);
 						$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
 					}
@@ -4372,21 +4381,17 @@
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*items, position, activeItem, isOpen, opts, container*/ 50332353) {
+			if ($$self.$$.dirty[0] & /*items, position, activeItem*/ 321) {
 				/**
 	 * Update the active item and dimensions on position change
 	 */
 				if (items && items[position]) {
-					$$invalidate(9, activeItem = items[position]);
+					$$invalidate(8, activeItem = items[position]);
 					$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
-
-					if (isOpen) {
-						opts.onUpdate?.(container, activeItem);
-					}
 				}
 			}
 
-			if ($$self.$$.dirty[0] & /*containerWidth*/ 256) {
+			if ($$self.$$.dirty[0] & /*containerWidth*/ 128) {
 				$$invalidate(10, smallScreen = containerWidth < 769);
 			}
 		};
@@ -4399,9 +4404,9 @@
 			next,
 			setPosition,
 			position,
-			opts,
 			containerWidth,
 			activeItem,
+			opts,
 			smallScreen,
 			inline,
 			clickedEl,
@@ -4416,8 +4421,6 @@
 			rulerActions,
 			target,
 			open,
-			isOpen,
-			container,
 			pointerdown_handler,
 			pointerup_handler
 		];

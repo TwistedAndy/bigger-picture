@@ -1,7 +1,7 @@
 <script>
 	import { tweened } from 'svelte/motion';
 	import { fly } from 'svelte/transition';
-	import { defaultTweenOptions } from '../stores.js';
+	import { defaultTweenOptions, getThumbBackground } from '../stores.js';
 
 	export let items;
 	export let position;
@@ -133,7 +133,7 @@
 				<button
 					title={item.caption}
 					aria-label={item.caption || `View image ${item.i + 1}`}
-					style:background-image={item.thumb ? `url(${item.thumb.src})` : 'none'}
+					style:background-image={getThumbBackground(item)}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}
 					on:click={() => !hasDragged && setPosition(item.i)}

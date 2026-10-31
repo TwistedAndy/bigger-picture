@@ -12,7 +12,7 @@ export const defaultTweenOptions = (duration) => ({
 	duration: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : duration
 });
 
-export const getThumbBackground = (activeItem) => !activeItem.thumb || `url(${activeItem.thumb})`;
+export const getThumbBackground = (activeItem) => activeItem.thumb ? `url(${activeItem.thumb.src})` : null;
 
 /**
  * Adds attributes to the given node based on the provided object.

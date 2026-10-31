@@ -106,7 +106,10 @@
 		bp.open({
 			...opts,
 			focusWrap,
-			onOpen: () => (bpItems = bp.items),
+			onOpen(container, activeItem) {
+				bpItems = bp.items
+				position = activeItem.i
+			},
 			onUpdate(container, activeItem) {
 				position = activeItem.i
 			},
