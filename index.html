@@ -89,14 +89,14 @@
 	<div class="code"><div class="heading"><span class="label">HTML</span><button class="button" type="button" data-copy aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.css" /&gt;
 &lt;script src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@main/dist/bigger-picture.umd.js"&gt;&lt;/script&gt;</code></pre></div>
 	<h3>npm and bundlers</h3>
-	<div class="code"><div class="heading"><span class="label">Terminal</span><button class="button" type="button" data-copy aria-label="Copy Terminal code">Copy</button></div><pre><code class="language-bash">npm install github:TwistedAndy/bigger-picture</code></pre></div>
-	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from 'bigger-picture'
-import 'bigger-picture/css'
+	<div class="code"><div class="heading"><span class="label">Terminal</span><button class="button" type="button" data-copy aria-label="Copy Terminal code">Copy</button></div><pre><code class="language-bash">npm install @twistedandy/bigger-picture</code></pre></div>
+	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
 
 const bp = BiggerPicture()</code></pre></div>
 	<h3>Svelte</h3>
-	<p>If your app already uses Svelte 4, import the source components to share the Svelte runtime and get a smaller bundle.</p>
-	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from 'bigger-picture/svelte'</code></pre></div>
+	<p>If your app already uses Svelte 4 or 5, import the source components to share the Svelte runtime and get a smaller bundle. Svelte 5 compiles them in legacy mode.</p>
+	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">import BiggerPicture from '@twistedandy/bigger-picture/svelte'</code></pre></div>
 	<h3>Files</h3>
 	<div class="table"><table><thead><tr><th>File</th><th>Format</th><th>Use it for</th></tr></thead><tbody><tr><td><code>bigger-picture.umd.js</code></td><td>UMD</td><td>Script tags, AMD and CommonJS loaders. Global <code>BiggerPicture</code>.</td></tr><tr><td><code>bigger-picture.min.js</code></td><td>IIFE, minified</td><td>Script tags in production. Global <code>BiggerPicture</code>.</td></tr><tr><td><code>bigger-picture.mjs</code> / <code>bigger-picture.min.mjs</code></td><td>ES module</td><td>Bundlers and <code>&lt;script type="module"&gt;</code>.</td></tr><tr><td><code>bigger-picture.cjs</code></td><td>CommonJS</td><td>Node based tooling and older bundlers.</td></tr><tr><td><code>bigger-picture.css</code> / <code>bigger-picture.scss</code></td><td>Styles</td><td>Required by every build. Use the SCSS file to change the source.</td></tr></tbody></table></div>
 	

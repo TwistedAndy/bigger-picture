@@ -1,5 +1,5 @@
 {
-	"name": "bigger-picture",
+	"name": "@twistedandy/bigger-picture",
 	"version": "1.2.1",
 	"type": "module",
 	"exports": {
@@ -25,6 +25,14 @@
 	},
 	"svelte": "./src/bigger-picture.js",
 	"types": "index.d.ts",
+	"files": [
+		"dist",
+		"src",
+		"index.d.ts"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"typesVersions": {
 		"*": {
 			"vanilla": [
@@ -60,7 +68,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/TwistedAndy/bigger-picture.git"
+		"url": "git+https://github.com/TwistedAndy/bigger-picture.git"
 	},
 	"bugs": {
 		"url": "https://github.com/TwistedAndy/bigger-picture/issues"

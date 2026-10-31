@@ -44,20 +44,20 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ></script>
 ```
 
-Or install it from GitHub and import it with a bundler:
+Or install it from npm and import it with a bundler:
 
 ```sh
-npm install github:TwistedAndy/bigger-picture#v1.2.1
+npm install @twistedandy/bigger-picture
 ```
 
 ```js
-import BiggerPicture from 'bigger-picture'
-import 'bigger-picture/css'
+import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
 ```
 
-The styles are also available as [SCSS](dist/bigger-picture.scss) (`bigger-picture/scss`) and can be themed with CSS variables.
+The styles are also available as [SCSS](dist/bigger-picture.scss) (`@twistedandy/bigger-picture/scss`) and can be themed with CSS variables.
 
-The bundled builds include Svelte 4 and work in any project. Svelte 4 and Svelte 5 apps can import the source with `bigger-picture/svelte` instead, so the gallery shares the app's Svelte runtime. Svelte 5 compiles it in legacy mode, so keep `runes` unset for this package.
+The bundled builds include Svelte 4 and work in any project. Svelte 4 and Svelte 5 apps can import the source with `@twistedandy/bigger-picture/svelte` instead, so the gallery shares the app's Svelte runtime. Svelte 5 compiles it in legacy mode, so keep `runes` unset for this package.
 
 ## Quick start
 
