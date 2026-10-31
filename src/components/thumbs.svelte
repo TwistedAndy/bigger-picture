@@ -113,6 +113,7 @@
 
 <div
 	use:thumbsActions
+	role="none"
 	in:fly|global={defaultTweenOptions(500)}
 	out:fly|global={defaultTweenOptions(500)}
 	on:pointermove={pointerMove}
@@ -122,6 +123,7 @@
 >
 	<div
 		class="bp-thumbs-outer"
+		role="none"
 		style:transform="translateX({$thumbsTranslate}px)"
 		on:pointerdown={pointerDown}
 	>

@@ -94,10 +94,20 @@ if (production) {
 	}));
 }
 
+/**
+ * The entry checks for the Svelte 5 `mount`, which Svelte 4 does not export
+ */
+const onwarn = (warning, warn) => {
+	if (warning.code !== 'MISSING_EXPORT' || warning.binding !== 'mount') {
+		warn(warning);
+	}
+};
+
 // unminified dist files, the UMD build is also used by index.html
 let config = [
 	{
 		input: 'src/bigger-picture.js',
+		onwarn,
 		output: [
 			{
 				format: 'es',
@@ -137,6 +147,7 @@ if (production) {
 	// minified dist files
 	config.push({
 		input: 'src/bigger-picture.js',
+		onwarn,
 		output: [
 			{
 				format: 'iife',

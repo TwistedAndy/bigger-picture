@@ -33,13 +33,13 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.0/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.1/dist/bigger-picture.css"
   integrity="sha384-Wi6gMclvFmcAz1fkN5w1e5df8wp+qSjUToYNwEuIB7udol0iHbzctL/7nOXhY2Wv"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.0/dist/bigger-picture.umd.js"
-  integrity="sha384-aOsHqqlmJdEV2zIwtNf/ntYoU4q+t62CbrKeetvaoPs/7Lb4yWe/cvCaXNBApzSk"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.1/dist/bigger-picture.umd.js"
+  integrity="sha384-EbhpKN3BnO87tMzz4zcvzAHaYAYV/uSElMKORxTmT9wNO3bnPgXDx1M9ejv76gFn"
   crossorigin="anonymous"
 ></script>
 ```
@@ -47,7 +47,7 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 Or install it from GitHub and import it with a bundler:
 
 ```sh
-npm install github:TwistedAndy/bigger-picture#v1.2.0
+npm install github:TwistedAndy/bigger-picture#v1.2.1
 ```
 
 ```js
@@ -56,6 +56,8 @@ import 'bigger-picture/css'
 ```
 
 The styles are also available as [SCSS](dist/bigger-picture.scss) (`bigger-picture/scss`) and can be themed with CSS variables.
+
+The bundled builds include Svelte 4 and work in any project. Svelte 4 and Svelte 5 apps can import the source with `bigger-picture/svelte` instead, so the gallery shares the app's Svelte runtime. Svelte 5 compiles it in legacy mode, so keep `runes` unset for this package.
 
 ## Quick start
 
@@ -479,6 +481,8 @@ bp.open({
 | ----------------------------- | ------------------------------------------------ |
 | <kbd>Esc</kbd>                | Close, unless `noClose` is set                   |
 | <kbd>←</kbd> <kbd>→</kbd>     | Previous and next item                           |
+| <kbd>+</kbd> <kbd>-</kbd>     | Zoom an image in and out                         |
+| Arrow keys while zoomed       | Move the zoomed image                            |
 | <kbd>Tab</kbd>                | Moves focus between the gallery controls only    |
 | Click or tap an image         | Zoom in to full size, click again to zoom out    |
 | Mouse wheel, pinch            | Zoom in and out around the pointer               |

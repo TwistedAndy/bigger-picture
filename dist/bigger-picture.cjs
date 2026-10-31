@@ -1396,7 +1396,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (127:3) {#each items as item (item.i)}
+// (129:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
@@ -1494,7 +1494,9 @@ function create_fragment$5(ctx) {
 
 			attr(div0, "class", "bp-thumbs-inner");
 			attr(div1, "class", "bp-thumbs-outer");
+			attr(div1, "role", "none");
 			set_style(div1, "transform", style_transform);
+			attr(div2, "role", "none");
 			attr(div2, "class", "bp-thumbs");
 		},
 		m(target, anchor) {
@@ -1910,8 +1912,8 @@ function create_if_block_1$1(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*addSrc*/ ctx[21].call(null, img)),
-					listen(img, "error", /*error_handler*/ ctx[29])
+					action_destroyer(/*addSrc*/ ctx[22].call(null, img)),
+					listen(img, "error", /*error_handler*/ ctx[30])
 				];
 
 				mounted = true;
@@ -1933,7 +1935,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (351:10) {#if showLoader}
+// (369:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -1999,6 +2001,7 @@ function create_fragment$3(ctx) {
 			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[8]));
 			set_style(div0, "transform", style_transform);
 			attr(div1, "class", "bp-img-wrap");
+			attr(div1, "role", "none");
 			toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[5]);
 		},
 		m(target, anchor) {
@@ -2011,12 +2014,13 @@ function create_fragment$3(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*onMount*/ ctx[20].call(null, div0)),
-					listen(div1, "wheel", /*onWheel*/ ctx[15]),
-					listen(div1, "pointerdown", /*onPointerDown*/ ctx[16]),
-					listen(div1, "pointermove", /*onPointerMove*/ ctx[17]),
-					listen(div1, "pointerup", /*onPointerUp*/ ctx[19]),
-					listen(div1, "pointercancel", /*removeEventFromCache*/ ctx[18])
+					listen(window, "keydown", /*onKeydown*/ ctx[15]),
+					action_destroyer(/*onMount*/ ctx[21].call(null, div0)),
+					listen(div1, "wheel", /*onWheel*/ ctx[16]),
+					listen(div1, "pointerdown", /*onPointerDown*/ ctx[17]),
+					listen(div1, "pointermove", /*onPointerMove*/ ctx[18]),
+					listen(div1, "pointerup", /*onPointerUp*/ ctx[20]),
+					listen(div1, "pointercancel", /*removeEventFromCache*/ ctx[19])
 				];
 
 				mounted = true;
@@ -2116,14 +2120,14 @@ function instance$3($$self, $$props, $$invalidate) {
 	let $zoomDragTranslate;
 	let $closing;
 	let $imageDimensions;
-	component_subscribe($$self, closing, $$value => $$invalidate(28, $closing = $$value));
+	component_subscribe($$self, closing, $$value => $$invalidate(29, $closing = $$value));
 	let { props } = $$props;
 	let { smallScreen } = $$props;
 	let { containerWidth } = $$props;
 	let { containerHeight } = $$props;
 	let { activeDimensions } = $$props;
 	let { activeItem, opts, prev, next, zoomed, container } = props;
-	component_subscribe($$self, zoomed, value => $$invalidate(27, $zoomed = value));
+	component_subscribe($$self, zoomed, value => $$invalidate(28, $zoomed = value));
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 	/** value of sizes attribute */
@@ -2277,6 +2281,32 @@ function instance$3($$self, $$props, $$invalidate) {
 		get: () => $zoomed,
 		set: bool => changeZoom(bool ? maxZoom : -maxZoom)
 	});
+
+	// zoom with + and -, and pan the zoomed image with the arrows, the gallery handles the other keys
+	const onKeydown = e => {
+		// zoom out by the same factor, 1.5x in and 1 / 1.5x out
+		const zoom = ({ '+': 0.5, '=': 0.5, '-': -1 / 3 })[e.key];
+
+		const pan = ({
+			ArrowLeft: [100, 0],
+			ArrowRight: [-100, 0],
+			ArrowUp: [0, 100],
+			ArrowDown: [0, -100]
+		})[e.key];
+
+		if (opts.inline) {
+			return;
+		}
+
+		if (zoom) {
+			changeZoom(zoom);
+		} else if (pan && $zoomed) {
+			e.preventDefault();
+
+			// update() starts from the target, so held keys keep panning while the tween runs
+			zoomDragTranslate.update(([x, y]) => boundTranslateValues([x + pan[0], y + pan[1]]));
+		}
+	};
 
 	const onWheel = e => {
 		// return if scrolling past inline gallery w/ wheel
@@ -2459,18 +2489,18 @@ function instance$3($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		
-		if ('smallScreen' in $$props) $$invalidate(23, smallScreen = $$props.smallScreen);
-		if ('containerWidth' in $$props) $$invalidate(24, containerWidth = $$props.containerWidth);
-		if ('containerHeight' in $$props) $$invalidate(25, containerHeight = $$props.containerHeight);
-		if ('activeDimensions' in $$props) $$invalidate(26, activeDimensions = $$props.activeDimensions);
+		if ('smallScreen' in $$props) $$invalidate(24, smallScreen = $$props.smallScreen);
+		if ('containerWidth' in $$props) $$invalidate(25, containerWidth = $$props.containerWidth);
+		if ('containerHeight' in $$props) $$invalidate(26, containerHeight = $$props.containerHeight);
+		if ('activeDimensions' in $$props) $$invalidate(27, activeDimensions = $$props.activeDimensions);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty[0] & /*$imageDimensions, activeDimensions*/ 67108865) {
+		if ($$self.$$.dirty[0] & /*$imageDimensions, activeDimensions*/ 134217729) {
 			zoomed.set($imageDimensions[0] - 10 > activeDimensions[0]);
 		}
 
-		if ($$self.$$.dirty[0] & /*$closing, $zoomed, activeDimensions*/ 469762048) {
+		if ($$self.$$.dirty[0] & /*$closing, $zoomed, activeDimensions*/ 939524096) {
 			// if zoomed while closing, zoom out image and add class
 			// to change contain value on .bp-wrap to avoid cropping
 			if ($closing && $zoomed && !opts.intro) {
@@ -2481,7 +2511,7 @@ function instance$3($$self, $$props, $$invalidate) {
 			}
 		}
 
-		if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 75497472) {
+		if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 150994944) {
 			if (activeDimensions && (opts.inline || !smallScreen)) {
 				imageDimensions.set(activeDimensions);
 				zoomDragTranslate.set([0, 0]);
@@ -2505,6 +2535,7 @@ function instance$3($$self, $$props, $$invalidate) {
 		maxZoom,
 		imageDimensions,
 		zoomDragTranslate,
+		onKeydown,
 		onWheel,
 		onPointerDown,
 		onPointerMove,
@@ -2534,11 +2565,11 @@ let Image$1 = class Image extends SvelteComponent {
 			create_fragment$3,
 			not_equal,
 			{
-				props: 22,
-				smallScreen: 23,
-				containerWidth: 24,
-				containerHeight: 25,
-				activeDimensions: 26
+				props: 23,
+				smallScreen: 24,
+				containerWidth: 25,
+				containerHeight: 26,
+				activeDimensions: 27
 			},
 			null,
 			[-1, -1]
@@ -2852,7 +2883,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (818:2) {#if !dialog}
+// (822:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 	let div_intro;
@@ -2895,7 +2926,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (829:6) {#if containerWidth > 0 && containerHeight > 0}
+// (834:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2970,7 +3001,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (829:340) {:else}
+// (834:340) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -2996,7 +3027,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (829:287) 
+// (834:287) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -3036,7 +3067,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (829:207) 
+// (834:207) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -3076,7 +3107,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (829:53) {#if activeItem.img}
+// (834:53) {#if activeItem.img}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -3122,7 +3153,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (818:177) {#key activeItem.i}
+// (822:177) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let div_intro;
@@ -3137,6 +3168,7 @@ function create_key_block(ctx) {
 			div = element("div");
 			if (if_block) if_block.c();
 			attr(div, "class", "bp-slide");
+			attr(div, "role", "none");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -3208,7 +3240,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (829:502) {#if activeItem.caption}
+// (834:502) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3255,7 +3287,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (829:885) {#if items.length > 1}
+// (834:885) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3307,7 +3339,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (839:25) {#if opts.thumbs && items.length > 1}
+// (844:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -3349,7 +3381,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (809:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+// (813:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3805,9 +3837,10 @@ function instance($$self, $$props, $$invalidate) {
 
 		if (key === 'Escape') {
 			!opts.noClose && close();
-		} else if (key === 'ArrowRight') {
+		} else if (key === 'ArrowRight' && !$zoomed) {
+			// the zoomed image pans with the arrows instead
 			next();
-		} else if (key === 'ArrowLeft') {
+		} else if (key === 'ArrowLeft' && !$zoomed) {
 			prev();
 		} else if (key === 'Tab') {
 			/**
@@ -4244,8 +4277,11 @@ function instance($$self, $$props, $$invalidate) {
 		});
 	};
 
-	/** custom svelte transition for entrance zoom */
-	const scaleIn = node => {
+	/**
+ * Custom svelte transition for entrance zoom, deferred so Svelte 5 measures
+ * the item after the container action has called onOpen
+ */
+	const scaleIn = node => () => {
 		let dimensions;
 		let css;
 
@@ -4258,7 +4294,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		if (!activeItem.img && !activeItem.sources && !activeItem.iframe) {
-			const bpItem = node.firstChild.firstChild;
+			const bpItem = node.firstElementChild.firstElementChild;
 			dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 		} else {
 			dimensions = activeDimensions;
@@ -4538,10 +4574,12 @@ function biggerPicture (options) {
 			target: document.body
 		};
 	}
-	return new Bigger_picture({
+	options = {
 		...options,
 		props: options,
-	})
+	};
+	// Svelte 5 apps compiling the source mount components with a function, Svelte 4 uses classes
+	return new Bigger_picture(options)
 }
 
 module.exports = biggerPicture;

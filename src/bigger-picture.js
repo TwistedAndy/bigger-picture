@@ -1,3 +1,4 @@
+import * as svelte from 'svelte'
 import BiggerPicture from './bigger-picture.svelte'
 
 /**
@@ -12,8 +13,10 @@ export default function (options) {
 			target: document.body
 		};
 	}
-	return new BiggerPicture({
+	options = {
 		...options,
 		props: options,
-	})
+	}
+	// Svelte 5 apps compiling the source mount components with a function, Svelte 4 uses classes
+	return svelte.mount ? svelte.mount(BiggerPicture, options) : new BiggerPicture(options)
 }

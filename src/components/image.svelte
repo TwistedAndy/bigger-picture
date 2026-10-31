@@ -161,6 +161,23 @@
 		set: (bool) => changeZoom(bool ? maxZoom : -maxZoom),
 	})
 
+	// zoom with + and -, and pan the zoomed image with the arrows, the gallery handles the other keys
+	const onKeydown = (e) => {
+		// zoom out by the same factor, 1.5x in and 1 / 1.5x out
+		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
+		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
+		if (opts.inline) {
+			return;
+		}
+		if (zoom) {
+			changeZoom(zoom);
+		} else if (pan && $zoomed) {
+			e.preventDefault();
+			// update() starts from the target, so held keys keep panning while the tween runs
+			zoomDragTranslate.update(([x, y]) => boundTranslateValues([x + pan[0], y + pan[1]]));
+		}
+	};
+
 	const onWheel = (e) => {
 		// return if scrolling past inline gallery w/ wheel
 		if (opts.inline && !$zoomed) {
@@ -326,8 +343,11 @@
 
 </script>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div
 	class="bp-img-wrap"
+	role="none"
 	on:wheel={onWheel}
 	on:pointerdown={onPointerDown}
 	on:pointermove={onPointerMove}

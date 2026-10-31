@@ -203,9 +203,10 @@
 		} = e;
 		if (key === 'Escape') {
 			!opts.noClose && close();
-		} else if (key === 'ArrowRight') {
+		} else if (key === 'ArrowRight' && !$zoomed) {
+			// the zoomed image pans with the arrows instead
 			next();
-		} else if (key === 'ArrowLeft') {
+		} else if (key === 'ArrowLeft' && !$zoomed) {
 			prev();
 		} else if (key === 'Tab') {
 			/**
@@ -652,8 +653,11 @@
 		});
 	};
 
-	/** custom svelte transition for entrance zoom */
-	const scaleIn = (node) => {
+	/**
+	 * Custom svelte transition for entrance zoom, deferred so Svelte 5 measures
+	 * the item after the container action has called onOpen
+	 */
+	const scaleIn = (node) => () => {
 		let dimensions;
 		let css;
 
@@ -666,7 +670,7 @@
 		}
 
 		if (!activeItem.img && !activeItem.sources && !activeItem.iframe) {
-			const bpItem = node.firstChild.firstChild;
+			const bpItem = node.firstElementChild.firstElementChild;
 			dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 		} else {
 			dimensions = activeDimensions;
@@ -829,6 +833,7 @@
 				{#key activeItem.i}
 					<div
 						class="bp-slide"
+						role="none"
 						in:mediaTransition|global={true}
 						out:mediaTransition|global={false}
 						on:pointerdown={(e) => (clickedEl = e.target)}
