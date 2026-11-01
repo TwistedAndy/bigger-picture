@@ -44,9 +44,12 @@ interface options {
 	maxZoom?: number
 	/** Adds a history entry on open, so the back button closes the gallery instead of leaving the page. Ignored for inline galleries. */
 	history?: boolean
+	/** Shows a download link next to the close button. It downloads the image, the largest one of a `srcset`, or the first video or audio source. Other items need their own `download` URL. Files on another origin open in a new tab instead. */
+	download?: boolean
 	/** Texts of the controls for screen readers and tooltips. `thumb` is followed by the item number on thumbnails without `alt` or `caption`. */
 	labels?: {
 		close?: string
+		download?: string
 		prev?: string
 		next?: string
 		thumb?: string
@@ -117,6 +120,8 @@ interface item {
 	element?: HTMLElement | EventTarget
 	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. Items may share one object. */
 	attr?: Record<string, string | boolean> | object
+	/** The URL of the download link, or `false` to hide it. `true` shows the link for this item even without the `download` option. Attribute name is `data-download`. */
+	download?: string | boolean
 	/** Controls how images are sized during the open and close animations. Accepts: 'cover', 'contain', and 'fill'. Default: 'fill' */
 	fit?: string
 }

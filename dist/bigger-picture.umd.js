@@ -2325,8 +2325,8 @@
 		};
 	}
 
-	// (749:2) {#if !dialog}
-	function create_if_block_8(ctx) {
+	// (778:2) {#if !dialog}
+	function create_if_block_9(ctx) {
 		let div;
 
 		return {
@@ -2345,13 +2345,13 @@
 		};
 	}
 
-	// (760:6) {#if containerWidth > 0 && containerHeight > 0}
-	function create_if_block_4(ctx) {
+	// (789:6) {#if containerWidth > 0 && containerHeight > 0}
+	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
 		let if_block_anchor;
 		let current;
-		const if_block_creators = [create_if_block_5, create_if_block_6, create_if_block_7, create_else_block];
+		const if_block_creators = [create_if_block_6, create_if_block_7, create_if_block_8, create_else_block];
 		const if_blocks = [];
 
 		function select_block_type(ctx, dirty) {
@@ -2420,7 +2420,7 @@
 		};
 	}
 
-	// (760:364) {:else}
+	// (789:364) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2446,8 +2446,8 @@
 		};
 	}
 
-	// (760:311) 
-	function create_if_block_7(ctx) {
+	// (789:311) 
+	function create_if_block_8(ctx) {
 		let iframe;
 		let current;
 
@@ -2486,8 +2486,8 @@
 		};
 	}
 
-	// (760:220) 
-	function create_if_block_6(ctx) {
+	// (789:220) 
+	function create_if_block_7(ctx) {
 		let video;
 		let current;
 
@@ -2526,8 +2526,8 @@
 		};
 	}
 
-	// (760:53) {#if activeItem.type === 'image'}
-	function create_if_block_5(ctx) {
+	// (789:53) {#if activeItem.type === 'image'}
+	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
 
@@ -2572,13 +2572,13 @@
 		};
 	}
 
-	// (749:94) {#key activeItem.i}
+	// (778:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let current;
 		let mounted;
 		let dispose;
-		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[14] > 0 && create_if_block_4(ctx);
+		let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[14] > 0 && create_if_block_5(ctx);
 
 		return {
 			c() {
@@ -2611,7 +2611,7 @@
 							transition_in(if_block, 1);
 						}
 					} else {
-						if_block = create_if_block_4(ctx);
+						if_block = create_if_block_5(ctx);
 						if_block.c();
 						transition_in(if_block, 1);
 						if_block.m(div, null);
@@ -2647,8 +2647,8 @@
 		};
 	}
 
-	// (760:494) {#if activeItem.caption}
-	function create_if_block_3(ctx) {
+	// (789:494) {#if activeItem.caption}
+	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
 
@@ -2671,7 +2671,46 @@
 		};
 	}
 
-	// (760:698) {#if items.length > 1}
+	// (789:634) {#if activeItem.download}
+	function create_if_block_3(ctx) {
+		let a;
+		let a_href_value;
+		let mounted;
+		let dispose;
+
+		return {
+			c() {
+				a = element("a");
+				attr(a, "class", "bp-dl");
+				attr(a, "href", a_href_value = /*activeItem*/ ctx[8].download);
+				attr(a, "download", "");
+				attr(a, "target", "_blank");
+			},
+			m(target, anchor) {
+				insert(target, a, anchor);
+
+				if (!mounted) {
+					dispose = action_destroyer(/*label*/ ctx[22].call(null, a, 'download'));
+					mounted = true;
+				}
+			},
+			p(ctx, dirty) {
+				if (dirty[0] & /*activeItem*/ 256 && a_href_value !== (a_href_value = /*activeItem*/ ctx[8].download)) {
+					attr(a, "href", a_href_value);
+				}
+			},
+			d(detaching) {
+				if (detaching) {
+					detach(a);
+				}
+
+				mounted = false;
+				dispose();
+			}
+		};
+	}
+
+	// (789:992) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2732,7 +2771,7 @@
 		};
 	}
 
-	// (768:25) {#if opts.thumbs && items.length > 1}
+	// (797:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2776,23 +2815,25 @@
 		};
 	}
 
-	// (740:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+	// (769:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
 		let div1;
 		let previous_key = /*activeItem*/ ctx[8].i;
 		let div0;
+		let div4;
 		let div3;
 		let button;
 		let current;
 		let mounted;
 		let dispose;
-		let if_block0 = !/*dialog*/ ctx[1] && create_if_block_8();
+		let if_block0 = !/*dialog*/ ctx[1] && create_if_block_9();
 		let key_block = create_key_block(ctx);
-		let if_block1 = /*activeItem*/ ctx[8].caption && create_if_block_3(ctx);
-		let if_block2 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
-		let if_block3 = /*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1 && create_if_block_1(ctx);
+		let if_block1 = /*activeItem*/ ctx[8].caption && create_if_block_4(ctx);
+		let if_block2 = /*activeItem*/ ctx[8].download && create_if_block_3(ctx);
+		let if_block3 = /*items*/ ctx[0].length > 1 && create_if_block_2(ctx);
+		let if_block4 = /*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1 && create_if_block_1(ctx);
 
 		return {
 			c() {
@@ -2803,15 +2844,18 @@
 				key_block.c();
 				div0 = element("div");
 				if (if_block1) if_block1.c();
+				div4 = element("div");
 				div3 = element("div");
-				button = element("button");
 				if (if_block2) if_block2.c();
+				button = element("button");
 				if (if_block3) if_block3.c();
+				if (if_block4) if_block4.c();
 				attr(div0, "class", "bp-ruler");
 				attr(div1, "class", "bp-inner");
 				attr(div2, "class", "bp-stage");
 				attr(button, "class", "bp-x");
-				attr(div3, "class", "bp-controls");
+				attr(div3, "class", "bp-actions");
+				attr(div4, "class", "bp-controls");
 				set_dynamic_element_data(/*dialog*/ ctx[1] ? 'dialog' : 'div')(svelte_element, { class: "bp-wrap" });
 				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[16]);
 				toggle_class(svelte_element, "bp-inline", /*inline*/ ctx[11]);
@@ -2827,10 +2871,12 @@
 				key_block.m(div1, null);
 				append(div1, div0);
 				if (if_block1) if_block1.m(div2, null);
-				append(svelte_element, div3);
-				append(div3, button);
+				append(svelte_element, div4);
+				append(div4, div3);
 				if (if_block2) if_block2.m(div3, null);
-				if (if_block3) if_block3.m(svelte_element, null);
+				append(div3, button);
+				if (if_block3) if_block3.m(div4, null);
+				if (if_block4) if_block4.m(svelte_element, null);
 				current = true;
 
 				if (!mounted) {
@@ -2847,7 +2893,7 @@
 			p(ctx, dirty) {
 				if (!/*dialog*/ ctx[1]) {
 					if (if_block0) ; else {
-						if_block0 = create_if_block_8();
+						if_block0 = create_if_block_9();
 						if_block0.c();
 						if_block0.m(svelte_element, div2);
 					}
@@ -2872,7 +2918,7 @@
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 					} else {
-						if_block1 = create_if_block_3(ctx);
+						if_block1 = create_if_block_4(ctx);
 						if_block1.c();
 						if_block1.m(div2, null);
 					}
@@ -2881,37 +2927,50 @@
 					if_block1 = null;
 				}
 
-				if (/*items*/ ctx[0].length > 1) {
+				if (/*activeItem*/ ctx[8].download) {
 					if (if_block2) {
 						if_block2.p(ctx, dirty);
 					} else {
-						if_block2 = create_if_block_2(ctx);
+						if_block2 = create_if_block_3(ctx);
 						if_block2.c();
-						if_block2.m(div3, null);
+						if_block2.m(div3, button);
 					}
 				} else if (if_block2) {
 					if_block2.d(1);
 					if_block2 = null;
 				}
 
-				if (/*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1) {
+				if (/*items*/ ctx[0].length > 1) {
 					if (if_block3) {
 						if_block3.p(ctx, dirty);
-
-						if (dirty[0] & /*opts, items*/ 513) {
-							transition_in(if_block3, 1);
-						}
 					} else {
-						if_block3 = create_if_block_1(ctx);
+						if_block3 = create_if_block_2(ctx);
 						if_block3.c();
-						transition_in(if_block3, 1);
-						if_block3.m(svelte_element, null);
+						if_block3.m(div4, null);
 					}
 				} else if (if_block3) {
+					if_block3.d(1);
+					if_block3 = null;
+				}
+
+				if (/*opts*/ ctx[9].thumbs && /*items*/ ctx[0].length > 1) {
+					if (if_block4) {
+						if_block4.p(ctx, dirty);
+
+						if (dirty[0] & /*opts, items*/ 513) {
+							transition_in(if_block4, 1);
+						}
+					} else {
+						if_block4 = create_if_block_1(ctx);
+						if_block4.c();
+						transition_in(if_block4, 1);
+						if_block4.m(svelte_element, null);
+					}
+				} else if (if_block4) {
 					group_outros();
 
-					transition_out(if_block3, 1, 1, () => {
-						if_block3 = null;
+					transition_out(if_block4, 1, 1, () => {
+						if_block4 = null;
 					});
 
 					check_outros();
@@ -2940,12 +2999,12 @@
 			i(local) {
 				if (current) return;
 				transition_in(key_block);
-				transition_in(if_block3);
+				transition_in(if_block4);
 				current = true;
 			},
 			o(local) {
 				transition_out(key_block);
-				transition_out(if_block3);
+				transition_out(if_block4);
 				current = false;
 			},
 			d(detaching) {
@@ -2958,6 +3017,7 @@
 				if (if_block1) if_block1.d();
 				if (if_block2) if_block2.d();
 				if (if_block3) if_block3.d();
+				if (if_block4) if_block4.d();
 				mounted = false;
 				run_all(dispose);
 			}
@@ -3104,6 +3164,7 @@
 
 			$$invalidate(13, labels = {
 				close: 'Close',
+				download: 'Download',
 				prev: 'Previous',
 				next: 'Next',
 				thumb: 'View image',
@@ -3286,7 +3347,37 @@
 				return false;
 			}
 
+			item.download = parseDownload(item);
 			return (!opts.types || opts.types.includes(item.type)) && parseThumbnail(item);
+		};
+
+		// URL of the download link, a set URL or the largest image of a srcset or the first video or audio source
+		const parseDownload = ({ download, link, type, sources }) => {
+			// Data attributes pass true and false as strings
+			if (download == null
+			? !opts.download
+			: download + '' == 'false') {
+				return '';
+			}
+
+			if (download && download + '' != 'true') {
+				return download;
+			}
+
+			if (type === 'image') {
+				let max = 0;
+
+				for (const [,url, value] of link.matchAll(/(\S+)\s+(\d+)[wx]/gi)) {
+					if (+value > max) {
+						max = +value;
+						link = url;
+					}
+				}
+
+				return link;
+			}
+
+			return sources?.[0]?.src || '';
 		};
 
 		// Parse the link and detect the content type

@@ -87,7 +87,7 @@
 
 		// intro and noClose are the deprecated names of zoom: false and persistent
 		opts = { zoom: !options.intro, persistent: options.noClose, ...options };
-		labels = { close: 'Close', prev: 'Previous', next: 'Next', thumb: 'View image', gallery: 'Gallery', ...opts.labels };
+		labels = { close: 'Close', download: 'Download', prev: 'Previous', next: 'Next', thumb: 'View image', gallery: 'Gallery', ...opts.labels };
 		inline = opts.inline;
 
 		// Update trigger element to restore focus
@@ -256,7 +256,36 @@
 			return false;
 		}
 
+		item.download = parseDownload(item);
+
 		return (!opts.types || opts.types.includes(item.type)) && parseThumbnail(item);
+
+	};
+
+	// URL of the download link, a set URL or the largest image of a srcset or the first video or audio source
+	const parseDownload = ({ download, link, type, sources }) => {
+
+		// Data attributes pass true and false as strings
+		if (download == null ? !opts.download : download + '' == 'false') {
+			return '';
+		}
+
+		if (download && download + '' != 'true') {
+			return download;
+		}
+
+		if (type === 'image') {
+			let max = 0;
+			for (const [, url, value] of link.matchAll(/(\S+)\s+(\d+)[wx]/gi)) {
+				if (+value > max) {
+					max = +value;
+					link = url;
+				}
+			}
+			return link;
+		}
+
+		return sources?.[0]?.src || '';
 
 	};
 
@@ -794,8 +823,15 @@
 			{/if}
 		</div>
 		<div class="bp-controls">
-			<!-- Close button -->
-			<button class="bp-x" use:label={'close'} on:click={close}></button>
+			<div class="bp-actions">
+				{#if activeItem.download}
+					<!-- Download link, cross-origin files open in a new tab instead, the label action names it -->
+					<!-- svelte-ignore a11y-missing-content -->
+					<a class="bp-dl" href={activeItem.download} download target="_blank" use:label={'download'}></a>
+				{/if}
+				<!-- Close button -->
+				<button class="bp-x" use:label={'close'} on:click={close}></button>
+			</div>
 
 			{#if items.length > 1}
 				<!-- Counter -->

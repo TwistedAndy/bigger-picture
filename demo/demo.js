@@ -33,7 +33,7 @@
 
 	delegate($('#quick_start'), 'a', () => ({ items: $$('#quick_start a') }))
 
-	delegate($('#image_gallery'), 'a', () => ({ items: $$('#image_gallery a'), thumbs: true }))
+	delegate($('#image_gallery'), 'a', () => ({ items: $$('#image_gallery a'), thumbs: true, download: true }))
 
 	// Automatic link detection
 

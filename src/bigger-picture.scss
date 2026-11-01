@@ -91,7 +91,8 @@
 
 	&.bp-noclose {
 
-		.bp-x {
+		.bp-x,
+		.bp-actions:not(:has(a)) {
 			display: none;
 		}
 
@@ -274,8 +275,12 @@
 	text-align: left;
 	pointer-events: none;
 
-	button {
-		position: absolute;
+	button,
+	a {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
 		border: 0;
 		background: rgba(0, 0, 0, 0.15);
 		transition: all 0.1s;
@@ -293,6 +298,41 @@
 
 }
 
+// Icons are blocks of one size, so the line height of the page doesn't move them
+.bp-x,
+.bp-dl,
+.bp-prev,
+.bp-next {
+	&:before {
+		content: '';
+		width: 24px;
+		height: 24px;
+		background: 50% / contain no-repeat;
+		transition: all 0.2s;
+	}
+}
+
+// Download and close share the background, the padding of the wrapper and of the buttons gives equal space around the icons
+.bp-actions {
+	display: flex;
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 0 8px;
+	border-radius: 0 0 0 3px;
+	background: rgba(0, 0, 0, 0.15);
+
+	button,
+	a {
+		padding: 12px 8px;
+
+		&,
+		&:hover {
+			background: none;
+		}
+	}
+}
+
 .bp-count {
 	position: absolute;
 	width: 100px;
@@ -304,26 +344,24 @@
 
 .bp-prev,
 .bp-next {
+	position: absolute;
 	top: 50%;
 	right: 0;
-	width: 58px;
-	height: 64px;
-	margin-top: -32px;
+	width: 44px;
+	height: 56px;
+	margin-top: -28px;
 	border-radius: 3px 0 0 3px;
 
 	&:hover {
 		&:before {
-			transform: translateX(-2px);
+			transform: translateX(2px);
 		}
 	}
 
 	&:before {
-		content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z'/%3E%3C/svg%3E");
-		position: absolute;
-		top: 9px;
-		left: 7px;
-		width: 46px;
-		transition: all 0.2s;
+		width: 32px;
+		height: 32px;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E");
 	}
 }
 
@@ -338,20 +376,13 @@
 	contain: layout size;
 }
 
-.bp-x {
-	top: 0;
-	right: 0;
-	width: 58px;
-	height: 55px;
-	border-radius: 0 0 0 3px;
+// Icons from Tabler Icons, MIT license
+.bp-x:before {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 5 5 19M5 5l14 14'/%3E%3C/svg%3E");
+}
 
-	&:before {
-		content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='%23fff'%3E%3Cpath d='M24 10l-2-2-6 6-6-6-2 2 6 6-6 6 2 2 6-6 6 6 2-2-6-6z'/%3E%3C/svg%3E");
-		position: absolute;
-		top: 8px;
-		right: 10px;
-		width: 37px;
-	}
+.bp-dl:before {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5 5-5m-5-7v12'/%3E%3C/svg%3E");
 }
 
 .bp-load {
@@ -489,7 +520,8 @@
 			.bp-controls {
 				opacity: 0;
 
-				button {
+				button,
+				a {
 					pointer-events: none;
 				}
 
@@ -499,26 +531,24 @@
 
 	}
 
-	.bp-x {
-		width: 47px;
-		height: 47px;
+	.bp-actions {
+		padding: 0 6px;
 
-		&:before {
-			top: 6px;
-			right: 6px;
-			width: 34px;
+		button,
+		a {
+			padding: 9px 6px;
 		}
 	}
+
 	.bp-prev,
 	.bp-next {
-		width: 45px;
-		height: 54px;
-		margin-top: -27px;
+		width: 38px;
+		height: 48px;
+		margin-top: -24px;
 
 		&:before {
-			top: 7px;
-			left: 2px;
-			width: 43px;
+			width: 28px;
+			height: 28px;
 		}
 	}
 

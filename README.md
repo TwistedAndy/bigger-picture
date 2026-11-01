@@ -32,12 +32,12 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.2/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.3/dist/bigger-picture.css"
   integrity="sha384-YFux48/HVHgRUq9lWJxsWwEsGB3by3FwHwiNy5ihnmMp3BLdxMRuPxVm0ELM8jje"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.2/dist/bigger-picture.umd.js"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.3/dist/bigger-picture.umd.js"
   integrity="sha384-HRW54STC/+KNTMeRkujfmoFt0mBPPstJ0pOI5Dy12iU245yP2/foKDNELQbqDRky"
   crossorigin="anonymous"
 ></script>
@@ -277,6 +277,7 @@ Options passed to `open()`.
 | [`focusWrap`](#focuswrap)      | `Node`                             |             | Element to trap focus in.                               |
 | [`maxZoom`](#maxzoom)          | `number`                           | `10`        | Maximum zoom relative to the starting size.             |
 | [`history`](#history)          | `boolean`                          | `false`     | The back button closes the gallery.                     |
+| [`download`](#download)        | `boolean`                          | `false`     | Shows a download link next to the close button.         |
 | [`labels`](#labels)            | `object`                           |             | Texts of the controls, for translations.                |
 | [`onOpen`](#onopen)            | `function`                         |             | Runs before the intro animation.                        |
 | [`onUpdate`](#onupdate)        | `function`                         |             | Runs after the active item changes.                     |
@@ -389,6 +390,19 @@ Limits zoom to `maxZoom` times the starting size, even if the item's `width` and
 
 Adds a history entry when the gallery opens, so the back button, or the back swipe on phones, closes the gallery instead of leaving the page. Closing the gallery otherwise removes the entry. Inline galleries ignore it.
 
+### download
+
+`boolean` · default `false`
+
+Shows a download link next to the close button. It downloads the image, the largest one of a `srcset`, or the first video or audio source. Iframes and HTML show it only with their own [`download`](#download-1) URL, which also replaces the default one, for example with the original file.
+
+```js
+bp.open({ items, download: true })
+```
+
+> [!NOTE]
+> Browsers download only files of the same origin. A file on another origin, for example a CDN, opens in a new tab instead, unless the server sends it with `Content-Disposition: attachment`.
+
 ### labels
 
 `object`
@@ -400,6 +414,7 @@ bp.open({
   items,
   labels: {
     close: 'Fermer',
+    download: 'Télécharger',
     prev: 'Précédent',
     next: 'Suivant',
     thumb: 'Image', // followed by the number on thumbnails without alt or caption
@@ -408,7 +423,7 @@ bp.open({
 })
 ```
 
-The defaults are `Close`, `Previous`, `Next`, `View image` and `Gallery`.
+The defaults are `Close`, `Download`, `Previous`, `Next`, `View image` and `Gallery`.
 
 ### onOpen
 
@@ -486,6 +501,7 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 | [`attr`](#attr)          | `object` or `string`                   | Extra attributes for the media element.                    |
 | [`sizes`](#sizes-1)      | `string`                               | `sizes` attribute for a `srcset` image.                    |
 | [`maxZoom`](#maxzoom-1)  | `number`                               | Maximum zoom for this item.                                |
+| [`download`](#download-1) | `string` or `boolean`                 | Download URL, or `false` to hide the link.                 |
 | `element`                | `Node`                                 | Element to zoom from and back into, for objects.           |
 
 ### link
@@ -614,6 +630,17 @@ Sets the `sizes` attribute of an image with a `srcset`, overriding the [`sizes`]
 `number` · default `10`
 
 The maximum zoom of this item, overriding the [`maxZoom`](#maxzoom) option. The attribute is `data-max-zoom`.
+
+### download
+
+`string` or `boolean`
+
+The URL of the [download](#download) link, for example the original file of a smaller image. `false` hides the link for this item, and `true` or an empty `data-download` attribute shows it even without the `download` option.
+
+<!-- prettier-ignore -->
+```html
+<a href="photo-1200.jpg" data-download="photo-original.jpg">
+```
 
 ## Passing items as objects
 

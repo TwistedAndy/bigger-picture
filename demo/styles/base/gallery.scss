@@ -11,7 +11,9 @@
 		background: var(--theme-light);
 	}
 
-	.bp-controls button {
+	.bp-prev,
+	.bp-next,
+	.bp-actions {
 		background-color: #{rgbo(--theme-shadow, 55%)};
 
 		@include hover {
