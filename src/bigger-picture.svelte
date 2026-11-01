@@ -7,44 +7,42 @@
 	import Iframe from './components/iframe.svelte';
 	import Video from './components/video.svelte';
 
-	/**
-	 * Items in the gallery
-	 */
+	// Items in the gallery
 	export let items = undefined;
 
-	/** element the gallery is mounted within (passed during initialization)*/
+	// Element the gallery is mounted within (passed during initialization)
 	export let target = undefined;
 
-	/** usage of HTML dialog element and showModal method */
+	// Usage of HTML dialog element and showModal method
 	export let dialog = false;
 
 	const html = document.documentElement;
 
-	/** index of current active item */
+	// Index of current active item
 	let position = 0;
 
-	/** options passed via open method */
+	// Options passed via open method
 	let opts;
 
-	/** bool tracks open state */
+	// Bool tracks open state
 	let isOpen;
 
-	/** dom element to restore focus to on close */
+	// Dom element to restore focus to on close
 	let focusTrigger;
 
-	/** bool true if container width < 769 */
+	// Bool true if container width < 769
 	let smallScreen;
 
-	/** bool value of inline option passed in open method */
+	// Bool value of inline option passed in open method
 	let inline;
 
-	/** when position is set */
+	// When position is set
 	let movement;
 
-	/** stores target on pointerdown (ref for overlay close) */
+	// Stores target on pointerdown (ref for overlay close)
 	let clickedEl;
 
-	/** slide of the active item */
+	// Slide of the active item
 	let slide;
 
 	let ruler;
@@ -52,31 +50,29 @@
 	let containerWidth;
 	let containerHeight;
 
-	/** active item object */
+	// Active item object
 	let activeItem = null;
 	let activeDimensions;
 
-	// /** true if image is currently zoomed past starting size */
+	// True if the image is zoomed past its starting size
 	const zoomed = writable(0);
 
-	/** true while this gallery runs its outro, other galleries on the page keep their own */
+	// True while this gallery runs its outro, other galleries on the page keep their own
 	const closing = writable(0);
 
-	/**
-	 * Update the active item and dimensions on position change
-	 */
+	// Update the active item and dimensions on position change
 	$: if (items && items[position]) {
 		activeItem = items[position];
 		activeDimensions = calculateDimensions(activeItem);
 	}
 
-	/** true while the gallery runs its outro animation */
+	// True while the gallery runs its outro animation
 	let isClosing;
 
-	/** options of an open call made while closing, applied once the gallery is removed */
+	// Options of an open call made while closing, applied once the gallery is removed
 	let pendingOptions;
 
-	/** receives options and opens gallery */
+	// Receives options and opens gallery
 	export const open = (options) => {
 		if (isClosing) {
 			pendingOptions = options;
@@ -86,9 +82,7 @@
 		opts = options;
 		inline = opts.inline;
 
-		/**
-		 * Update trigger element to restore focus
-		 */
+		// Update trigger element to restore focus
 		focusTrigger = document.activeElement;
 
 		if (target) {
@@ -99,9 +93,7 @@
 
 		position = 0;
 
-		/**
-		 * Set the gallery items
-		 */
+		// Set the gallery items
 		const list = [];
 
 		if (opts.items instanceof HTMLElement) {
@@ -118,7 +110,7 @@
 				return;
 			}
 
-			// index in the filtered list, used for position and thumbnails
+			// Index in the filtered list, used for position and thumbnails
 			item.i = list.length;
 
 			if (opts.el ? opts.el === item.element : i === opts.position) {
@@ -129,18 +121,16 @@
 
 		});
 
-		// nothing to show, e.g. every item was filtered out
+		// Nothing to show, e.g. every item was filtered out
 		if (!list.length) {
 			return;
 		}
 
-		/**
-		 * Lock the scroll unless gallery is inline
-		 */
+		// Lock the scroll unless gallery is inline
 		if (!inline && html.scrollHeight > html.clientHeight) {
 			const style = getComputedStyle(html);
 			const scrollbar = innerWidth - html.clientWidth;
-			// padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
+			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
 			if (scrollbar && style.scrollbarGutter === 'auto') {
 				html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
 			}
@@ -151,9 +141,7 @@
 
 	};
 
-	/**
-	 * Close the gallery
-	 */
+	// Close the gallery
 	export const close = () => {
 		if (!items || isClosing) {
 			return;
@@ -162,39 +150,26 @@
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
 		window.removeEventListener('keydown', onKeydown);
-		// no slide yet when closed in the same tick as opened
+		// No slide yet when closed in the same tick as opened
 		slide && zoom(slide, 'bp-out');
 
-		// remove the gallery once the slide has finished its outro
+		// Remove the gallery once the slide has finished its outro
 		afterAnimations(slide, () => {
 			items = null;
 			focusTrigger?.focus({ preventScroll: true });
 		});
 	};
 
-	/**
-	 * Run a callback once the animations of a node are finished, right away if it has none
-	 *
-	 * @param {HTMLElement} node
-	 * @param {Function} callback
-	 */
+	// Run a callback once the animations of a node are finished, right away if it has none
 	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map((animation) => animation.finished) || []).finally(callback);
 
-	/**
-	 * Switch to the previous item
-	 */
+	// Switch to the previous item
 	export const prev = () => setPosition(position - 1);
 
-	/**
-	 * Switch to the next item
-	 */
+	// Switch to the next item
 	export const next = () => setPosition(position + 1);
 
-	/**
-	 * Jump to a specific position
-	 *
-	 * @param {number} index
-	 */
+	// Jump to a specific position
 	export const setPosition = (index) => {
 		const nextPosition = getNextPosition(index);
 		movement = index - position;
@@ -204,20 +179,10 @@
 		}
 	};
 
-	/**
-	 * Get the next gallery position
-	 *
-	 * @param {number} index
-	 */
+	// Get the next gallery position
 	const getNextPosition = (index) => (index + items.length) % items.length;
 
-	/**
-	 * Handle the keyboard events
-	 *
-	 * @param e
-	 *
-	 * @returns {Object|false}
-	 */
+	// Handle the keyboard events
 	const onKeydown = (e) => {
 		const {
 			key,
@@ -226,19 +191,15 @@
 		if (key === 'Escape') {
 			!opts.noClose && close();
 		} else if (key === 'ArrowRight' && !$zoomed) {
-			// the zoomed image pans with the arrows instead
+			// The zoomed image pans with the arrows instead
 			next();
 		} else if (key === 'ArrowLeft' && !$zoomed) {
 			prev();
 		} else if (key === 'Tab') {
-			/**
-			 * Trap the focus on tab press
-			 */
+			// Trap the focus on tab press
 			const { activeElement } = document;
 
-			/**
-			 * Allow browser to handle tab into video controls only
-			 */
+			// Allow browser to handle tab into video controls only
 			if (shiftKey || !activeElement.controls) {
 				e.preventDefault();
 				const { focusWrap = container } = opts;
@@ -250,24 +211,20 @@
 		}
 	};
 
-	/**
-	 * Normalize a gallery item
-	 *
-	 * @param {Object} item
-	 */
+	// Normalize a gallery item
 	const prepareItem = (item) => {
 
-		// work on a copy, the gallery adds its own fields and the caller's objects stay as they are
+		// Work on a copy, the gallery adds its own fields and the caller's objects stay as they are
 		item = item instanceof HTMLElement ? { element: item, ...item.dataset } : { ...item };
 
-		// data attributes pass these as JSON
+		// Data attributes pass these as JSON
 		['sources', 'tracks', 'attr'].forEach(key => {
 			if (typeof item[key] === 'string') {
 				item[key] = JSON.parse(item[key]);
 			}
 		});
 
-		// a copy too, the gallery writes the image src, srcset and sizes into it
+		// A copy too, the gallery writes the image src, srcset and sizes into it
 		item.attr = { ...item.attr };
 
 		let link = item.link = item.link || item.element?.href,
@@ -280,7 +237,7 @@
 		} else if (!link) {
 			return false;
 		} else if (type === 'video' || type === 'audio') {
-			// a set type shows the link as it is, without detection
+			// A set type shows the link as it is, without detection
 			item.sources = [{ src: link }];
 		} else if (type !== 'image' && type !== 'iframe' && !parseLink(link, item)) {
 			return false;
@@ -294,17 +251,10 @@
 
 	};
 
-	/**
-	 * Parse the link and detect the content type
-	 *
-	 * @param {string} link
-	 * @param {Object} item
-	 *
-	 * @returns {Object|false} the item, or false for a link of an unknown type
-	 */
+	// Parse the link and detect the content type
 	const parseLink = (link, item) => {
 
-		// also matches the first candidate of a srcset
+		// Also matches the first candidate of a srcset
 		let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
 
 		if (match) {
@@ -312,9 +262,7 @@
 			return item;
 		}
 
-		/**
-		 * HTML5 Video
-		 */
+		// HTML5 Video
 		match = link.match(/\.(mp4|mpeg|mov|ogv|webm|avi|h264)((\?|#).*)?$/i);
 
 		if (match) {
@@ -339,9 +287,7 @@
 
 		}
 
-		/**
-		 * HTML5 Audio
-		 */
+		// HTML5 Audio
 		match = link.match(/\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid)((\?|#).*)?$/i);
 
 		if (match) {
@@ -364,9 +310,7 @@
 			return item;
 		}
 
-		/**
-		 * YouTube Video
-		 */
+		// YouTube Video
 		match = link.match(/(youtube\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|embed\/?)?(videoseries\?list=(?:.*)|[\w-]{11}|\?listType=(?:.*)&list=(?:.*))(?:.*)/i);
 
 		if (match) {
@@ -396,9 +340,7 @@
 
 		}
 
-		/**
-		 * Vimeo Video
-		 */
+		// Vimeo Video
 		match = link.match(/^.+vimeo.com\/(?:\/)?(video\/)?([\d]+)((\/|\?h=)([a-z0-9]+))?(.*)?/);
 
 		if (match) {
@@ -428,9 +370,7 @@
 
 		}
 
-		/**
-		 * SoundCloud Widget
-		 */
+		// SoundCloud Widget
 		match = link.match(/^(https?:\/\/)?(www\.)?(m\.)?soundcloud\.com\/([a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+.*)$/);
 
 		if (match) {
@@ -446,9 +386,7 @@
 
 		}
 
-		/**
-		 * Google Drive, Dropbox, and PDF files
-		 */
+		// Google Drive, Dropbox, and PDF files
 		match = link.match(/(drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+))|(dropbox\.com\/s\/)|(\.pdf($|\?|#))/i);
 
 		if (match) {
@@ -479,11 +417,7 @@
 
 	};
 
-	/**
-	 * Parse a thumbnail, update dimensions, and the fit option
-	 *
-	 * @param {Object} item
-	 */
+	// Parse a thumbnail, update dimensions, and the fit option
 	const parseThumbnail = (item) => {
 
 		let thumbLink = '',
@@ -529,12 +463,7 @@
 
 	};
 
-	/**
-	 * Set item dimensions based on a thumbnail image if not already specified
-	 *
-	 * @param {Object} item Gallery item object to check and update
-	 * @param {HTMLImageElement} thumb Thumbnail image element to extract dimensions from
-	 */
+	// Set item dimensions based on a thumbnail image if not already specified
 	const setDimensions = (item, thumb) => {
 
 		if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
@@ -554,12 +483,7 @@
 
 	};
 
-	/**
-	 * Calculate width and height to fit inside a container
-	 *
-	 * @param {object} item object with height / width properties
-	 * @returns {Array} [width: number, height: number]
-	 */
+	// Calculate width and height to fit inside a container
 	const calculateDimensions = ({
 		width = 1920,
 		height = 1080
@@ -567,11 +491,11 @@
 		const activeGap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
 		const { scale = 1 } = opts;
 		const ratio = Math.min(((containerWidth - 2 * activeGap) / width) * scale, ((containerHeight - 2 * activeGap) / height) * scale);
-		// round number so we don't use a float as the sizes attribute
+		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	};
 
-	/** preloads images for previous and next items in gallery */
+	// Preloads images for previous and next items in gallery
 	const preloadNext = () => {
 		if (items) {
 			const nextItem = items[getNextPosition(position + 1)];
@@ -581,11 +505,7 @@
 		}
 	};
 
-	/**
-	 * Load and decode the image for an item
-	 *
-	 * @param {Object} item
-	 */
+	// Load and decode the image for an item
 	const loadImage = (item) => {
 
 		if (item.type === 'image') {
@@ -644,9 +564,7 @@
 					item.height = image.naturalHeight;
 				}
 
-				/**
-				 * It's important to set srcset after we read the image dimensions
-				 */
+				// It's important to set srcset after we read the image dimensions
 				if (image.src && srcset) {
 					image.srcset = srcset;
 				}
@@ -657,26 +575,13 @@
 		}
 	};
 
-	/**
-	 * Set the state a slide animates from or to, the CSS animations of the classes do the rest
-	 *
-	 * @param {HTMLElement} node
-	 * @param {string} className
-	 * @param {string} transform
-	 * @param {string} css
-	 */
+	// Set the state a slide animates from or to, the CSS animations of the classes do the rest
 	const animate = (node, className, transform, css = '--bp-opacity:0') => {
 		node.className = 'bp-slide ' + className;
 		node.style.cssText = `--bp-transform:${transform};${css}`;
 	};
 
-	/**
-	 * Zoom the slide out of the thumbnail on open and back into it on close,
-	 * or fade it up with the intro option
-	 *
-	 * @param {HTMLElement} node
-	 * @param {string} className bp-out for the outro
-	 */
+	// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with the intro option
 	const zoom = (node, className) => {
 		if (opts.intro) {
 			return animate(node, className, `translateY(${className ? -10 : 10}px)`);
@@ -684,9 +589,7 @@
 
 		let dimensions;
 
-		/**
-		 * Update the container dimensions before triggering an animation
-		 */
+		// Update the container dimensions before triggering an animation
 		if (ruler) {
 			containerWidth = ruler.clientWidth;
 			containerHeight = ruler.clientHeight;
@@ -699,7 +602,7 @@
 			dimensions = activeDimensions;
 		}
 
-		// rect is the content box of the trigger element, the image is drawn inside its padding and border
+		// Rect is the content box of the trigger element, the image is drawn inside its padding and border
 		const source = activeItem.source || activeItem.element || focusTrigger;
 		const style = window.getComputedStyle(source);
 		const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
@@ -718,7 +621,7 @@
 
 		if (activeItem.fit === 'cover') {
 			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
-			// crop the item like the thumbnail
+			// Crop the item like the thumbnail
 			css += `;--bp-clip-y:${Math.max((dimensions[1] - rect.height / scaleHeight) / 2, 0)}px;--bp-clip-x:${Math.max((dimensions[0] - rect.width / scaleWidth) / 2, 0)}px`;
 			className += ' bp-clip';
 		} else if (activeItem.fit === 'contain') {
@@ -728,9 +631,7 @@
 		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})`, css);
 	};
 
-	/**
-	 * Animate the slides, the first one zooms in, the next ones slide in and out
-	 */
+	// Animate the slides, the first one zooms in, the next ones slide in and out
 	const slideActions = (node) => {
 		slide = node;
 
@@ -738,13 +639,13 @@
 			animate(node, 'bp-nav', `translate(${movement > 0 ? 20 : -20}px)`);
 		} else {
 			isOpen = true;
-			// deferred so the item is measured after the container action has shown the dialog and called onOpen
+			// Deferred so the item is measured after the container action has shown the dialog and called onOpen
 			queueMicrotask(() => zoom(node, ''));
 		}
 
 		return {
 			destroy() {
-				// the items are removed on close, the slide leaves with the gallery then
+				// The items are removed on close, the slide leaves with the gallery then
 				if (items) {
 					// Svelte has removed the previous slide, put it back under the new one until it slides out
 					animate(node, 'bp-nav bp-out', `translate(${movement > 0 ? -20 : 20}px)`);
@@ -755,7 +656,7 @@
 		};
 	};
 
-	/** provides object w/ needed funcs / data to child components  */
+	// Provides object w/ needed funcs / data to child components
 	const getChildProps = () => ({
 		calculateDimensions,
 		closing,
@@ -770,15 +671,13 @@
 		next
 	});
 
-	/**
-	 * Process the gallery mount and destroy
-	 */
+	// Process the gallery mount and destroy
 	const containerActions = (node) => {
 		container = node;
 
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
-			// keep the dialog open on Escape, the keydown handler closes it with the outro animation
+			// Keep the dialog open on Escape, the keydown handler closes it with the outro animation
 			node.oncancel = (e) => e.preventDefault();
 			if (!inline) {
 				node.showModal();
@@ -789,7 +688,7 @@
 
 		opts.onOpen?.(container, activeItem);
 
-		// don't use keyboard events for inline galleries
+		// Don't use keyboard events for inline galleries
 		if (!inline) {
 			window.addEventListener('keydown', onKeydown);
 		}
@@ -804,7 +703,7 @@
 				closing.set(false);
 				isOpen = false;
 				isClosing = false;
-				// remove class hiding scroll
+				// Remove class hiding scroll
 				html.classList.remove('bp-lock');
 				html.style.paddingRight = '';
 				opts.onClosed?.();
@@ -818,9 +717,7 @@
 
 	$: smallScreen = containerWidth < 769;
 
-	/**
-	 * Ruler is required to get accurate dimensions and handle container resize
-	 */
+	// Ruler is required to get accurate dimensions and handle container resize
 	const rulerActions = (node) => {
 
 		ruler = node;
@@ -835,9 +732,7 @@
 				activeDimensions = calculateDimensions(activeItem);
 			}
 
-			/**
-			 * Run the user-defined resize function
-			 */
+			// Run the user-defined resize function
 			opts.onResize?.(container, activeItem);
 
 		});
@@ -877,7 +772,7 @@
 						use:slideActions
 						on:pointerdown={(e) => (clickedEl = e.target)}
 						on:pointerup={function (e) {
-						// only close if left click on self and not dragged
+						// Only close if left click on self and not dragged
 						if (e.button !== 2 && e.target === this && clickedEl === this) {
 							!opts.noClose && close()
 						}
@@ -907,15 +802,15 @@
 			{/if}
 		</div>
 		<div class="bp-controls">
-			<!-- close button -->
+			<!-- Close button -->
 			<button class="bp-x" title="Close" aria-label="Close" on:click={close}></button>
 
 			{#if items.length > 1}
-				<!-- counter -->
+				<!-- Counter -->
 				<div class="bp-count">
 					{@html `${position + 1} / ${items.length}`}
 				</div>
-				<!-- forward / back buttons -->
+				<!-- Forward / back buttons -->
 				<button
 					class="bp-prev"
 					title="Previous"

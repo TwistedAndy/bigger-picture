@@ -1,14 +1,11 @@
 <script context="module">
-	/** playback positions by the first source, a video opened again resumes from there */
+	// Playback positions by the first source, a video opened again resumes from there
 	const positions = {};
 </script>
 
 <script>
-	/*
-	This could be cleaner with svelte:element to switch video / audio
-	and each blocks for sources / tracks, but doing it that way creates
-	a larger vanilla bundle size, so we make them ourselves.
-	*/
+	// Svelte:element and each blocks would be cleaner for video / audio and sources / tracks,
+	// but they make the vanilla bundle larger, so the elements are made here by hand
 
 	import Loading from './loading.svelte';
 	import { addAttributes, getThumbBackground } from '../stores';
@@ -20,7 +17,7 @@
 
 	const { activeItem, opts, closing, container } = props;
 
-	/** create audio / video element */
+	// Create audio / video element
 	const onMount = (node) => {
 
 		const mediaElement = document.createElement(activeItem.type);
@@ -28,16 +25,16 @@
 		addAttributes(mediaElement, {
 			controls: true, autoplay: true, playsinline: true, tabindex: '0'
 		});
-		// the alt text names the player for screen readers
+		// The alt text names the player for screen readers
 		if (activeItem.alt) {
 			mediaElement.setAttribute('aria-label', activeItem.alt);
 		}
 		addAttributes(mediaElement, activeItem.attr);
 
-		/** takes supplied object and creates elements in video */
+		// Takes supplied object and creates elements in video
 		const appendToVideo = (tag, list) => {
 			for (let item of list) {
-				// add sources / tracks to media element
+				// Add sources / tracks to media element
 				let el = document.createElement(tag);
 				addAttributes(el, item);
 				if (tag === 'source') {
@@ -55,7 +52,7 @@
 
 		mediaElement.oncanplay = () => (loaded = true);
 
-		// before the metadata loads, this sets the position the playback starts from
+		// Before the metadata loads, this sets the position the playback starts from
 		const key = activeItem.sources[0].src;
 		mediaElement.currentTime = positions[key] || 0;
 
@@ -63,7 +60,7 @@
 
 		return {
 			destroy() {
-				// a finished video starts over next time
+				// A finished video starts over next time
 				positions[key] = mediaElement.ended ? 0 : mediaElement.currentTime;
 			}
 		};

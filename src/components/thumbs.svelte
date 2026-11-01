@@ -9,7 +9,7 @@
 	let thumbsPanel;
 	let thumbsPanelWidth;
 	let initialTranslate = 0;
-	/** translate of the strip, a CSS transition animates it */
+	// Translate of the strip, a CSS transition animates it
 	let thumbsTranslate = 0;
 
 	let isPointerDown, pointerDownX, hasDragged;
@@ -42,7 +42,7 @@
 		if (thumbsWidth >= thumbsPanelWidth) {
 			isPointerDown = true;
 			pointerDownX = e.clientX;
-			// stop the transition where it is, the drag moves the strip without one
+			// Stop the transition where it is, the drag moves the strip without one
 			thumbsTranslate = initialTranslate = new DOMMatrix(getComputedStyle(this).transform).m41;
 		}
 	};
@@ -74,16 +74,12 @@
 		initialTranslate = thumbsTranslate;
 	};
 
-	/**
-	 * Scroll to an active position on external change
-	 */
+	// Scroll to an active position on external change
 	$: if (position !== undefined) {
 		setTimeout(() => scrollToButton());
 	}
 
-	/**
-	 * Update dimensions on resize
-	 */
+	// Update dimensions on resize
 	const thumbsActions = function(node) {
 
 		thumbsPanel = node;

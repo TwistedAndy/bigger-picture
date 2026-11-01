@@ -5,15 +5,11 @@
 	const $ = (selector, root = document) => root.querySelector(selector)
 	const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
-	/**
-	 * One full screen instance serves every example, the same way most sites use it
-	 */
+	// One full screen instance serves every example, the same way most sites use it
 	const bp = BiggerPicture()
 
-	/**
-	 * Open a gallery when a matching element inside the container is clicked.
-	 * Passing the clicked element as `el` makes the gallery zoom out of it and back.
-	 */
+	// Open a gallery when a matching element inside the container is clicked,
+	// passing the clicked element as `el` makes the gallery zoom out of it and back
 	const delegate = (container, selector, getOptions, instance = bp) => {
 		container?.addEventListener('click', (event) => {
 			const element = event.target.closest(selector)
@@ -28,9 +24,7 @@
 		})
 	}
 
-	/**
-	 * Read the items of a data attribute gallery as objects
-	 */
+	// Read the items of a data attribute gallery as objects
 	const datasetItems = (selector) => $$(selector).map((link) => ({ ...link.dataset }))
 
 	// Hero, quick start and the main image gallery
@@ -116,7 +110,7 @@
 		['03', 'Navigate as usual', 'Arrow keys, swipes and the counter work the same as for images.'],
 	]
 
-	// every slide zooms from the same button, so start at the first one instead of matching `el`
+	// Every slide zooms from the same button, so start at the first one instead of matching `el`
 	delegate($('#html_grid'), '#html_slides', (button) => ({
 		el: null,
 		items: slides.map(([number, title, text]) => ({
@@ -138,9 +132,7 @@
 		}
 	})
 
-	/**
-	 * Parallax scene from the Firewatch website, built when the gallery opens
-	 */
+	// Parallax scene from the Firewatch website, built when the gallery opens
 	function mountParallax(target) {
 		const scene = document.createElement('div')
 		scene.className = 'parallax_box'
@@ -197,7 +189,7 @@
 					position: activeItem.i,
 					onUpdate(_, item) {
 						inline.setPosition(item.i)
-						// close back into the image the inline gallery shows now
+						// Close back into the image the inline gallery shows now
 						requestAnimationFrame(() => (item.element = lastImage(container)))
 					},
 				})
@@ -326,7 +318,7 @@
 		const link = event.target.closest('a')
 		if (link) {
 			event.preventDefault()
-			// a regular gallery is drawn under the modal, because the modal is in the top layer
+			// A regular gallery is drawn under the modal, because the modal is in the top layer
 			const instance = useDialog.checked ? dialogBp : bp
 			instance.open({ items: $$('#modal_grid a'), el: link })
 		}
@@ -355,7 +347,7 @@
 				for (const link of tocLinks.values()) {
 					link.parentElement.classList.toggle('active', link === active)
 				}
-				// keep the active link visible without scrolling the page
+				// Keep the active link visible without scrolling the page
 				const { offsetTop, offsetHeight } = active
 				if (offsetTop < toc.scrollTop || offsetTop + offsetHeight > toc.scrollTop + toc.clientHeight) {
 					toc.scrollTo({ top: offsetTop - toc.clientHeight / 2, behavior: 'smooth' })

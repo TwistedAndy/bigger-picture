@@ -831,12 +831,7 @@
 
 	const getThumbBackground = (activeItem) => activeItem.thumb ? `url(${activeItem.thumb.src})` : null;
 
-	/**
-	 * Adds attributes to the given node based on the provided object.
-	 *
-	 * @param {HTMLElement} node - The node to which attributes will be added
-	 * @param {Record<string, string | boolean> | string} attributes - The object containing key-value pairs of attributes to be added
-	 */
+	// Adds attributes to the given node based on the provided object
 	const addAttributes = (node, attributes) => {
 		if (!attributes) {
 			return;
@@ -857,7 +852,7 @@
 		return child_ctx;
 	}
 
-	// (127:3) {#each items as item (item.i)}
+	// (123:3) {#each items as item (item.i)}
 	function create_each_block(key_1, ctx) {
 		let button;
 		let button_title_value;
@@ -1022,7 +1017,7 @@
 		let thumbsPanelWidth;
 		let initialTranslate = 0;
 
-		/** translate of the strip, a CSS transition animates it */
+		// Translate of the strip, a CSS transition animates it
 		let thumbsTranslate = 0;
 
 		let isPointerDown, pointerDownX, hasDragged;
@@ -1055,7 +1050,7 @@
 				$$invalidate(4, isPointerDown = true);
 				pointerDownX = e.clientX;
 
-				// stop the transition where it is, the drag moves the strip without one
+				// Stop the transition where it is, the drag moves the strip without one
 				$$invalidate(3, thumbsTranslate = initialTranslate = new DOMMatrix(getComputedStyle(this).transform).m41);
 			}
 		};
@@ -1091,9 +1086,7 @@
 			initialTranslate = thumbsTranslate;
 		};
 
-		/**
-	 * Update dimensions on resize
-	 */
+		// Update dimensions on resize
 		const thumbsActions = function (node) {
 			thumbsPanel = node;
 
@@ -1127,9 +1120,7 @@
 
 		$$self.$$.update = () => {
 			if ($$self.$$.dirty & /*position*/ 2) {
-				/**
-	 * Scroll to an active position on external change
-	 */
+				// Scroll to an active position on external change
 				if (position !== undefined) {
 					setTimeout(() => scrollToButton());
 				}
@@ -1300,7 +1291,7 @@
 		let { closing } = $$props;
 		$$subscribe_closing();
 
-		/** true once the loader has faded out */
+		// True once the loader has faded out
 		let hidden;
 
 		const animationend_handler = e => $$invalidate(3, hidden = e.animationName === 'bp-fade-out');
@@ -1557,78 +1548,78 @@
 		component_subscribe($$self, closing, value => $$invalidate(28, $closing = value));
 		let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
-		/** value of sizes attribute */
+		// Value of sizes attribute
 		let sizes = activeDimensions[0];
 
-		/** tracks load state of image */
+		// Tracks load state of image
 		let loaded, showLoader;
 
-		/** stores pinch info if multiple touch events active */
+		// Stores pinch info if multiple touch events active
 		let pinchDetails;
 
-		/** image html element (.bp-img) */
+		// Image html element (.bp-img)
 		let bpImg;
 
-		/** track distance for pinch events */
+		// Track distance for pinch events
 		let prevDiff = 0;
 
 		let pointerDown, hasDragged;
 		let dragStartX, dragStartY;
 
-		/** translate values on start of drag */
+		// Translate values on start of drag
 		let dragStartTranslateX, dragStartTranslateY;
 
-		/** if true, adds class to .bp-wrap to avoid image cropping */
+		// If true, adds class to .bp-wrap to avoid image cropping
 		let closingWhileZoomed;
 
 		let naturalWidth = +activeItem.width;
 
-		/** store positions for drag inertia */
+		// Store positions for drag inertia
 		const dragPositions = [];
 
-		/** cache pointer events to handle pinch */
+		// Cache pointer events to handle pinch
 		const pointerCache = new Map();
 
-		/** zoom level of the image, 1 is the starting size, a CSS transition animates it */
+		// Zoom level of the image, 1 is the starting size, a CSS transition animates it
 		let scale = 1;
 
-		/** translate of the zoomed image, animated with the scale */
+		// Translate of the zoomed image, animated with the scale
 		let translate = [0, 0];
 
-		/** calculate translate position with bounds */
+		// Calculate translate position with bounds
 		const boundTranslateValues = ([x, y], newScale = scale) => {
-			// image drag translate bounds
+			// Image drag translate bounds
 			let maxTranslateX = (activeDimensions[0] * newScale - containerWidth) / 2,
 				maxTranslateY = (activeDimensions[1] * newScale - containerHeight) / 2;
 
-			// x max drag
+			// X max drag
 			if (maxTranslateX < 0) {
 				x = 0;
 			} else if (x > maxTranslateX) {
 				if (smallScreen) {
-					// bound to left side (allow slight over drag)
+					// Bound to left side (allow slight over drag)
 					x = pointerDown
 					? maxTranslateX + (x - maxTranslateX) / 10
 					: maxTranslateX;
 
-					// previous item if dragged past threshold
+					// Previous item if dragged past threshold
 					if (x > maxTranslateX + 20) {
-						// pointerdown = undefined to stop pointermove from running again
+						// Setting pointerDown to undefined stops pointermove from running again
 						$$invalidate(5, pointerDown = prev());
 					}
 				} else {
 					x = maxTranslateX;
 				}
 			} else if (x < -maxTranslateX) {
-				// bound to right side (allow slight over drag)
+				// Bound to right side (allow slight over drag)
 				if (smallScreen) {
 					x = pointerDown
 					? -maxTranslateX - (-maxTranslateX - x) / 10
 					: -maxTranslateX;
 
-					// next item if dragged past threshold
+					// Next item if dragged past threshold
 					if (x < -maxTranslateX - 20) {
-						// pointerdown = undefined to stop pointermove from running again
+						// Setting pointerDown to undefined stops pointermove from running again
 						$$invalidate(5, pointerDown = next());
 					}
 				} else {
@@ -1636,7 +1627,7 @@
 				}
 			}
 
-			// y max drag
+			// Y max drag
 			if (maxTranslateY < 0) {
 				y = 0;
 			} else if (y > maxTranslateY) {
@@ -1648,7 +1639,7 @@
 			return [x, y];
 		};
 
-		/** updates zoom level in or out based on amt value */
+		// Updates zoom level in or out based on amt value
 		function changeZoom(amt = maxZoom, e) {
 			if ($closing) {
 				return;
@@ -1657,10 +1648,10 @@
 			let newScale = scale + scale * amt;
 
 			if (amt > 0) {
-				// not larger than the max zoom and the natural size
+				// Not larger than the max zoom and the natural size
 				newScale = Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]);
 			} else if (newScale < 1) {
-				// if requesting image smaller than starting size
+				// If requesting image smaller than starting size
 				$$invalidate(1, scale = 1);
 
 				return $$invalidate(8, translate = [0, 0]);
@@ -1669,33 +1660,33 @@
 			let x = 0, y = 0;
 
 			if (e) {
-				// distance clicked from center of image
+				// Distance clicked from center of image
 				const { left, top, width, height } = bpImg.parentNode.getBoundingClientRect();
 
 				x = e.clientX - left - width / 2 - translate[0];
 				y = e.clientY - top - height / 2 - translate[1];
 			}
 
-			// keep the clicked point in place
+			// Keep the clicked point in place
 			const ratio = 1 - newScale / scale;
 
-			// update sizes property, the browser loads a larger source if there is one
+			// Update sizes property, the browser loads a larger source if there is one
 			$$invalidate(2, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
 
 			$$invalidate(8, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
 			$$invalidate(1, scale = newScale);
 		}
 
-		// allow zoom to be read / set externally
+		// Allow zoom to be read / set externally
 		Object.defineProperty(activeItem, 'zoom', {
 			configurable: true,
 			get: () => $zoomed,
 			set: bool => changeZoom(bool ? maxZoom : -maxZoom)
 		});
 
-		// zoom with + and -, and pan the zoomed image with the arrows, the gallery handles the other keys
+		// Zoom with + and -, and pan the zoomed image with the arrows, the gallery handles the other keys
 		const onKeydown = e => {
-			// zoom out by the same factor, 1.5x in and 1 / 1.5x out
+			// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 			const zoom = ({ '+': 0.5, '=': 0.5, '-': -1 / 3 })[e.key];
 
 			const pan = ({
@@ -1714,32 +1705,32 @@
 			} else if (pan && $zoomed) {
 				e.preventDefault();
 
-				// starts from the target, so held keys keep panning while the transition runs
+				// Starts from the target, so held keys keep panning while the transition runs
 				$$invalidate(8, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
 			}
 		};
 
 		const onWheel = e => {
-			// return if scrolling past inline gallery w/ wheel
+			// Return if scrolling past inline gallery w/ wheel
 			if (opts.inline && !$zoomed) {
 				return;
 			}
 
-			// preventDefault to stop scrolling on zoomed inline image
+			// Prevent the default to stop scrolling on a zoomed inline image
 			e.preventDefault();
 
-			// change zoom on wheel
+			// Change zoom on wheel
 			changeZoom(e.deltaY / -300, e);
 		};
 
-		/** on drag start, store initial position and image translate values */
+		// On drag start, store initial position and image translate values
 		const onPointerDown = e => {
-			// don't run if right click
+			// Don't run if right click
 			if (e.button !== 2) {
 				e.preventDefault();
 
 				if ($zoomed) {
-					// stop the transition where it is, the drag moves the image without one
+					// Stop the transition where it is, the drag moves the image without one
 					const img = bpImg.getBoundingClientRect();
 
 					const wrap = bpImg.parentNode.getBoundingClientRect();
@@ -1760,10 +1751,10 @@
 			}
 		};
 
-		/** on drag, update image translate val */
+		// On drag, update image translate val
 		const onPointerMove = e => {
 			if (pointerCache.size > 1) {
-				// if multiple pointer events, pass to handlePinch function
+				// If multiple pointer events, pass to handlePinch function
 				$$invalidate(5, pointerDown = false);
 
 				return opts.noPinch?.(container) || handlePinch(e);
@@ -1776,47 +1767,47 @@
 			let x = e.clientX;
 			let y = e.clientY;
 
-			// store positions for drag inertia, flag drag by distance
+			// Store positions for drag inertia, flag drag by distance
 			dragPositions.push({ x, y });
 
 			hasDragged = hasDragged || Math.hypot(x - dragStartX, y - dragStartY) > 5;
 
-			// overall drag diff from start location
+			// Overall drag diff from start location
 			x = x - dragStartX;
 
 			y = y - dragStartY;
 
-			// handle unzoomed left / right / up swipes
+			// Handle unzoomed left / right / up swipes
 			if (!$zoomed) {
-				// close if swipe up
+				// Close if swipe up
 				if (y < -90) {
 					$$invalidate(5, pointerDown = !opts.noClose && props.close());
 				}
 
-				// only handle left / right if not swiping vertically
+				// Only handle left / right if not swiping vertically
 				if (Math.abs(y) < 30) {
-					// previous if swipe left
+					// Previous if swipe left
 					if (x > 40) {
-						// pointerdown = undefined to stop pointermove from running again
+						// Setting pointerDown to undefined stops pointermove from running again
 						$$invalidate(5, pointerDown = prev());
 					}
 
-					// next if swipe right
+					// Next if swipe right
 					if (x < -40) {
-						// pointerdown = undefined to stop pointermove from running again
+						// Setting pointerDown to undefined stops pointermove from running again
 						$$invalidate(5, pointerDown = next());
 					}
 				}
 			}
 
-			// image drag when zoomed
+			// Image drag when zoomed
 			if ($zoomed && hasDragged && !$closing) {
 				$$invalidate(8, translate = boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]));
 			}
 		};
 
 		const handlePinch = e => {
-			// update event in cache and get values
+			// Update event in cache and get values
 			const [p1, p2] = pointerCache.set(e.pointerId, e).values();
 
 			// Calculate the distance between the two pointers
@@ -1825,50 +1816,50 @@
 			const dy = p1.clientY - p2.clientY;
 			const curDiff = Math.hypot(dx, dy);
 
-			// cache the original pinch center
+			// Cache the original pinch center
 			pinchDetails = pinchDetails || {
 				clientX: (p1.clientX + p2.clientX) / 2,
 				clientY: (p1.clientY + p2.clientY) / 2
 			};
 
-			// scale image
+			// Scale image
 			changeZoom(((prevDiff || curDiff) - curDiff) / -35, pinchDetails);
 
 			// Cache the distance for the next move event
 			prevDiff = curDiff;
 		};
 
-		/** remove event from pointer event cache */
+		// Remove event from pointer event cache
 		const removeEventFromCache = e => pointerCache.delete(e.pointerId);
 
 		const onPointerUp = function (e) {
 			removeEventFromCache(e);
 
 			if (pinchDetails) {
-				// reset prevDiff and clear pointerDown to trigger return below
+				// Reset prevDiff and clear pointerDown to trigger return below
 				$$invalidate(5, pointerDown = prevDiff = 0);
 
-				// set pinchDetails to null after last finger lifts
+				// Set pinchDetails to null after last finger lifts
 				pinchDetails = pointerCache.size ? pinchDetails : null;
 			}
 
-			// make sure pointer events don't carry over to next image
+			// Make sure pointer events don't carry over to next image
 			if (!pointerDown) {
 				return;
 			}
 
 			$$invalidate(5, pointerDown = false);
 
-			// close if overlay is clicked
+			// Close if overlay is clicked
 			if (e.target === this && !opts.noClose) {
 				return props.close();
 			}
 
-			// add drag inertia / snap back to bounds
+			// Add drag inertia / snap back to bounds
 			if (hasDragged) {
 				const [posOne, posTwo, posThree] = dragPositions.slice(-3);
 
-				// a short flick may have fewer than three moves, it gets no inertia
+				// A short flick may have fewer than three moves, it gets no inertia
 				if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
 					$$invalidate(8, translate = boundTranslateValues([
 						translate[0] - (posOne.x - posThree.x) * 5,
@@ -1879,24 +1870,24 @@
 				changeZoom($zoomed ? -maxZoom : maxZoom, e);
 			}
 
-			// reset pointer states
+			// Reset pointer states
 			hasDragged = false;
 
-			// reset dragPositions
+			// Reset dragPositions
 			dragPositions.length = 0;
 		};
 
 		const onMount = node => {
 			bpImg = node;
 
-			// decode initial image before rendering
+			// Decode initial image before rendering
 			props.loadImage(activeItem).then(() => {
 				$$invalidate(7, naturalWidth = +activeItem.width);
 				$$invalidate(3, loaded = true);
 				props.preloadNext();
 			});
 
-			// show loading indicator if needed
+			// Show loading indicator if needed
 			setTimeout(
 				() => {
 					$$invalidate(4, showLoader = !loaded);
@@ -1921,7 +1912,7 @@
 
 		$$self.$$.update = () => {
 			if ($$self.$$.dirty[0] & /*$closing, $zoomed*/ 402653184) {
-				// if zoomed while closing, zoom out image and add class
+				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && $zoomed && !opts.intro) {
 					$$invalidate(1, scale = 1);
@@ -2187,7 +2178,7 @@
 		let loaded = false;
 		const { activeItem, opts, closing, container } = props;
 
-		/** create audio / video element */
+		// Create audio / video element
 		const onMount = node => {
 			const mediaElement = document.createElement(activeItem.type);
 
@@ -2198,17 +2189,17 @@
 				tabindex: '0'
 			});
 
-			// the alt text names the player for screen readers
+			// The alt text names the player for screen readers
 			if (activeItem.alt) {
 				mediaElement.setAttribute('aria-label', activeItem.alt);
 			}
 
 			addAttributes(mediaElement, activeItem.attr);
 
-			/** takes supplied object and creates elements in video */
+			// Takes supplied object and creates elements in video
 			const appendToVideo = (tag, list) => {
 				for (let item of list) {
-					// add sources / tracks to media element
+					// Add sources / tracks to media element
 					let el = document.createElement(tag);
 
 					addAttributes(el, item);
@@ -2229,7 +2220,7 @@
 
 			mediaElement.oncanplay = () => $$invalidate(1, loaded = true);
 
-			// before the metadata loads, this sets the position the playback starts from
+			// Before the metadata loads, this sets the position the playback starts from
 			const key = activeItem.sources[0].src;
 
 			mediaElement.currentTime = positions[key] || 0;
@@ -2237,7 +2228,7 @@
 
 			return {
 				destroy() {
-					// a finished video starts over next time
+					// A finished video starts over next time
 					positions[key] = mediaElement.ended ? 0 : mediaElement.currentTime;
 				}
 			};
@@ -2310,7 +2301,7 @@
 		};
 	}
 
-	// (862:2) {#if !dialog}
+	// (757:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 
@@ -2330,7 +2321,7 @@
 		};
 	}
 
-	// (873:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (768:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2405,7 +2396,7 @@
 		};
 	}
 
-	// (873:364) {:else}
+	// (768:364) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2431,7 +2422,7 @@
 		};
 	}
 
-	// (873:311) 
+	// (768:311) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -2471,7 +2462,7 @@
 		};
 	}
 
-	// (873:220) 
+	// (768:220) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -2511,7 +2502,7 @@
 		};
 	}
 
-	// (873:53) {#if activeItem.type === 'image'}
+	// (768:53) {#if activeItem.type === 'image'}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -2557,7 +2548,7 @@
 		};
 	}
 
-	// (862:94) {#key activeItem.i}
+	// (757:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let current;
@@ -2632,7 +2623,7 @@
 		};
 	}
 
-	// (873:494) {#if activeItem.caption}
+	// (768:494) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2656,7 +2647,7 @@
 		};
 	}
 
-	// (873:711) {#if items.length > 1}
+	// (768:711) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2708,7 +2699,7 @@
 		};
 	}
 
-	// (883:25) {#if opts.thumbs && items.length > 1}
+	// (778:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2750,7 +2741,7 @@
 		};
 	}
 
-	// (853:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+	// (748:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3005,31 +2996,31 @@
 		let { dialog = false } = $$props;
 		const html = document.documentElement;
 
-		/** index of current active item */
+		// Index of current active item
 		let position = 0;
 
-		/** options passed via open method */
+		// Options passed via open method
 		let opts;
 
-		/** bool tracks open state */
+		// Bool tracks open state
 		let isOpen;
 
-		/** dom element to restore focus to on close */
+		// Dom element to restore focus to on close
 		let focusTrigger;
 
-		/** bool true if container width < 769 */
+		// Bool true if container width < 769
 		let smallScreen;
 
-		/** bool value of inline option passed in open method */
+		// Bool value of inline option passed in open method
 		let inline;
 
-		/** when position is set */
+		// When position is set
 		let movement;
 
-		/** stores target on pointerdown (ref for overlay close) */
+		// Stores target on pointerdown (ref for overlay close)
 		let clickedEl;
 
-		/** slide of the active item */
+		// Slide of the active item
 		let slide;
 
 		let ruler;
@@ -3037,25 +3028,25 @@
 		let containerWidth;
 		let containerHeight;
 
-		/** active item object */
+		// Active item object
 		let activeItem = null;
 
 		let activeDimensions;
 
-		// /** true if image is currently zoomed past starting size */
+		// True if the image is zoomed past its starting size
 		const zoomed = writable(0);
 
 		component_subscribe($$self, zoomed, value => $$invalidate(15, $zoomed = value));
 
-		/** true while this gallery runs its outro, other galleries on the page keep their own */
+		// True while this gallery runs its outro, other galleries on the page keep their own
 		const closing = writable(0);
 
 		component_subscribe($$self, closing, value => $$invalidate(16, $closing = value));
 
-		/** true while the gallery runs its outro animation */
+		// True while the gallery runs its outro animation
 		let isClosing;
 
-		/** options of an open call made while closing, applied once the gallery is removed */
+		// Options of an open call made while closing, applied once the gallery is removed
 		let pendingOptions;
 
 		const open = options => {
@@ -3067,9 +3058,7 @@
 			$$invalidate(9, opts = options);
 			$$invalidate(11, inline = opts.inline);
 
-			/**
-	 * Update trigger element to restore focus
-	 */
+			// Update trigger element to restore focus
 			focusTrigger = document.activeElement;
 
 			if (target) {
@@ -3083,9 +3072,7 @@
 
 			$$invalidate(6, position = 0);
 
-			/**
-	 * Set the gallery items
-	 */
+			// Set the gallery items
 			const list = [];
 
 			if (opts.items instanceof HTMLElement) {
@@ -3101,7 +3088,7 @@
 					return;
 				}
 
-				// index in the filtered list, used for position and thumbnails
+				// Index in the filtered list, used for position and thumbnails
 				item.i = list.length;
 
 				if (opts.el ? opts.el === item.element : i === opts.position) {
@@ -3111,19 +3098,17 @@
 				list.push(item);
 			});
 
-			// nothing to show, e.g. every item was filtered out
+			// Nothing to show, e.g. every item was filtered out
 			if (!list.length) {
 				return;
 			}
 
-			/**
-	 * Lock the scroll unless gallery is inline
-	 */
+			// Lock the scroll unless gallery is inline
 			if (!inline && html.scrollHeight > html.clientHeight) {
 				const style = getComputedStyle(html);
 				const scrollbar = innerWidth - html.clientWidth;
 
-				// padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
+				// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
 				if (scrollbar && style.scrollbarGutter === 'auto') {
 					html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
 				}
@@ -3144,22 +3129,17 @@
 			closing.set(true);
 			window.removeEventListener('keydown', onKeydown);
 
-			// no slide yet when closed in the same tick as opened
+			// No slide yet when closed in the same tick as opened
 			slide && zoom(slide, 'bp-out');
 
-			// remove the gallery once the slide has finished its outro
+			// Remove the gallery once the slide has finished its outro
 			afterAnimations(slide, () => {
 				$$invalidate(0, items = null);
 				focusTrigger?.focus({ preventScroll: true });
 			});
 		};
 
-		/**
-	 * Run a callback once the animations of a node are finished, right away if it has none
-	 *
-	 * @param {HTMLElement} node
-	 * @param {Function} callback
-	 */
+		// Run a callback once the animations of a node are finished, right away if it has none
 		const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map(animation => animation.finished) || []).finally(callback);
 
 		const prev = () => setPosition(position - 1);
@@ -3175,39 +3155,25 @@
 			}
 		};
 
-		/**
-	 * Get the next gallery position
-	 *
-	 * @param {number} index
-	 */
+		// Get the next gallery position
 		const getNextPosition = index => (index + items.length) % items.length;
 
-		/**
-	 * Handle the keyboard events
-	 *
-	 * @param e
-	 *
-	 * @returns {Object|false}
-	 */
+		// Handle the keyboard events
 		const onKeydown = e => {
 			const { key, shiftKey } = e;
 
 			if (key === 'Escape') {
 				!opts.noClose && close();
 			} else if (key === 'ArrowRight' && !$zoomed) {
-				// the zoomed image pans with the arrows instead
+				// The zoomed image pans with the arrows instead
 				next();
 			} else if (key === 'ArrowLeft' && !$zoomed) {
 				prev();
 			} else if (key === 'Tab') {
-				/**
-	 * Trap the focus on tab press
-	 */
+				// Trap the focus on tab press
 				const { activeElement } = document;
 
-				/**
-	 * Allow browser to handle tab into video controls only
-	 */
+				// Allow browser to handle tab into video controls only
 				if (shiftKey || !activeElement.controls) {
 					e.preventDefault();
 					const { focusWrap = container } = opts;
@@ -3219,25 +3185,21 @@
 			}
 		};
 
-		/**
-	 * Normalize a gallery item
-	 *
-	 * @param {Object} item
-	 */
+		// Normalize a gallery item
 		const prepareItem = item => {
-			// work on a copy, the gallery adds its own fields and the caller's objects stay as they are
+			// Work on a copy, the gallery adds its own fields and the caller's objects stay as they are
 			item = item instanceof HTMLElement
 			? { element: item, ...item.dataset }
 			: { ...item };
 
-			// data attributes pass these as JSON
+			// Data attributes pass these as JSON
 			['sources', 'tracks', 'attr'].forEach(key => {
 				if (typeof item[key] === 'string') {
 					item[key] = JSON.parse(item[key]);
 				}
 			});
 
-			// a copy too, the gallery writes the image src, srcset and sizes into it
+			// A copy too, the gallery writes the image src, srcset and sizes into it
 			item.attr = { ...item.attr };
 
 			let link = item.link = item.link || item.element?.href, type = item.type;
@@ -3251,7 +3213,7 @@
 			} else if (!link) {
 				return false;
 			} else if (type === 'video' || type === 'audio') {
-				// a set type shows the link as it is, without detection
+				// A set type shows the link as it is, without detection
 				item.sources = [{ src: link }];
 			} else if (type !== 'image' && type !== 'iframe' && !parseLink(link, item)) {
 				return false;
@@ -3264,16 +3226,9 @@
 			}
 		};
 
-		/**
-	 * Parse the link and detect the content type
-	 *
-	 * @param {string} link
-	 * @param {Object} item
-	 *
-	 * @returns {Object|false} the item, or false for a link of an unknown type
-	 */
+		// Parse the link and detect the content type
 		const parseLink = (link, item) => {
-			// also matches the first candidate of a srcset
+			// Also matches the first candidate of a srcset
 			let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
 
 			if (match) {
@@ -3281,9 +3236,7 @@
 				return item;
 			}
 
-			/**
-	 * HTML5 Video
-	 */
+			// HTML5 Video
 			match = link.match(/\.(mp4|mpeg|mov|ogv|webm|avi|h264)((\?|#).*)?$/i);
 
 			if (match) {
@@ -3306,9 +3259,7 @@
 				return item;
 			}
 
-			/**
-	 * HTML5 Audio
-	 */
+			// HTML5 Audio
 			match = link.match(/\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid)((\?|#).*)?$/i);
 
 			if (match) {
@@ -3335,9 +3286,7 @@
 				return item;
 			}
 
-			/**
-	 * YouTube Video
-	 */
+			// YouTube Video
 			match = link.match(/(youtube\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|embed\/?)?(videoseries\?list=(?:.*)|[\w-]{11}|\?listType=(?:.*)&list=(?:.*))(?:.*)/i);
 
 			if (match) {
@@ -3366,9 +3315,7 @@
 				return item;
 			}
 
-			/**
-	 * Vimeo Video
-	 */
+			// Vimeo Video
 			match = link.match(/^.+vimeo.com\/(?:\/)?(video\/)?([\d]+)((\/|\?h=)([a-z0-9]+))?(.*)?/);
 
 			if (match) {
@@ -3395,9 +3342,7 @@
 				return item;
 			}
 
-			/**
-	 * SoundCloud Widget
-	 */
+			// SoundCloud Widget
 			match = link.match(/^(https?:\/\/)?(www\.)?(m\.)?soundcloud\.com\/([a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+.*)$/);
 
 			if (match) {
@@ -3408,9 +3353,7 @@
 				return item;
 			}
 
-			/**
-	 * Google Drive, Dropbox, and PDF files
-	 */
+			// Google Drive, Dropbox, and PDF files
 			match = link.match(/(drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+))|(dropbox\.com\/s\/)|(\.pdf($|\?|#))/i);
 
 			if (match) {
@@ -3438,11 +3381,7 @@
 			return false;
 		};
 
-		/**
-	 * Parse a thumbnail, update dimensions, and the fit option
-	 *
-	 * @param {Object} item
-	 */
+		// Parse a thumbnail, update dimensions, and the fit option
 		const parseThumbnail = item => {
 			let thumbLink = '', thumbElement = false;
 
@@ -3487,12 +3426,7 @@
 			return item;
 		};
 
-		/**
-	 * Set item dimensions based on a thumbnail image if not already specified
-	 *
-	 * @param {Object} item Gallery item object to check and update
-	 * @param {HTMLImageElement} thumb Thumbnail image element to extract dimensions from
-	 */
+		// Set item dimensions based on a thumbnail image if not already specified
 		const setDimensions = (item, thumb) => {
 			if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
 				let dimensions = calculateDimensions({
@@ -3507,12 +3441,7 @@
 			}
 		};
 
-		/**
-	 * Calculate width and height to fit inside a container
-	 *
-	 * @param {object} item object with height / width properties
-	 * @returns {Array} [width: number, height: number]
-	 */
+		// Calculate width and height to fit inside a container
 		const calculateDimensions = ({ width = 1920, height = 1080 }) => {
 			const activeGap = container
 			? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
@@ -3521,11 +3450,11 @@
 			const { scale = 1 } = opts;
 			const ratio = Math.min((containerWidth - 2 * activeGap) / width * scale, (containerHeight - 2 * activeGap) / height * scale);
 
-			// round number so we don't use a float as the sizes attribute
+			// Round number so we don't use a float as the sizes attribute
 			return [Math.round(width * ratio), Math.round(height * ratio)];
 		};
 
-		/** preloads images for previous and next items in gallery */
+		// Preloads images for previous and next items in gallery
 		const preloadNext = () => {
 			if (items) {
 				const nextItem = items[getNextPosition(position + 1)];
@@ -3535,11 +3464,7 @@
 			}
 		};
 
-		/**
-	 * Load and decode the image for an item
-	 *
-	 * @param {Object} item
-	 */
+		// Load and decode the image for an item
 		const loadImage = item => {
 			if (item.type === 'image') {
 				let image = document.createElement('img'),
@@ -3593,9 +3518,7 @@
 						item.height = image.naturalHeight;
 					}
 
-					/**
-	 * It's important to set srcset after we read the image dimensions
-	 */
+					// It's important to set srcset after we read the image dimensions
 					if (image.src && srcset) {
 						image.srcset = srcset;
 					}
@@ -3605,26 +3528,13 @@
 			}
 		};
 
-		/**
-	 * Set the state a slide animates from or to, the CSS animations of the classes do the rest
-	 *
-	 * @param {HTMLElement} node
-	 * @param {string} className
-	 * @param {string} transform
-	 * @param {string} css
-	 */
+		// Set the state a slide animates from or to, the CSS animations of the classes do the rest
 		const animate = (node, className, transform, css = '--bp-opacity:0') => {
 			node.className = 'bp-slide ' + className;
 			node.style.cssText = `--bp-transform:${transform};${css}`;
 		};
 
-		/**
-	 * Zoom the slide out of the thumbnail on open and back into it on close,
-	 * or fade it up with the intro option
-	 *
-	 * @param {HTMLElement} node
-	 * @param {string} className bp-out for the outro
-	 */
+		// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with the intro option
 		const zoom = (node, className) => {
 			if (opts.intro) {
 				return animate(node, className, `translateY(${className ? -10 : 10}px)`);
@@ -3632,9 +3542,7 @@
 
 			let dimensions;
 
-			/**
-	 * Update the container dimensions before triggering an animation
-	 */
+			// Update the container dimensions before triggering an animation
 			if (ruler) {
 				$$invalidate(7, containerWidth = ruler.clientWidth);
 				$$invalidate(13, containerHeight = ruler.clientHeight);
@@ -3647,7 +3555,7 @@
 				dimensions = activeDimensions;
 			}
 
-			// rect is the content box of the trigger element, the image is drawn inside its padding and border
+			// Rect is the content box of the trigger element, the image is drawn inside its padding and border
 			const source = activeItem.source || activeItem.element || focusTrigger;
 
 			const style = window.getComputedStyle(source);
@@ -3670,7 +3578,7 @@
 			if (activeItem.fit === 'cover') {
 				scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
 
-				// crop the item like the thumbnail
+				// Crop the item like the thumbnail
 				css += `;--bp-clip-y:${Math.max((dimensions[1] - rect.height / scaleHeight) / 2, 0)}px;--bp-clip-x:${Math.max((dimensions[0] - rect.width / scaleWidth) / 2, 0)}px`;
 
 				className += ' bp-clip';
@@ -3681,9 +3589,7 @@
 			animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})`, css);
 		};
 
-		/**
-	 * Animate the slides, the first one zooms in, the next ones slide in and out
-	 */
+		// Animate the slides, the first one zooms in, the next ones slide in and out
 		const slideActions = node => {
 			slide = node;
 
@@ -3692,13 +3598,13 @@
 			} else {
 				isOpen = true;
 
-				// deferred so the item is measured after the container action has shown the dialog and called onOpen
+				// Deferred so the item is measured after the container action has shown the dialog and called onOpen
 				queueMicrotask(() => zoom(node, ''));
 			}
 
 			return {
 				destroy() {
-					// the items are removed on close, the slide leaves with the gallery then
+					// The items are removed on close, the slide leaves with the gallery then
 					if (items) {
 						// Svelte has removed the previous slide, put it back under the new one until it slides out
 						animate(node, 'bp-nav bp-out', `translate(${movement > 0 ? -20 : 20}px)`);
@@ -3710,7 +3616,7 @@
 			};
 		};
 
-		/** provides object w/ needed funcs / data to child components  */
+		// Provides object w/ needed funcs / data to child components
 		const getChildProps = () => ({
 			calculateDimensions,
 			closing,
@@ -3725,15 +3631,13 @@
 			next
 		});
 
-		/**
-	 * Process the gallery mount and destroy
-	 */
+		// Process the gallery mount and destroy
 		const containerActions = node => {
 			container = node;
 
 			// Use the top layer API for proper modal behavior
 			if (dialog) {
-				// keep the dialog open on Escape, the keydown handler closes it with the outro animation
+				// Keep the dialog open on Escape, the keydown handler closes it with the outro animation
 				node.oncancel = e => e.preventDefault();
 
 				if (!inline) {
@@ -3745,7 +3649,7 @@
 
 			opts.onOpen?.(container, activeItem);
 
-			// don't use keyboard events for inline galleries
+			// Don't use keyboard events for inline galleries
 			if (!inline) {
 				window.addEventListener('keydown', onKeydown);
 			}
@@ -3762,7 +3666,7 @@
 					isOpen = false;
 					isClosing = false;
 
-					// remove class hiding scroll
+					// Remove class hiding scroll
 					html.classList.remove('bp-lock');
 
 					html.style.paddingRight = '';
@@ -3776,9 +3680,7 @@
 			};
 		};
 
-		/**
-	 * Ruler is required to get accurate dimensions and handle container resize
-	 */
+		// Ruler is required to get accurate dimensions and handle container resize
 		const rulerActions = node => {
 			ruler = node;
 
@@ -3791,9 +3693,7 @@
 						$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
 					}
 
-					/**
-	 * Run the user-defined resize function
-	 */
+					// Run the user-defined resize function
 					opts.onResize?.(container, activeItem);
 				});
 
@@ -3809,7 +3709,7 @@
 		const pointerdown_handler = e => $$invalidate(12, clickedEl = e.target);
 
 		const pointerup_handler = function (e) {
-			// only close if left click on self and not dragged
+			// Only close if left click on self and not dragged
 			if (e.button !== 2 && e.target === this && clickedEl === this) {
 				!opts.noClose && close();
 			}
@@ -3823,9 +3723,7 @@
 
 		$$self.$$.update = () => {
 			if ($$self.$$.dirty[0] & /*items, position, activeItem*/ 321) {
-				/**
-	 * Update the active item and dimensions on position change
-	 */
+				// Update the active item and dimensions on position change
 				if (items && items[position]) {
 					$$invalidate(8, activeItem = items[position]);
 					$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
@@ -3932,12 +3830,7 @@
 		}
 	}
 
-	/**
-	 * Initializes BiggerPicture and assigns provided options to a props property
-	 *
-	 * @param {{target: HTMLElement}} options
-	 * @returns BiggerPicture instance
-	 */
+	// Initializes BiggerPicture and assigns provided options to a props property
 	function biggerPicture (options) {
 		if (typeof options !== 'object') {
 			options = {

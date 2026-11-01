@@ -33,13 +33,13 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.2/dist/bigger-picture.css"
-  integrity="sha384-Wi6gMclvFmcAz1fkN5w1e5df8wp+qSjUToYNwEuIB7udol0iHbzctL/7nOXhY2Wv"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.0/dist/bigger-picture.css"
+  integrity="sha384-m8NWHvUkoSwZKuPS0FFaXdBzl8CkJ1zTCnkRs6joNpQ+60IaFBDMnCnAdhRfxCL+"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.2/dist/bigger-picture.umd.js"
-  integrity="sha384-xtBaFTVGyzdj/F/xEIQyrZEyt2+fdQPK13JIgLiZMtyGU2erc0v4ISMVOaVwPuhk"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.0/dist/bigger-picture.umd.js"
+  integrity="sha384-H491mEyFBWIcjdERofosyO1A10rZn3r49vcc8hthPdWspMwGeTylP3RT5ka8+tFB"
   crossorigin="anonymous"
 ></script>
 ```
@@ -512,7 +512,7 @@ html {
 }
 ```
 
-## Upgrading from 1.x
+## Upgrading from 1.2
 
 - `img` and `iframe` are now [`link`](#link): `data-img` becomes `data-link`, and `data-iframe="url"` becomes `data-link="url" data-type="iframe"`. A `srcset` value is detected as an image.
 - [`type`](#type) shows the link as that type even when it is detected as another one, and also accepts `video` and `audio`.

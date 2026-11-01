@@ -4,10 +4,10 @@
 	export let activeItem;
 	export let loaded;
 
-	/** closing store of the gallery */
+	// Closing store of the gallery
 	export let closing;
 
-	/** true once the loader has faded out */
+	// True once the loader has faded out
 	let hidden;
 </script>
 

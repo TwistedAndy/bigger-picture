@@ -24,8 +24,8 @@
 	position: fixed;
 	flex-direction: column;
 	z-index: 999;
-	/* If you're mounting on a portion of the screen and need visible
-	overflow on .bp-wrap, change contain to "layout" on that instance */
+	// If you're mounting on a portion of the screen and need visible
+	// overflow on .bp-wrap, change contain to "layout" on that instance
 	contain: strict;
 	touch-action: none;
 	-webkit-tap-highlight-color: transparent;
@@ -50,7 +50,7 @@
 
 	&.bp-closing {
 
-		// the wrap keeps taking the input, so the page under it can't be scrolled or clicked during the outro
+		// The wrap keeps taking the input, so the page under it can't be scrolled or clicked during the outro
 		* {
 			pointer-events: none;
 		}
@@ -106,7 +106,7 @@
 
 }
 
-// the script pads the root for the hidden scrollbar, so the page doesn't shift,
+// The script pads the root for the hidden scrollbar, so the page doesn't shift,
 // an overflow on the body would break the sticky elements of the page
 .bp-lock {
 	overflow-y: hidden;
@@ -121,12 +121,12 @@
 .bp-controls,
 .bp-caption,
 .bp-thumbs,
-// the thumbnail fading in over the item on close
+// The thumbnail fading in over the item on close
 .bp-load:empty {
 	animation: bp-fade var(--bp-duration) var(--bp-easing);
 }
 
-// the slide animates from or to the --bp-transform and --bp-opacity set by the script
+// The slide animates from or to the --bp-transform and --bp-opacity set by the script
 .bp-slide {
 	animation: bp-in var(--bp-duration) var(--bp-easing);
 }
@@ -140,7 +140,7 @@
 	animation-fill-mode: forwards;
 }
 
-// crop the item like the thumbnail during the zoom
+// Crop the item like the thumbnail during the zoom
 .bp-clip {
 
 	.bp-img,
@@ -204,7 +204,7 @@
 	left: 50%;
 	background: 50% 50% / contain no-repeat;
 	user-select: none;
-	// centers the image, the script sets the transform for the zoom and pan
+	// Centers the image, the script sets the transform for the zoom and pan
 	translate: -50% -50%;
 	transition: transform var(--bp-duration) var(--bp-easing);
 
@@ -331,7 +331,7 @@
 	transform: scalex(-1);
 }
 
-// when closing a zoomed image contain: strict hides overflow
+// When closing a zoomed image contain: strict hides overflow
 .bp-close {
 	contain: layout size;
 }
@@ -422,7 +422,7 @@
 	height: var(--bp-thumb-height);
 	background: #12161a;
 	z-index: 1;
-	// keeps the layer of the fade in, dropping it once the intro ends repaints the bar and can blink
+	// Keeps the layer of the fade in, dropping it once the intro ends repaints the bar and can blink
 	will-change: opacity;
 
 	&-outer {
@@ -430,7 +430,7 @@
 		height: 100%;
 		margin: 0 auto;
 		transition: transform calc(var(--bp-duration) / 2) var(--bp-easing);
-		// a layer of its own for good, adding and dropping one on every scroll repaints the thumbnails
+		// A layer of its own for good, adding and dropping one on every scroll repaints the thumbnails
 		will-change: transform;
 
 		&.bp-drag {
@@ -455,7 +455,7 @@
 		padding: 0;
 		border: 0;
 		border-radius: 4px;
-		// no transition, fading the opacity or filter lifts the thumbnail and the ones after it into layers
+		// No transition, fading the opacity or filter lifts the thumbnail and the ones after it into layers
 		background: rgba(#ffffff, 0.1) 50% 50% / cover no-repeat;
 		cursor: pointer;
 		user-select: none;
@@ -481,7 +481,7 @@
 
 	.bp-wrap {
 
-		// when zoomed on small screens, hide controls
+		// When zoomed on small screens, hide controls
 		&.bp-zoomed {
 
 			.bp-controls {

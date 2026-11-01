@@ -1,12 +1,7 @@
 import * as svelte from 'svelte'
 import BiggerPicture from './bigger-picture.svelte'
 
-/**
- * Initializes BiggerPicture and assigns provided options to a props property
- *
- * @param {{target: HTMLElement}} options
- * @returns BiggerPicture instance
- */
+// Initializes BiggerPicture and assigns provided options to a props property
 export default function (options) {
 	if (typeof options !== 'object') {
 		options = {
