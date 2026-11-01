@@ -367,6 +367,8 @@ The URL of the full image. Can be a `srcset` value, then the `sizes` value updat
 
 For native video and audio, an array of objects with [`src`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#src) (required) and [`type`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#type). A string is parsed as JSON. Each object creates a `<source>` element with its keys as attributes.
 
+A video or audio opened again resumes from where it was closed, until the page reloads. The position is stored by the first `src`, and a finished one starts over.
+
 <!-- prettier-ignore -->
 ```html
 <a href="video.webm" data-sources='[{"src": "video.webm", "type": "video/webm"}, {"src": "video.mp4", "type": "video/mp4"}]'>

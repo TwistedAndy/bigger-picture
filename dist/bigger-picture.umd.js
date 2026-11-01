@@ -829,9 +829,6 @@
 		return { set, update, subscribe };
 	}
 
-	/** true if gallery is in the process of closing */
-	const closing = writable(false);
-
 	const getThumbBackground = (activeItem) => activeItem.thumb ? `url(${activeItem.thumb.src})` : null;
 
 	/**
@@ -1182,7 +1179,7 @@
 				insert(target, div, anchor);
 
 				if (!mounted) {
-					dispose = listen(div, "animationend", /*animationend_handler*/ ctx[4]);
+					dispose = listen(div, "animationend", /*animationend_handler*/ ctx[5]);
 					mounted = true;
 				}
 			},
@@ -1206,7 +1203,7 @@
 		};
 	}
 
-	// (14:67) {#if $closing}
+	// (17:67) {#if $closing}
 	function create_if_block$2(ctx) {
 		let div;
 
@@ -1235,8 +1232,8 @@
 	function create_fragment$4(ctx) {
 		let if_block0_anchor;
 		let if_block1_anchor;
-		let if_block0 = !/*hidden*/ ctx[2] && create_if_block_1$2(ctx);
-		let if_block1 = /*$closing*/ ctx[3] && create_if_block$2(ctx);
+		let if_block0 = !/*hidden*/ ctx[3] && create_if_block_1$2(ctx);
+		let if_block1 = /*$closing*/ ctx[4] && create_if_block$2(ctx);
 
 		return {
 			c() {
@@ -1252,7 +1249,7 @@
 				insert(target, if_block1_anchor, anchor);
 			},
 			p(ctx, [dirty]) {
-				if (!/*hidden*/ ctx[2]) {
+				if (!/*hidden*/ ctx[3]) {
 					if (if_block0) {
 						if_block0.p(ctx, dirty);
 					} else {
@@ -1265,7 +1262,7 @@
 					if_block0 = null;
 				}
 
-				if (/*$closing*/ ctx[3]) {
+				if (/*$closing*/ ctx[4]) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 					} else {
@@ -1293,28 +1290,34 @@
 	}
 
 	function instance$4($$self, $$props, $$invalidate) {
-		let $closing;
-		component_subscribe($$self, closing, $$value => $$invalidate(3, $closing = $$value));
+		let $closing,
+			$$unsubscribe_closing = noop,
+			$$subscribe_closing = () => ($$unsubscribe_closing(), $$unsubscribe_closing = subscribe(closing, $$value => $$invalidate(4, $closing = $$value)), closing);
+
+		$$self.$$.on_destroy.push(() => $$unsubscribe_closing());
 		let { activeItem } = $$props;
 		let { loaded } = $$props;
+		let { closing } = $$props;
+		$$subscribe_closing();
 
 		/** true once the loader has faded out */
 		let hidden;
 
-		const animationend_handler = e => $$invalidate(2, hidden = e.animationName === 'bp-fade-out');
+		const animationend_handler = e => $$invalidate(3, hidden = e.animationName === 'bp-fade-out');
 
 		$$self.$$set = $$props => {
 			if ('activeItem' in $$props) $$invalidate(0, activeItem = $$props.activeItem);
 			if ('loaded' in $$props) $$invalidate(1, loaded = $$props.loaded);
+			if ('closing' in $$props) $$subscribe_closing($$invalidate(2, closing = $$props.closing));
 		};
 
-		return [activeItem, loaded, hidden, $closing, animationend_handler];
+		return [activeItem, loaded, closing, hidden, $closing, animationend_handler];
 	}
 
 	class Loading extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$4, create_fragment$4, not_equal, { activeItem: 0, loaded: 1 });
+			init(this, options, instance$4, create_fragment$4, not_equal, { activeItem: 0, loaded: 1, closing: 2 });
 		}
 	}
 
@@ -1337,8 +1340,8 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*addSrc*/ ctx[21].call(null, img)),
-						listen(img, "error", /*error_handler*/ ctx[28])
+						action_destroyer(/*addSrc*/ ctx[22].call(null, img)),
+						listen(img, "error", /*error_handler*/ ctx[29])
 					];
 
 					mounted = true;
@@ -1360,7 +1363,7 @@
 		};
 	}
 
-	// (361:10) {#if showLoader}
+	// (360:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -1368,7 +1371,8 @@
 		loading = new Loading({
 				props: {
 					activeItem: /*activeItem*/ ctx[9],
-					loaded: /*loaded*/ ctx[3]
+					loaded: /*loaded*/ ctx[3],
+					closing: /*closing*/ ctx[12]
 				}
 			});
 
@@ -1422,7 +1426,7 @@
 				set_style(div0, "width", /*activeDimensions*/ ctx[0][0] + "px");
 				set_style(div0, "height", /*activeDimensions*/ ctx[0][1] + "px");
 				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[5]);
-				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[13] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
+				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[14] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
 				set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[9]));
 				set_style(div0, "transform", style_transform);
 				attr(div1, "class", "bp-img-wrap");
@@ -1439,13 +1443,13 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(window, "keydown", /*onKeydown*/ ctx[14]),
-						action_destroyer(/*onMount*/ ctx[20].call(null, div0)),
-						listen(div1, "wheel", /*onWheel*/ ctx[15]),
-						listen(div1, "pointerdown", /*onPointerDown*/ ctx[16]),
-						listen(div1, "pointermove", /*onPointerMove*/ ctx[17]),
-						listen(div1, "pointerup", /*onPointerUp*/ ctx[19]),
-						listen(div1, "pointercancel", /*removeEventFromCache*/ ctx[18])
+						listen(window, "keydown", /*onKeydown*/ ctx[15]),
+						action_destroyer(/*onMount*/ ctx[21].call(null, div0)),
+						listen(div1, "wheel", /*onWheel*/ ctx[16]),
+						listen(div1, "pointerdown", /*onPointerDown*/ ctx[17]),
+						listen(div1, "pointermove", /*onPointerMove*/ ctx[18]),
+						listen(div1, "pointerup", /*onPointerUp*/ ctx[20]),
+						listen(div1, "pointercancel", /*removeEventFromCache*/ ctx[19])
 					];
 
 					mounted = true;
@@ -1500,8 +1504,8 @@
 					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[5]);
 				}
 
-				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 8323) {
-					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[13] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
+				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 16515) {
+					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[14] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
 				}
 
 				const style_changed = dirty[0] & /*activeDimensions*/ 1;
@@ -1543,14 +1547,14 @@
 	function instance$3($$self, $$props, $$invalidate) {
 		let $zoomed;
 		let $closing;
-		component_subscribe($$self, closing, $$value => $$invalidate(27, $closing = $$value));
 		let { props } = $$props;
 		let { smallScreen } = $$props;
 		let { containerWidth } = $$props;
 		let { containerHeight } = $$props;
 		let { activeDimensions } = $$props;
-		let { activeItem, opts, prev, next, zoomed, container } = props;
-		component_subscribe($$self, zoomed, value => $$invalidate(26, $zoomed = value));
+		let { activeItem, opts, prev, next, zoomed, closing, container } = props;
+		component_subscribe($$self, zoomed, value => $$invalidate(27, $zoomed = value));
+		component_subscribe($$self, closing, value => $$invalidate(28, $closing = value));
 		let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 		/** value of sizes attribute */
@@ -1863,10 +1867,9 @@
 			// add drag inertia / snap back to bounds
 			if (hasDragged) {
 				const [posOne, posTwo, posThree] = dragPositions.slice(-3);
-				const xDiff = posTwo.x - posThree.x;
-				const yDiff = posTwo.y - posThree.y;
 
-				if (Math.hypot(xDiff, yDiff) > 5) {
+				// a short flick may have fewer than three moves, it gets no inertia
+				if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
 					$$invalidate(8, translate = boundTranslateValues([
 						translate[0] - (posOne.x - posThree.x) * 5,
 						translate[1] - (posOne.y - posThree.y) * 5
@@ -1910,14 +1913,14 @@
 
 		$$self.$$set = $$props => {
 			
-			if ('smallScreen' in $$props) $$invalidate(23, smallScreen = $$props.smallScreen);
-			if ('containerWidth' in $$props) $$invalidate(24, containerWidth = $$props.containerWidth);
-			if ('containerHeight' in $$props) $$invalidate(25, containerHeight = $$props.containerHeight);
+			if ('smallScreen' in $$props) $$invalidate(24, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(25, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(26, containerHeight = $$props.containerHeight);
 			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*$closing, $zoomed*/ 201326592) {
+			if ($$self.$$.dirty[0] & /*$closing, $zoomed*/ 402653184) {
 				// if zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && $zoomed && !opts.intro) {
@@ -1927,7 +1930,7 @@
 				}
 			}
 
-			if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 8388609) {
+			if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 16777217) {
 				if (activeDimensions && (opts.inline || !smallScreen)) {
 					$$invalidate(1, scale = 1);
 					$$invalidate(8, translate = [0, 0]);
@@ -1952,6 +1955,7 @@
 			activeItem,
 			opts,
 			zoomed,
+			closing,
 			container,
 			maxZoom,
 			onKeydown,
@@ -1983,10 +1987,10 @@
 				create_fragment$3,
 				not_equal,
 				{
-					props: 22,
-					smallScreen: 23,
-					containerWidth: 24,
-					containerHeight: 25,
+					props: 23,
+					smallScreen: 24,
+					containerWidth: 25,
+					containerHeight: 26,
 					activeDimensions: 0
 				},
 				null,
@@ -2010,7 +2014,8 @@
 		loading = new Loading({
 				props: {
 					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[1]
+					loaded: /*loaded*/ ctx[1],
+					closing: /*closing*/ ctx[3]
 				}
 			});
 
@@ -2033,8 +2038,8 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*addSrc*/ ctx[3].call(null, iframe)),
-						listen(iframe, "load", /*load_handler*/ ctx[5])
+						action_destroyer(/*addSrc*/ ctx[4].call(null, iframe)),
+						listen(iframe, "load", /*load_handler*/ ctx[6])
 					];
 
 					mounted = true;
@@ -2078,7 +2083,7 @@
 		let { props } = $$props;
 		let { activeDimensions } = $$props;
 		let loaded = false;
-		const { activeItem } = props;
+		const { activeItem, closing } = props;
 
 		const addSrc = node => {
 			addAttributes(node, activeItem.attr);
@@ -2092,13 +2097,13 @@
 			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
 		};
 
-		return [activeDimensions, loaded, activeItem, addSrc, props, load_handler];
+		return [activeDimensions, loaded, activeItem, closing, addSrc, props, load_handler];
 	}
 
 	class Iframe extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$2, create_fragment$2, not_equal, { props: 4, activeDimensions: 0 });
+			init(this, options, instance$2, create_fragment$2, not_equal, { props: 5, activeDimensions: 0 });
 		}
 	}
 
@@ -2116,7 +2121,8 @@
 		loading = new Loading({
 				props: {
 					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[1]
+					loaded: /*loaded*/ ctx[1],
+					closing: /*closing*/ ctx[3]
 				}
 			});
 
@@ -2135,7 +2141,7 @@
 				current = true;
 
 				if (!mounted) {
-					dispose = action_destroyer(/*onMount*/ ctx[3].call(null, div));
+					dispose = action_destroyer(/*onMount*/ ctx[4].call(null, div));
 					mounted = true;
 				}
 			},
@@ -2173,11 +2179,13 @@
 		};
 	}
 
+	const positions = {};
+
 	function instance$1($$self, $$props, $$invalidate) {
 		let { props } = $$props;
 		let { activeDimensions } = $$props;
 		let loaded = false;
-		const { activeItem, opts, container } = props;
+		const { activeItem, opts, closing, container } = props;
 
 		/** create audio / video element */
 		const onMount = node => {
@@ -2225,7 +2233,19 @@
 			}
 
 			mediaElement.oncanplay = () => $$invalidate(1, loaded = true);
+
+			// before the metadata loads, this sets the position the playback starts from
+			const key = activeItem.sources[0].src;
+
+			mediaElement.currentTime = positions[key] || 0;
 			node.append(mediaElement);
+
+			return {
+				destroy() {
+					// a finished video starts over next time
+					positions[key] = mediaElement.ended ? 0 : mediaElement.currentTime;
+				}
+			};
 		};
 
 		$$self.$$set = $$props => {
@@ -2233,13 +2253,13 @@
 			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
 		};
 
-		return [activeDimensions, loaded, activeItem, onMount, props];
+		return [activeDimensions, loaded, activeItem, closing, onMount, props];
 	}
 
 	class Video extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$1, create_fragment$1, not_equal, { props: 4, activeDimensions: 0 });
+			init(this, options, instance$1, create_fragment$1, not_equal, { props: 5, activeDimensions: 0 });
 		}
 	}
 
@@ -2295,7 +2315,7 @@
 		};
 	}
 
-	// (866:2) {#if !dialog}
+	// (869:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 
@@ -2315,7 +2335,7 @@
 		};
 	}
 
-	// (877:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (880:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2390,7 +2410,7 @@
 		};
 	}
 
-	// (877:340) {:else}
+	// (880:340) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -2416,14 +2436,14 @@
 		};
 	}
 
-	// (877:287) 
+	// (880:287) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
 
 		iframe = new Iframe({
 				props: {
-					props: /*getChildProps*/ ctx[19](),
+					props: /*getChildProps*/ ctx[20](),
 					activeDimensions: /*activeDimensions*/ ctx[14]
 				}
 			});
@@ -2456,14 +2476,14 @@
 		};
 	}
 
-	// (877:207) 
+	// (880:207) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
 
 		video = new Video({
 				props: {
-					props: /*getChildProps*/ ctx[19](),
+					props: /*getChildProps*/ ctx[20](),
 					activeDimensions: /*activeDimensions*/ ctx[14]
 				}
 			});
@@ -2496,14 +2516,14 @@
 		};
 	}
 
-	// (877:53) {#if activeItem.img}
+	// (880:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
 
 		imageitem = new Image$1({
 				props: {
-					props: /*getChildProps*/ ctx[19](),
+					props: /*getChildProps*/ ctx[20](),
 					smallScreen: /*smallScreen*/ ctx[10],
 					containerWidth: /*containerWidth*/ ctx[7],
 					containerHeight: /*containerHeight*/ ctx[13],
@@ -2542,7 +2562,7 @@
 		};
 	}
 
-	// (866:94) {#key activeItem.i}
+	// (869:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let current;
@@ -2564,9 +2584,9 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*slideActions*/ ctx[18].call(null, div)),
-						listen(div, "pointerdown", /*pointerdown_handler*/ ctx[24]),
-						listen(div, "pointerup", /*pointerup_handler*/ ctx[25])
+						action_destroyer(/*slideActions*/ ctx[19].call(null, div)),
+						listen(div, "pointerdown", /*pointerdown_handler*/ ctx[25]),
+						listen(div, "pointerup", /*pointerup_handler*/ ctx[26])
 					];
 
 					mounted = true;
@@ -2617,7 +2637,7 @@
 		};
 	}
 
-	// (877:502) {#if activeItem.caption}
+	// (880:502) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2641,7 +2661,7 @@
 		};
 	}
 
-	// (877:719) {#if items.length > 1}
+	// (880:719) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2693,7 +2713,7 @@
 		};
 	}
 
-	// (887:25) {#if opts.thumbs && items.length > 1}
+	// (890:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2735,7 +2755,7 @@
 		};
 	}
 
-	// (857:20) <svelte:element    this={dialog ? 'dialog' : 'div'}    use:containerActions    class="bp-wrap"    class:bp-zoomed={$zoomed}    class:bp-inline={inline}    class:bp-small={smallScreen}    class:bp-noclose={opts.noClose}    class:bp-closing={$closing}   >
+	// (860:20) <svelte:element    this={dialog ? 'dialog' : 'div'}    use:containerActions    class="bp-wrap"    class:bp-zoomed={$zoomed}    class:bp-inline={inline}    class:bp-small={smallScreen}    class:bp-noclose={opts.noClose}    class:bp-closing={$closing}   >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -2796,9 +2816,9 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*rulerActions*/ ctx[21].call(null, div0)),
+						action_destroyer(/*rulerActions*/ ctx[22].call(null, div0)),
 						listen(button, "click", /*close*/ ctx[2]),
-						action_destroyer(/*containerActions*/ ctx[20].call(null, svelte_element))
+						action_destroyer(/*containerActions*/ ctx[21].call(null, svelte_element))
 					];
 
 					mounted = true;
@@ -2985,7 +3005,6 @@
 	function instance($$self, $$props, $$invalidate) {
 		let $zoomed;
 		let $closing;
-		component_subscribe($$self, closing, $$value => $$invalidate(16, $closing = $$value));
 		let { items = undefined } = $$props;
 		let { target = undefined } = $$props;
 		let { dialog = false } = $$props;
@@ -3032,6 +3051,11 @@
 		const zoomed = writable(0);
 
 		component_subscribe($$self, zoomed, value => $$invalidate(15, $zoomed = value));
+
+		/** true while this gallery runs its outro, other galleries on the page keep their own */
+		const closing = writable(0);
+
+		component_subscribe($$self, closing, value => $$invalidate(16, $closing = value));
 
 		/** true while the gallery runs its outro animation */
 		let isClosing;
@@ -3710,6 +3734,7 @@
 		/** provides object w/ needed funcs / data to child components  */
 		const getChildProps = () => ({
 			calculateDimensions,
+			closing,
 			preloadNext,
 			activeItem,
 			loadImage,
@@ -3812,7 +3837,7 @@
 
 		$$self.$$set = $$props => {
 			if ('items' in $$props) $$invalidate(0, items = $$props.items);
-			if ('target' in $$props) $$invalidate(22, target = $$props.target);
+			if ('target' in $$props) $$invalidate(23, target = $$props.target);
 			if ('dialog' in $$props) $$invalidate(1, dialog = $$props.dialog);
 		};
 
@@ -3851,6 +3876,7 @@
 			$zoomed,
 			$closing,
 			zoomed,
+			closing,
 			slideActions,
 			getChildProps,
 			containerActions,
@@ -3874,9 +3900,9 @@
 				not_equal,
 				{
 					items: 0,
-					target: 22,
+					target: 23,
 					dialog: 1,
-					open: 23,
+					open: 24,
 					close: 2,
 					prev: 3,
 					next: 4,
@@ -3894,7 +3920,7 @@
 
 
 		get target() {
-			return this.$$.ctx[22];
+			return this.$$.ctx[23];
 		}
 
 
@@ -3906,7 +3932,7 @@
 
 
 		get open() {
-			return this.$$.ctx[23];
+			return this.$$.ctx[24];
 		}
 
 		get close() {

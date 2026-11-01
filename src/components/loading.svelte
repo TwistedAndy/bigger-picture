@@ -1,8 +1,11 @@
 <script>
-	import { closing, getThumbBackground } from '../stores';
+	import { getThumbBackground } from '../stores';
 
 	export let activeItem;
 	export let loaded;
+
+	/** closing store of the gallery */
+	export let closing;
 
 	/** true once the loader has faded out */
 	let hidden;

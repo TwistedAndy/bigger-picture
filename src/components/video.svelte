@@ -1,3 +1,8 @@
+<script context="module">
+	/** playback positions by the first source, a video opened again resumes from there */
+	const positions = {};
+</script>
+
 <script>
 	/*
 	This could be cleaner with svelte:element to switch video / audio
@@ -13,7 +18,7 @@
 
 	let loaded = false;
 
-	const { activeItem, opts, container } = props;
+	const { activeItem, opts, closing, container } = props;
 
 	/** create audio / video element */
 	const onMount = (node) => {
@@ -53,7 +58,18 @@
 
 		mediaElement.oncanplay = () => (loaded = true);
 
+		// before the metadata loads, this sets the position the playback starts from
+		const key = activeItem.sources[0].src;
+		mediaElement.currentTime = positions[key] || 0;
+
 		node.append(mediaElement);
+
+		return {
+			destroy() {
+				// a finished video starts over next time
+				positions[key] = mediaElement.ended ? 0 : mediaElement.currentTime;
+			}
+		};
 
 	};
 </script>
@@ -65,5 +81,5 @@
 	style:height="{activeDimensions[1]}px"
 	style:background-image={getThumbBackground(activeItem)}
 >
-	<Loading {activeItem} {loaded} />
+	<Loading {activeItem} {loaded} {closing} />
 </div>

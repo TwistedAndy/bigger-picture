@@ -7,7 +7,7 @@
 
 	let loaded = false;
 
-	const { activeItem } = props;
+	const { activeItem, closing } = props;
 
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr);
@@ -27,5 +27,5 @@
 		title={activeItem.title || activeItem.alt}
 		on:load={() => (loaded = true)}
 	></iframe>
-	<Loading {activeItem} {loaded} />
+	<Loading {activeItem} {loaded} {closing} />
 </div>

@@ -1,11 +1,3 @@
-/** Svelte store to track if gallery is in the process of closing
- * ```js
- * closing.subscribe((bool) => {
- *    console.log('is closing', bool)
- * })
- * ```
- */
-export const closing: import('svelte/store').Writable<number>
 /** If user prefers reduced motion  */
 export const prefersReducedMotion: boolean
 export function defaultTweenOptions(duration: number): {

@@ -1,5 +1,5 @@
 <script>
-	import { addAttributes, closing, getThumbBackground } from '../stores';
+	import { addAttributes, getThumbBackground } from '../stores';
 
 	import Loading from './loading.svelte';
 
@@ -9,7 +9,7 @@
 	export let containerHeight;
 	export let activeDimensions;
 
-	let { activeItem, opts, prev, next, zoomed, container } = props;
+	let { activeItem, opts, prev, next, zoomed, closing, container } = props;
 
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
@@ -296,9 +296,8 @@
 		// add drag inertia / snap back to bounds
 		if (hasDragged) {
 			const [posOne, posTwo, posThree] = dragPositions.slice(-3);
-			const xDiff = posTwo.x - posThree.x;
-			const yDiff = posTwo.y - posThree.y;
-			if (Math.hypot(xDiff, yDiff) > 5) {
+			// a short flick may have fewer than three moves, it gets no inertia
+			if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
 				translate = boundTranslateValues([translate[0] - (posOne.x - posThree.x) * 5, translate[1] - (posOne.y - posThree.y) * 5]);
 			}
 		} else if (!opts.onImageClick?.(container, activeItem)) {
@@ -370,7 +369,7 @@
 			/>
 		{/if}
 		{#if showLoader}
-			<Loading {activeItem} {loaded} />
+			<Loading {activeItem} {loaded} {closing} />
 		{/if}
 	</div>
 </div>

@@ -332,6 +332,7 @@ buttons.forEach((button) =&gt; {
 })</code></pre></div>
 	<ul>
 		<li>An audio source creates an <code>&lt;audio&gt;</code> element over the thumbnail; anything else creates a <code>&lt;video&gt;</code>. Both start with <code>controls</code>, <code>autoplay</code> and <code>playsinline</code>.</li>
+		<li>Opened again, video and audio resume from where they were closed, until the page reloads. A finished one starts over.</li>
 		<li>Passing a single element as <code>items</code> opens it on its own.</li>
 		<li>A bare link to a <code>.mp4</code> or <code>.mp3</code> file works too, see <a href="#link-detection">link detection</a>.</li>
 	</ul>

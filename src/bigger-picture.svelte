@@ -1,7 +1,6 @@
 <svelte:options accessors={true} />
 
 <script>
-	import { closing } from './stores';
 	import { writable } from 'svelte/store';
 	import Thumbs from './components/thumbs.svelte';
 	import ImageItem from './components/image.svelte';
@@ -59,6 +58,9 @@
 
 	// /** true if image is currently zoomed past starting size */
 	const zoomed = writable(0);
+
+	/** true while this gallery runs its outro, other galleries on the page keep their own */
+	const closing = writable(0);
 
 	/**
 	 * Update the active item and dimensions on position change
@@ -764,6 +766,7 @@
 	/** provides object w/ needed funcs / data to child components  */
 	const getChildProps = () => ({
 		calculateDimensions,
+		closing,
 		preloadNext,
 		activeItem,
 		loadImage,
