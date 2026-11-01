@@ -45,6 +45,12 @@
 	// Slide of the active item
 	let slide;
 
+	// Texts of the controls, merged with the labels option
+	let labels;
+
+	// Gap around the stage, read on open and on resize instead of on every measure
+	let gap = 0;
+
 	let ruler;
 	let container;
 	let containerWidth;
@@ -81,6 +87,7 @@
 
 		// intro and noClose are the deprecated names of zoom: false and persistent
 		opts = { zoom: !options.intro, persistent: options.noClose, ...options };
+		labels = { close: 'Close', prev: 'Previous', next: 'Next', thumb: 'View image', gallery: 'Gallery', ...opts.labels };
 		inline = opts.inline;
 
 		// Update trigger element to restore focus
@@ -90,6 +97,7 @@
 			container = target;
 			containerWidth = target.offsetWidth;
 			containerHeight = target === document.body ? window.innerHeight : target.clientHeight;
+			readGap();
 		}
 
 		position = 0;
@@ -147,6 +155,10 @@
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
 		window.removeEventListener('keydown', onKeydown);
+		// Closed without the back button, drop the history entry the gallery added
+		if (opts.history && history.state?.bp) {
+			history.back();
+		}
 		// No slide yet when closed in the same tick as opened
 		slide && zoom(slide, 'bp-out');
 
@@ -202,7 +214,8 @@
 				const { focusWrap = container } = opts;
 				const tabbable = [...focusWrap.querySelectorAll('*')].filter((node) => node.tabIndex >= 0);
 				let index = tabbable.indexOf(activeElement);
-				index += tabbable.length + (shiftKey ? -1 : 1);
+				// From the container itself, Tab goes to the first control and Shift+Tab to the last
+				index = (index < 0 && shiftKey ? 0 : index) + tabbable.length + (shiftKey ? -1 : 1);
 				tabbable[index % tabbable.length].focus();
 			}
 		}
@@ -396,7 +409,8 @@
 			thumbElement = item.element.querySelector('img');
 		}
 
-		if (item.type === 'image') {
+		// A link without a thumbnail shows the full image in the strip, otherwise the gallery loads it when shown
+		if (item.type === 'image' && opts.thumbs) {
 			thumbLink = item.element?.href || '';
 		}
 
@@ -450,14 +464,15 @@
 
 	};
 
+	const readGap = () => (gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0);
+
 	// Calculate width and height to fit inside a container
 	const calculateDimensions = ({
 		width = 1920,
 		height = 1080
 	}) => {
-		const activeGap = container ? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap')) : 0;
 		const { scale = 1 } = opts;
-		const ratio = Math.min(((containerWidth - 2 * activeGap) / width) * scale, ((containerHeight - 2 * activeGap) / height) * scale);
+		const ratio = Math.min(((containerWidth - 2 * gap) / width) * scale, ((containerHeight - 2 * gap) / height) * scale);
 		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	};
@@ -511,9 +526,13 @@
 
 			return image.decode().then(() => {
 
-				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
+				// The size from a thumbnail is only a ratio, and an item without one takes it from the image
+				if ((item.scaled || !item.width || !item.height) && image.naturalWidth) {
 					item.width = image.naturalWidth;
 					item.height = image.naturalHeight;
+					if (item === activeItem) {
+						activeDimensions = calculateDimensions(item);
+					}
 				}
 
 				// It's important to set srcset after we read the image dimensions
@@ -623,9 +642,21 @@
 		next
 	});
 
+	// Name a control, the labels stay the same while the gallery is open
+	const label = (node, key) => {
+		node.title = labels[key];
+		node.setAttribute('aria-label', labels[key]);
+	};
+
 	// Process the gallery mount and destroy
 	const containerActions = (node) => {
 		container = node;
+
+		// Set here, attributes on svelte:element compile to a much larger spread
+		node.tabIndex = -1;
+		node.setAttribute('role', inline ? 'region' : 'dialog');
+		node.setAttribute('aria-modal', !inline);
+		node.setAttribute('aria-label', labels.gallery);
 
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
@@ -643,6 +674,13 @@
 		// Don't use keyboard events for inline galleries
 		if (!inline) {
 			window.addEventListener('keydown', onKeydown);
+			// Keyboard and screen reader users start inside the gallery
+			node.focus({ preventScroll: true });
+			// The back button closes the gallery instead of leaving the page
+			if (opts.history) {
+				history.pushState({ bp: 1 }, '');
+				window.addEventListener('popstate', close);
+			}
 		}
 
 		return {
@@ -652,6 +690,7 @@
 					node.close();
 				}
 				window.removeEventListener('keydown', onKeydown);
+				window.removeEventListener('popstate', close);
 				closing.set(false);
 				isOpen = false;
 				isClosing = false;
@@ -681,6 +720,7 @@
 			if (rect.width !== containerWidth || rect.height !== containerHeight) {
 				containerWidth = rect.width;
 				containerHeight = rect.height;
+				readGap();
 				activeDimensions = calculateDimensions(activeItem);
 			}
 
@@ -755,7 +795,7 @@
 		</div>
 		<div class="bp-controls">
 			<!-- Close button -->
-			<button class="bp-x" title="Close" aria-label="Close" on:click={close}></button>
+			<button class="bp-x" use:label={'close'} on:click={close}></button>
 
 			{#if items.length > 1}
 				<!-- Counter -->
@@ -765,20 +805,18 @@
 				<!-- Forward / back buttons -->
 				<button
 					class="bp-prev"
-					title="Previous"
-					aria-label="Previous"
+					use:label={'prev'}
 					on:click={prev}
 				></button>
 				<button
 					class="bp-next"
-					title="Next"
-					aria-label="Next"
+					use:label={'next'}
 					on:click={next}
 				></button>
 			{/if}
 		</div>
 		{#if opts.thumbs && items.length > 1}
-			<Thumbs {position} {setPosition} {items} />
+			<Thumbs {position} {setPosition} {items} label={labels.thumb} />
 		{/if}
 	</svelte:element>
 {/if}

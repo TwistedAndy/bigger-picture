@@ -5,6 +5,9 @@
 	export let position;
 	export let setPosition;
 
+	// Label of a thumbnail without alt text or a caption, followed by its number
+	export let label;
+
 	let thumbsWidth;
 	let thumbsPanel;
 	let thumbsPanelWidth;
@@ -128,7 +131,7 @@
 			{#each items as item (item.i)}
 				<button
 					title={item.caption}
-					aria-label={item.caption || `View image ${item.i + 1}`}
+					aria-label={item.alt || item.caption || `${label} ${item.i + 1}`}
 					style:background-image={getThumbBackground(item)}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}

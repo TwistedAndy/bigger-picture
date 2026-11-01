@@ -12,7 +12,6 @@
 
 </div>
 
-> [!NOTE]
 > Originally created by [Hank Dollman](https://github.com/henrygd/bigger-picture). This fork is maintained by [Andrii Toniievych](https://github.com/TwistedAndy) and adds automatic link detection, built-in thumbnails, dialog (top layer) mode, type filtering and more.
 
 ## Features
@@ -33,13 +32,13 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.1/dist/bigger-picture.css"
-  integrity="sha384-m8NWHvUkoSwZKuPS0FFaXdBzl8CkJ1zTCnkRs6joNpQ+60IaFBDMnCnAdhRfxCL+"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.2/dist/bigger-picture.css"
+  integrity="sha384-YFux48/HVHgRUq9lWJxsWwEsGB3by3FwHwiNy5ihnmMp3BLdxMRuPxVm0ELM8jje"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.1/dist/bigger-picture.umd.js"
-  integrity="sha384-qKax1NfKqtbff0A1PAWxyuqnyUSTDrtKwhyJaWPrLwG6K6Hzo9Q5J6HxH7NCIPWY"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.2/dist/bigger-picture.umd.js"
+  integrity="sha384-HRW54STC/+KNTMeRkujfmoFt0mBPPstJ0pOI5Dy12iU245yP2/foKDNELQbqDRky"
   crossorigin="anonymous"
 ></script>
 ```
@@ -155,6 +154,8 @@ Options passed to `open()`.
 | [`noPinch`](#nopinch)          | `boolean` or `function`            | `false`     | Disables pinch zoom.                                    |
 | [`focusWrap`](#focuswrap)      | `Node`                             |             | Element to trap focus in.                               |
 | [`maxZoom`](#maxzoom)          | `number`                           | `10`        | Maximum zoom relative to the starting size.             |
+| [`history`](#history)          | `boolean`                          | `false`     | The back button closes the gallery.                     |
+| [`labels`](#labels)            | `object`                           |             | Texts of the controls, for translations.                |
 | [`onOpen`](#onopen)            | `function`                         |             | Runs before the intro animation.                        |
 | [`onUpdate`](#onupdate)        | `function`                         |             | Runs after the active item changes.                     |
 | [`onClose`](#onclose)          | `function`                         |             | Runs before the outro animation.                        |
@@ -259,6 +260,33 @@ The element to trap focus in on Tab. Useful when the gallery is mounted inside a
 `number` · default `10`
 
 Limits zoom to `maxZoom` times the starting size, even if the item's `width` and `height` are larger. With `2`, an image that starts 800px wide zooms up to 1600px. `1` disables zoom. An item's own `maxZoom` overrides this value.
+
+### history
+
+`boolean` · default `false`
+
+Adds a history entry when the gallery opens, so the back button, or the back swipe on phones, closes the gallery instead of leaving the page. Closing the gallery otherwise removes the entry. Inline galleries ignore it.
+
+### labels
+
+`object`
+
+Texts of the controls, read by screen readers and shown as tooltips. Pass only the ones to change.
+
+```js
+bp.open({
+  items,
+  labels: {
+    close: 'Fermer',
+    prev: 'Précédent',
+    next: 'Suivant',
+    thumb: 'Image', // followed by the number on thumbnails without alt or caption
+    gallery: 'Galerie',
+  },
+})
+```
+
+The defaults are `Close`, `Previous`, `Next`, `View image` and `Gallery`.
 
 ### onOpen
 
@@ -501,7 +529,7 @@ bp.open({
 | Swipe left or right           | Previous and next item                           |
 | Swipe up, click the backdrop  | Close                                            |
 
-Inline galleries handle the mouse and touch, but leave the keyboard to the page.
+The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page.
 
 ## Page scroll
 

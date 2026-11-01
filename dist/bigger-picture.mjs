@@ -854,11 +854,11 @@ const addAttributes = (node, attributes) => {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
+	child_ctx[21] = list[i];
 	return child_ctx;
 }
 
-// (123:3) {#each items as item (item.i)}
+// (126:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
@@ -867,7 +867,7 @@ function create_each_block(key_1, ctx) {
 	let dispose;
 
 	function click_handler() {
-		return /*click_handler*/ ctx[12](/*item*/ ctx[20]);
+		return /*click_handler*/ ctx[13](/*item*/ ctx[21]);
 	}
 
 	return {
@@ -875,10 +875,10 @@ function create_each_block(key_1, ctx) {
 		first: null,
 		c() {
 			button = element("button");
-			attr(button, "title", button_title_value = /*item*/ ctx[20].caption);
-			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[20].caption || `View image ${/*item*/ ctx[20].i + 1}`);
-			toggle_class(button, "active", /*item*/ ctx[20].i === /*position*/ ctx[1]);
-			set_style(button, "background-image", getThumbBackground(/*item*/ ctx[20]));
+			attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
+			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`);
+			toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
+			set_style(button, "background-image", getThumbBackground(/*item*/ ctx[21]));
 			this.first = button;
 		},
 		m(target, anchor) {
@@ -886,7 +886,7 @@ function create_each_block(key_1, ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(button, "focus", /*focus_handler*/ ctx[11]),
+					listen(button, "focus", /*focus_handler*/ ctx[12]),
 					listen(button, "click", click_handler)
 				];
 
@@ -896,20 +896,20 @@ function create_each_block(key_1, ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[20].caption)) {
+			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[21].caption)) {
 				attr(button, "title", button_title_value);
 			}
 
-			if (dirty & /*items*/ 1 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[20].caption || `View image ${/*item*/ ctx[20].i + 1}`)) {
+			if (dirty & /*items, label*/ 9 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`)) {
 				attr(button, "aria-label", button_aria_label_value);
 			}
 
 			if (dirty & /*items, position*/ 3) {
-				toggle_class(button, "active", /*item*/ ctx[20].i === /*position*/ ctx[1]);
+				toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
 			}
 
 			if (dirty & /*items*/ 1) {
-				set_style(button, "background-image", getThumbBackground(/*item*/ ctx[20]));
+				set_style(button, "background-image", getThumbBackground(/*item*/ ctx[21]));
 			}
 		},
 		d(detaching) {
@@ -929,11 +929,11 @@ function create_fragment$5(ctx) {
 	let div0;
 	let each_blocks = [];
 	let each_1_lookup = new Map();
-	let style_transform = `translateX(${/*thumbsTranslate*/ ctx[3]}px)`;
+	let style_transform = `translateX(${/*thumbsTranslate*/ ctx[4]}px)`;
 	let mounted;
 	let dispose;
 	let each_value = ensure_array_like(/*items*/ ctx[0]);
-	const get_key = ctx => /*item*/ ctx[20].i;
+	const get_key = ctx => /*item*/ ctx[21].i;
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -954,7 +954,7 @@ function create_fragment$5(ctx) {
 			attr(div0, "class", "bp-thumbs-inner");
 			attr(div1, "class", "bp-thumbs-outer");
 			attr(div1, "role", "none");
-			toggle_class(div1, "bp-drag", /*isPointerDown*/ ctx[4]);
+			toggle_class(div1, "bp-drag", /*isPointerDown*/ ctx[5]);
 			set_style(div1, "transform", style_transform);
 			attr(div2, "role", "none");
 			attr(div2, "class", "bp-thumbs");
@@ -972,28 +972,28 @@ function create_fragment$5(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*thumbsActions*/ ctx[10].call(null, div0)),
-					listen(div1, "pointerdown", /*pointerDown*/ ctx[7]),
-					action_destroyer(/*thumbsActions*/ ctx[10].call(null, div2)),
-					listen(div2, "pointermove", /*pointerMove*/ ctx[8]),
-					listen(div2, "pointerup", /*pointerUp*/ ctx[9]),
-					listen(div2, "pointercancel", /*pointerUp*/ ctx[9])
+					action_destroyer(/*thumbsActions*/ ctx[11].call(null, div0)),
+					listen(div1, "pointerdown", /*pointerDown*/ ctx[8]),
+					action_destroyer(/*thumbsActions*/ ctx[11].call(null, div2)),
+					listen(div2, "pointermove", /*pointerMove*/ ctx[9]),
+					listen(div2, "pointerup", /*pointerUp*/ ctx[10]),
+					listen(div2, "pointercancel", /*pointerUp*/ ctx[10])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*items, position, scrollToButton, hasDragged, setPosition*/ 103) {
+			if (dirty & /*items, label, position, scrollToButton, hasDragged, setPosition*/ 207) {
 				each_value = ensure_array_like(/*items*/ ctx[0]);
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div0, destroy_block, create_each_block, null, get_each_context);
 			}
 
-			if (dirty & /*isPointerDown*/ 16) {
-				toggle_class(div1, "bp-drag", /*isPointerDown*/ ctx[4]);
+			if (dirty & /*isPointerDown*/ 32) {
+				toggle_class(div1, "bp-drag", /*isPointerDown*/ ctx[5]);
 			}
 
-			if (dirty & /*thumbsTranslate*/ 8 && style_transform !== (style_transform = `translateX(${/*thumbsTranslate*/ ctx[3]}px)`)) {
+			if (dirty & /*thumbsTranslate*/ 16 && style_transform !== (style_transform = `translateX(${/*thumbsTranslate*/ ctx[4]}px)`)) {
 				set_style(div1, "transform", style_transform);
 			}
 		},
@@ -1018,6 +1018,7 @@ function instance$5($$self, $$props, $$invalidate) {
 	let { items } = $$props;
 	let { position } = $$props;
 	let { setPosition } = $$props;
+	let { label } = $$props;
 	let thumbsWidth;
 	let thumbsPanel;
 	let thumbsPanelWidth;
@@ -1041,9 +1042,9 @@ function instance$5($$self, $$props, $$invalidate) {
 		let { offsetLeft } = activeBtn;
 
 		if (left + width > thumbsPanelWidth) {
-			$$invalidate(3, thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin));
+			$$invalidate(4, thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin));
 		} else if (right - width < 0) {
-			$$invalidate(3, thumbsTranslate = boundTranslate(-offsetLeft + margin));
+			$$invalidate(4, thumbsTranslate = boundTranslate(-offsetLeft + margin));
 		}
 
 		initialTranslate = thumbsTranslate;
@@ -1053,11 +1054,11 @@ function instance$5($$self, $$props, $$invalidate) {
 
 	const pointerDown = function (e) {
 		if (thumbsWidth >= thumbsPanelWidth) {
-			$$invalidate(4, isPointerDown = true);
+			$$invalidate(5, isPointerDown = true);
 			pointerDownX = e.clientX;
 
 			// Stop the transition where it is, the drag moves the strip without one
-			$$invalidate(3, thumbsTranslate = initialTranslate = new DOMMatrix(getComputedStyle(this).transform).m41);
+			$$invalidate(4, thumbsTranslate = initialTranslate = new DOMMatrix(getComputedStyle(this).transform).m41);
 		}
 	};
 
@@ -1066,10 +1067,10 @@ function instance$5($$self, $$props, $$invalidate) {
 			let dragAmount = -(pointerDownX - e.clientX);
 
 			if (hasDragged) {
-				$$invalidate(3, thumbsTranslate = boundTranslate(initialTranslate + dragAmount));
+				$$invalidate(4, thumbsTranslate = boundTranslate(initialTranslate + dragAmount));
 				dragPositions.push(e.clientX);
 			} else {
-				$$invalidate(5, hasDragged = Math.abs(dragAmount) > 5);
+				$$invalidate(6, hasDragged = Math.abs(dragAmount) > 5);
 			}
 		}
 	};
@@ -1082,13 +1083,13 @@ function instance$5($$self, $$props, $$invalidate) {
 				let xDiff = dragPositions[0] - dragPositions.pop();
 
 				if (Math.abs(xDiff) > 5) {
-					$$invalidate(3, thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5));
+					$$invalidate(4, thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5));
 				}
 			}
 		}
 
 		dragPositions = [];
-		$$invalidate(4, isPointerDown = $$invalidate(5, hasDragged = false));
+		$$invalidate(5, isPointerDown = $$invalidate(6, hasDragged = false));
 		initialTranslate = thumbsTranslate;
 	};
 
@@ -1122,6 +1123,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		if ('items' in $$props) $$invalidate(0, items = $$props.items);
 		if ('position' in $$props) $$invalidate(1, position = $$props.position);
 		if ('setPosition' in $$props) $$invalidate(2, setPosition = $$props.setPosition);
+		if ('label' in $$props) $$invalidate(3, label = $$props.label);
 	};
 
 	$$self.$$.update = () => {
@@ -1137,6 +1139,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		items,
 		position,
 		setPosition,
+		label,
 		thumbsTranslate,
 		isPointerDown,
 		hasDragged,
@@ -1153,7 +1156,13 @@ function instance$5($$self, $$props, $$invalidate) {
 class Thumbs extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance$5, create_fragment$5, not_equal, { items: 0, position: 1, setPosition: 2 });
+
+		init(this, options, instance$5, create_fragment$5, not_equal, {
+			items: 0,
+			position: 1,
+			setPosition: 2,
+			label: 3
+		});
 	}
 }
 
@@ -2311,7 +2320,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (709:2) {#if !dialog}
+// (749:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 
@@ -2331,7 +2340,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (720:6) {#if containerWidth > 0 && containerHeight > 0}
+// (760:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2406,7 +2415,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (720:364) {:else}
+// (760:364) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2432,15 +2441,15 @@ function create_else_block(ctx) {
 	};
 }
 
-// (720:311) 
+// (760:311) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
 
 	iframe = new Iframe({
 			props: {
-				props: /*getChildProps*/ ctx[20](),
-				activeDimensions: /*activeDimensions*/ ctx[14]
+				props: /*getChildProps*/ ctx[21](),
+				activeDimensions: /*activeDimensions*/ ctx[15]
 			}
 		});
 
@@ -2454,7 +2463,7 @@ function create_if_block_7(ctx) {
 		},
 		p(ctx, dirty) {
 			const iframe_changes = {};
-			if (dirty[0] & /*activeDimensions*/ 16384) iframe_changes.activeDimensions = /*activeDimensions*/ ctx[14];
+			if (dirty[0] & /*activeDimensions*/ 32768) iframe_changes.activeDimensions = /*activeDimensions*/ ctx[15];
 			iframe.$set(iframe_changes);
 		},
 		i(local) {
@@ -2472,15 +2481,15 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (720:220) 
+// (760:220) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
 
 	video = new Video({
 			props: {
-				props: /*getChildProps*/ ctx[20](),
-				activeDimensions: /*activeDimensions*/ ctx[14]
+				props: /*getChildProps*/ ctx[21](),
+				activeDimensions: /*activeDimensions*/ ctx[15]
 			}
 		});
 
@@ -2494,7 +2503,7 @@ function create_if_block_6(ctx) {
 		},
 		p(ctx, dirty) {
 			const video_changes = {};
-			if (dirty[0] & /*activeDimensions*/ 16384) video_changes.activeDimensions = /*activeDimensions*/ ctx[14];
+			if (dirty[0] & /*activeDimensions*/ 32768) video_changes.activeDimensions = /*activeDimensions*/ ctx[15];
 			video.$set(video_changes);
 		},
 		i(local) {
@@ -2512,18 +2521,18 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (720:53) {#if activeItem.type === 'image'}
+// (760:53) {#if activeItem.type === 'image'}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
 
 	imageitem = new Image$1({
 			props: {
-				props: /*getChildProps*/ ctx[20](),
+				props: /*getChildProps*/ ctx[21](),
 				smallScreen: /*smallScreen*/ ctx[10],
 				containerWidth: /*containerWidth*/ ctx[7],
-				containerHeight: /*containerHeight*/ ctx[13],
-				activeDimensions: /*activeDimensions*/ ctx[14]
+				containerHeight: /*containerHeight*/ ctx[14],
+				activeDimensions: /*activeDimensions*/ ctx[15]
 			}
 		});
 
@@ -2539,8 +2548,8 @@ function create_if_block_5(ctx) {
 			const imageitem_changes = {};
 			if (dirty[0] & /*smallScreen*/ 1024) imageitem_changes.smallScreen = /*smallScreen*/ ctx[10];
 			if (dirty[0] & /*containerWidth*/ 128) imageitem_changes.containerWidth = /*containerWidth*/ ctx[7];
-			if (dirty[0] & /*containerHeight*/ 8192) imageitem_changes.containerHeight = /*containerHeight*/ ctx[13];
-			if (dirty[0] & /*activeDimensions*/ 16384) imageitem_changes.activeDimensions = /*activeDimensions*/ ctx[14];
+			if (dirty[0] & /*containerHeight*/ 16384) imageitem_changes.containerHeight = /*containerHeight*/ ctx[14];
+			if (dirty[0] & /*activeDimensions*/ 32768) imageitem_changes.activeDimensions = /*activeDimensions*/ ctx[15];
 			imageitem.$set(imageitem_changes);
 		},
 		i(local) {
@@ -2558,13 +2567,13 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (709:94) {#key activeItem.i}
+// (749:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let current;
 	let mounted;
 	let dispose;
-	let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0 && create_if_block_4(ctx);
+	let if_block = /*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[14] > 0 && create_if_block_4(ctx);
 
 	return {
 		c() {
@@ -2580,20 +2589,20 @@ function create_key_block(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*slideActions*/ ctx[19].call(null, div)),
-					listen(div, "pointerdown", /*pointerdown_handler*/ ctx[25]),
-					listen(div, "pointerup", /*pointerup_handler*/ ctx[26])
+					action_destroyer(/*slideActions*/ ctx[20].call(null, div)),
+					listen(div, "pointerdown", /*pointerdown_handler*/ ctx[27]),
+					listen(div, "pointerup", /*pointerup_handler*/ ctx[28])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[13] > 0) {
+			if (/*containerWidth*/ ctx[7] > 0 && /*containerHeight*/ ctx[14] > 0) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty[0] & /*containerWidth, containerHeight*/ 8320) {
+					if (dirty[0] & /*containerWidth, containerHeight*/ 16512) {
 						transition_in(if_block, 1);
 					}
 				} else {
@@ -2633,7 +2642,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (720:494) {#if activeItem.caption}
+// (760:494) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2657,7 +2666,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (720:711) {#if items.length > 1}
+// (760:698) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2680,11 +2689,7 @@ function create_if_block_2(ctx) {
 			button1 = element("button");
 			attr(div, "class", "bp-count");
 			attr(button0, "class", "bp-prev");
-			attr(button0, "title", "Previous");
-			attr(button0, "aria-label", "Previous");
 			attr(button1, "class", "bp-next");
-			attr(button1, "title", "Next");
-			attr(button1, "aria-label", "Next");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -2696,7 +2701,9 @@ function create_if_block_2(ctx) {
 
 			if (!mounted) {
 				dispose = [
+					action_destroyer(/*label*/ ctx[22].call(null, button0, 'prev')),
 					listen(button0, "click", /*prev*/ ctx[3]),
+					action_destroyer(/*label*/ ctx[22].call(null, button1, 'next')),
 					listen(button1, "click", /*next*/ ctx[4])
 				];
 
@@ -2720,7 +2727,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (730:25) {#if opts.thumbs && items.length > 1}
+// (768:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2729,7 +2736,8 @@ function create_if_block_1(ctx) {
 			props: {
 				position: /*position*/ ctx[6],
 				setPosition: /*setPosition*/ ctx[5],
-				items: /*items*/ ctx[0]
+				items: /*items*/ ctx[0],
+				label: /*labels*/ ctx[13].thumb
 			}
 		});
 
@@ -2745,6 +2753,7 @@ function create_if_block_1(ctx) {
 			const thumbs_changes = {};
 			if (dirty[0] & /*position*/ 64) thumbs_changes.position = /*position*/ ctx[6];
 			if (dirty[0] & /*items*/ 1) thumbs_changes.items = /*items*/ ctx[0];
+			if (dirty[0] & /*labels*/ 8192) thumbs_changes.label = /*labels*/ ctx[13].thumb;
 			thumbs.$set(thumbs_changes);
 		},
 		i(local) {
@@ -2762,7 +2771,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (700:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (740:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -2797,15 +2806,13 @@ function create_dynamic_element(ctx) {
 			attr(div1, "class", "bp-inner");
 			attr(div2, "class", "bp-stage");
 			attr(button, "class", "bp-x");
-			attr(button, "title", "Close");
-			attr(button, "aria-label", "Close");
 			attr(div3, "class", "bp-controls");
 			set_dynamic_element_data(/*dialog*/ ctx[1] ? 'dialog' : 'div')(svelte_element, { class: "bp-wrap" });
-			toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[15]);
+			toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[16]);
 			toggle_class(svelte_element, "bp-inline", /*inline*/ ctx[11]);
 			toggle_class(svelte_element, "bp-small", /*smallScreen*/ ctx[10]);
 			toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
-			toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[16]);
+			toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[17]);
 		},
 		m(target, anchor) {
 			insert(target, svelte_element, anchor);
@@ -2823,9 +2830,10 @@ function create_dynamic_element(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*rulerActions*/ ctx[22].call(null, div0)),
+					action_destroyer(/*rulerActions*/ ctx[24].call(null, div0)),
+					action_destroyer(/*label*/ ctx[22].call(null, button, 'close')),
 					listen(button, "click", /*close*/ ctx[2]),
-					action_destroyer(/*containerActions*/ ctx[21].call(null, svelte_element))
+					action_destroyer(/*containerActions*/ ctx[23].call(null, svelte_element))
 				];
 
 				mounted = true;
@@ -2904,8 +2912,8 @@ function create_dynamic_element(ctx) {
 				check_outros();
 			}
 
-			if (!current || dirty[0] & /*$zoomed*/ 32768) {
-				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[15]);
+			if (!current || dirty[0] & /*$zoomed*/ 65536) {
+				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[16]);
 			}
 
 			if (!current || dirty[0] & /*inline*/ 2048) {
@@ -2920,8 +2928,8 @@ function create_dynamic_element(ctx) {
 				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
 			}
 
-			if (!current || dirty[0] & /*$closing*/ 65536) {
-				toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[16]);
+			if (!current || dirty[0] & /*$closing*/ 131072) {
+				toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[17]);
 			}
 		},
 		i(local) {
@@ -3044,6 +3052,12 @@ function instance($$self, $$props, $$invalidate) {
 	// Slide of the active item
 	let slide;
 
+	// Texts of the controls, merged with the labels option
+	let labels;
+
+	// Gap around the stage, read on open and on resize instead of on every measure
+	let gap = 0;
+
 	let ruler;
 	let container;
 	let containerWidth;
@@ -3057,12 +3071,12 @@ function instance($$self, $$props, $$invalidate) {
 	// True if the image is zoomed past its starting size
 	const zoomed = writable(0);
 
-	component_subscribe($$self, zoomed, value => $$invalidate(15, $zoomed = value));
+	component_subscribe($$self, zoomed, value => $$invalidate(16, $zoomed = value));
 
 	// True while this gallery runs its outro, other galleries on the page keep their own
 	const closing = writable(0);
 
-	component_subscribe($$self, closing, value => $$invalidate(16, $closing = value));
+	component_subscribe($$self, closing, value => $$invalidate(17, $closing = value));
 
 	// True while the gallery runs its outro animation
 	let isClosing;
@@ -3083,6 +3097,15 @@ function instance($$self, $$props, $$invalidate) {
 			...options
 		});
 
+		$$invalidate(13, labels = {
+			close: 'Close',
+			prev: 'Previous',
+			next: 'Next',
+			thumb: 'View image',
+			gallery: 'Gallery',
+			...opts.labels
+		});
+
 		$$invalidate(11, inline = opts.inline);
 
 		// Update trigger element to restore focus
@@ -3092,9 +3115,11 @@ function instance($$self, $$props, $$invalidate) {
 			container = target;
 			$$invalidate(7, containerWidth = target.offsetWidth);
 
-			$$invalidate(13, containerHeight = target === document.body
+			$$invalidate(14, containerHeight = target === document.body
 			? window.innerHeight
 			: target.clientHeight);
+
+			readGap();
 		}
 
 		$$invalidate(6, position = 0);
@@ -3155,6 +3180,11 @@ function instance($$self, $$props, $$invalidate) {
 		closing.set(true);
 		window.removeEventListener('keydown', onKeydown);
 
+		// Closed without the back button, drop the history entry the gallery added
+		if (opts.history && history.state?.bp) {
+			history.back();
+		}
+
 		// No slide yet when closed in the same tick as opened
 		slide && zoom(slide, 'bp-out');
 
@@ -3205,7 +3235,10 @@ function instance($$self, $$props, $$invalidate) {
 				const { focusWrap = container } = opts;
 				const tabbable = [...focusWrap.querySelectorAll('*')].filter(node => node.tabIndex >= 0);
 				let index = tabbable.indexOf(activeElement);
-				index += tabbable.length + (shiftKey ? -1 : 1);
+
+				// From the container itself, Tab goes to the first control and Shift+Tab to the last
+				index = (index < 0 && shiftKey ? 0 : index) + tabbable.length + (shiftKey ? -1 : 1);
+
 				tabbable[index % tabbable.length].focus();
 			}
 		}
@@ -3394,7 +3427,8 @@ function instance($$self, $$props, $$invalidate) {
 			thumbElement = item.element.querySelector('img');
 		}
 
-		if (item.type === 'image') {
+		// A link without a thumbnail shows the full image in the strip, otherwise the gallery loads it when shown
+		if (item.type === 'image' && opts.thumbs) {
 			thumbLink = item.element?.href || '';
 		}
 
@@ -3440,18 +3474,16 @@ function instance($$self, $$props, $$invalidate) {
 			item.width = dimensions[0];
 			item.height = dimensions[1];
 			item.scaled = 1;
-			$$invalidate(14, activeDimensions = dimensions);
+			$$invalidate(15, activeDimensions = dimensions);
 		}
 	};
 
+	const readGap = () => gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0;
+
 	// Calculate width and height to fit inside a container
 	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
-		const activeGap = container
-		? parseInt(window.getComputedStyle(container).getPropertyValue('--bp-stage-gap'))
-		: 0;
-
 		const { scale = 1 } = opts;
-		const ratio = Math.min((containerWidth - 2 * activeGap) / width * scale, (containerHeight - 2 * activeGap) / height * scale);
+		const ratio = Math.min((containerWidth - 2 * gap) / width * scale, (containerHeight - 2 * gap) / height * scale);
 
 		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
@@ -3503,9 +3535,14 @@ function instance($$self, $$props, $$invalidate) {
 			item.preload = true;
 
 			return image.decode().then(() => {
-				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
+				// The size from a thumbnail is only a ratio, and an item without one takes it from the image
+				if ((item.scaled || !item.width || !item.height) && image.naturalWidth) {
 					item.width = image.naturalWidth;
 					item.height = image.naturalHeight;
+
+					if (item === activeItem) {
+						$$invalidate(15, activeDimensions = calculateDimensions(item));
+					}
 				}
 
 				// It's important to set srcset after we read the image dimensions
@@ -3535,7 +3572,7 @@ function instance($$self, $$props, $$invalidate) {
 		// Update the container dimensions before triggering an animation
 		if (ruler) {
 			$$invalidate(7, containerWidth = ruler.clientWidth);
-			$$invalidate(13, containerHeight = ruler.clientHeight);
+			$$invalidate(14, containerHeight = ruler.clientHeight);
 		}
 
 		if (activeItem.type === 'html') {
@@ -3621,9 +3658,22 @@ function instance($$self, $$props, $$invalidate) {
 		next
 	});
 
+	// Name a control, the labels stay the same while the gallery is open
+	const label = (node, key) => {
+		node.title = labels[key];
+		node.setAttribute('aria-label', labels[key]);
+	};
+
 	// Process the gallery mount and destroy
 	const containerActions = node => {
 		container = node;
+
+		// Set here, attributes on svelte:element compile to a much larger spread
+		node.tabIndex = -1;
+
+		node.setAttribute('role', inline ? 'region' : 'dialog');
+		node.setAttribute('aria-modal', !inline);
+		node.setAttribute('aria-label', labels.gallery);
 
 		// Use the top layer API for proper modal behavior
 		if (dialog) {
@@ -3642,6 +3692,15 @@ function instance($$self, $$props, $$invalidate) {
 		// Don't use keyboard events for inline galleries
 		if (!inline) {
 			window.addEventListener('keydown', onKeydown);
+
+			// Keyboard and screen reader users start inside the gallery
+			node.focus({ preventScroll: true });
+
+			// The back button closes the gallery instead of leaving the page
+			if (opts.history) {
+				history.pushState({ bp: 1 }, '');
+				window.addEventListener('popstate', close);
+			}
 		}
 
 		return {
@@ -3652,6 +3711,7 @@ function instance($$self, $$props, $$invalidate) {
 				}
 
 				window.removeEventListener('keydown', onKeydown);
+				window.removeEventListener('popstate', close);
 				closing.set(false);
 				isOpen = false;
 				isClosing = false;
@@ -3679,8 +3739,9 @@ function instance($$self, $$props, $$invalidate) {
 
 				if (rect.width !== containerWidth || rect.height !== containerHeight) {
 					$$invalidate(7, containerWidth = rect.width);
-					$$invalidate(13, containerHeight = rect.height);
-					$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
+					$$invalidate(14, containerHeight = rect.height);
+					readGap();
+					$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
 				}
 
 				// Run the user-defined resize function
@@ -3707,7 +3768,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		if ('items' in $$props) $$invalidate(0, items = $$props.items);
-		if ('target' in $$props) $$invalidate(23, target = $$props.target);
+		if ('target' in $$props) $$invalidate(25, target = $$props.target);
 		if ('dialog' in $$props) $$invalidate(1, dialog = $$props.dialog);
 	};
 
@@ -3716,7 +3777,7 @@ function instance($$self, $$props, $$invalidate) {
 			// Update the active item and dimensions on position change
 			if (items && items[position]) {
 				$$invalidate(8, activeItem = items[position]);
-				$$invalidate(14, activeDimensions = calculateDimensions(activeItem));
+				$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
 			}
 		}
 
@@ -3739,6 +3800,7 @@ function instance($$self, $$props, $$invalidate) {
 		smallScreen,
 		inline,
 		clickedEl,
+		labels,
 		containerHeight,
 		activeDimensions,
 		$zoomed,
@@ -3747,6 +3809,7 @@ function instance($$self, $$props, $$invalidate) {
 		closing,
 		slideActions,
 		getChildProps,
+		label,
 		containerActions,
 		rulerActions,
 		target,
@@ -3768,9 +3831,9 @@ class Bigger_picture extends SvelteComponent {
 			not_equal,
 			{
 				items: 0,
-				target: 23,
+				target: 25,
 				dialog: 1,
-				open: 24,
+				open: 26,
 				close: 2,
 				prev: 3,
 				next: 4,
@@ -3788,7 +3851,7 @@ class Bigger_picture extends SvelteComponent {
 
 
 	get target() {
-		return this.$$.ctx[23];
+		return this.$$.ctx[25];
 	}
 
 
@@ -3800,7 +3863,7 @@ class Bigger_picture extends SvelteComponent {
 
 
 	get open() {
-		return this.$$.ctx[24];
+		return this.$$.ctx[26];
 	}
 
 	get close() {

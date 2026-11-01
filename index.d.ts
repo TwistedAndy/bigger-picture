@@ -42,6 +42,16 @@ interface options {
 	focusWrap?: HTMLElement | EventTarget
 	/** Restricts an image's maximum zoom level to `maxZoom` times the starting size, even if the item's `width` / `height` is larger. For example, a `maxZoom` of 2 on an image that is 800px wide when zoomed out would limit the image to a maximum zoom of 1600px width. */
 	maxZoom?: number
+	/** Adds a history entry on open, so the back button closes the gallery instead of leaving the page. Ignored for inline galleries. */
+	history?: boolean
+	/** Texts of the controls for screen readers and tooltips. `thumb` is followed by the item number on thumbnails without `alt` or `caption`. */
+	labels?: {
+		close?: string
+		prev?: string
+		next?: string
+		thumb?: string
+		gallery?: string
+	}
 	/** Executes just before intro animation. Supplies `container` - the gallery's wrapper element, and `activeItem` - an object containing the currently displayed item's data. */
 	onOpen?: (container: HTMLElement, activeItem: activeItem) => void
 	/** Executes just after the active item is updated. Supplies `container` and `activeItem`. */
