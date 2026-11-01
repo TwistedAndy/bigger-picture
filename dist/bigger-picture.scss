@@ -305,26 +305,31 @@
 .bp-next {
 	&:before {
 		content: '';
-		width: 24px;
-		height: 24px;
+		width: 22px;
+		height: 22px;
 		background: 50% / contain no-repeat;
 		transition: all 0.2s;
 	}
 }
 
-// Download and close share the background, the padding of the wrapper and of the buttons gives equal space around the icons
+// Download and close share the background, the gap and the padding give equal space around the icons,
+// the counter mirrors it on the left
 .bp-actions {
 	display: flex;
 	position: absolute;
 	top: 0;
 	right: 0;
-	padding: 0 8px;
+	align-items: center;
+	gap: 12px;
+	height: 46px;
+	padding: 0 12px;
 	border-radius: 0 0 0 3px;
 	background: rgba(0, 0, 0, 0.15);
 
 	button,
 	a {
-		padding: 12px 8px;
+		width: 22px;
+		height: 22px;
 
 		&,
 		&:hover {
@@ -334,10 +339,13 @@
 }
 
 .bp-count {
+	display: flex;
 	position: absolute;
-	width: 100px;
-	height: 50px;
-	margin: 16px;
+	align-items: center;
+	height: 46px;
+	padding: 0 16px;
+	border-radius: 0 0 3px 0;
+	background: rgba(0, 0, 0, 0.15);
 	color: rgba(255, 255, 255, 0.9);
 	line-height: 1;
 }
@@ -532,12 +540,7 @@
 	}
 
 	.bp-actions {
-		padding: 0 6px;
-
-		button,
-		a {
-			padding: 9px 6px;
-		}
+		height: 40px;
 	}
 
 	.bp-prev,
@@ -560,7 +563,8 @@
 	}
 
 	.bp-count {
-		margin: 12px 10px;
+		height: 40px;
+		padding: 0 12px;
 	}
 
 }

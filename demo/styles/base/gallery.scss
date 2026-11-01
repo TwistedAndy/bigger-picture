@@ -13,8 +13,14 @@
 
 	.bp-prev,
 	.bp-next,
-	.bp-actions {
+	.bp-actions,
+	.bp-count {
 		background-color: #{rgbo(--theme-shadow, 55%)};
+	}
+
+	.bp-prev,
+	.bp-next,
+	.bp-actions {
 
 		@include hover {
 			&:hover {
@@ -22,10 +28,6 @@
 			}
 		}
 
-	}
-
-	.bp-count {
-		color: var(--theme-heading);
 	}
 
 }
