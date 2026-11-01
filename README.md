@@ -185,7 +185,7 @@ The item to start at, counted from zero: the third item is `2`. Ignored when `el
 
 `string` or `string[]`
 
-Only items of these types are included: `image`, `video` (also used for audio), `iframe` and `html`.
+Only items of these types are included: `image`, `video`, `audio`, `iframe` and `html`.
 
 ```js
 bp.open({ items, types: ['image', 'video'] })
@@ -312,15 +312,13 @@ Runs when an image, audio or video fails to load.
 
 ## Item properties
 
-Pass them as data attributes (`data-img`, `data-max-zoom`) on elements, or as properties on objects. Properties that accept a `function` call it with the item and use the returned value.
+Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as properties on objects.
 
 | Property                 | Type                                   | Description                                                |
 | ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
-| [`link`](#link)          | `string`                               | A URL to detect the type from. Defaults to `href`.         |
-| [`type`](#type)          | `string`                               | `image` or `iframe` for a link of an unknown type.         |
-| [`img`](#img)            | `string`                               | Image URL or `srcset`.                                     |
+| [`link`](#link)          | `string`                               | The URL to show, its type is detected. Defaults to `href`. |
+| [`type`](#type)          | `string`                               | Shows `link` as this type without detection.               |
 | [`sources`](#sources)    | `Array` or `string`                    | Video or audio sources.                                    |
-| [`iframe`](#iframe)      | `string`                               | Iframe URL.                                                |
 | [`html`](#html)          | `string`                               | HTML content.                                              |
 | [`thumb`](#thumb)        | `string` or `HTMLImageElement`         | Thumbnail shown while the item loads.                      |
 | [`fit`](#fit)            | `string`                               | How the item zooms out of its thumbnail.                   |
@@ -337,9 +335,14 @@ Pass them as data attributes (`data-img`, `data-max-zoom`) on elements, or as pr
 
 ### link
 
-`string` or `function`
+`string`
 
-A link to an image, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive or Dropbox file. It is parsed and shown with the right player. For elements it defaults to their `href`.
+The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive and Dropbox links. A `srcset` value is an image too, and then the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
+
+<!-- prettier-ignore -->
+```html
+<a href="photo.jpg" data-link="photo-1200.jpg 1200w, photo.jpg 2400w">
+```
 
 Links of other types are skipped, unless [`type`](#type) says how to show them.
 
@@ -347,25 +350,19 @@ Links of other types are skipped, unless [`type`](#type) says how to show them.
 
 `string`
 
-Shows a link that isn't detected automatically: `iframe` opens it in an iframe, `image` as an image. Detected links ignore it.
+Shows [`link`](#link) as `image`, `video`, `audio` or `iframe` as it is, without detection. Use it for a web page, or a media URL without a file extension.
 
 ```html
 <a href="https://example.com" data-type="iframe" data-width="1200" data-height="800">Example</a>
 ```
 
-In callbacks, `activeItem.type` is the detected type: `image`, `video` (also for audio), `iframe` or `html`.
-
-### img
-
-`string` or `function`
-
-The URL of the full image. Can be a `srcset` value, then the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
+In callbacks, `activeItem.type` is the resolved type: `image`, `video`, `audio`, `iframe` or `html`, and `activeItem.link` the URL shown, such as the embed URL of a YouTube link.
 
 ### sources
 
-`Array`, `string` or `function`
+`Array` or `string`
 
-For native video and audio, an array of objects with [`src`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#src) (required) and [`type`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#type). A string is parsed as JSON. Each object creates a `<source>` element with its keys as attributes.
+For native video and audio, an array of objects with [`src`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#src) (required) and [`type`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source#type). A string is parsed as JSON. Each object creates a `<source>` element with its keys as attributes. The item is `audio` when the first source's `type` starts with `audio/`, or [`type`](#type) is `audio`, and `video` otherwise.
 
 A video or audio opened again resumes from where it was closed, until the page reloads. The position is stored by the first `src`, and a finished one starts over.
 
@@ -374,15 +371,9 @@ A video or audio opened again resumes from where it was closed, until the page r
 <a href="video.webm" data-sources='[{"src": "video.webm", "type": "video/webm"}, {"src": "video.mp4", "type": "video/mp4"}]'>
 ```
 
-### iframe
-
-`string` or `function`
-
-The URL of the iframe.
-
 ### html
 
-`string` or `function`
+`string`
 
 HTML rendered in the gallery. Size it with CSS, `width` and `height` are not used.
 
@@ -399,13 +390,13 @@ bp.open({
 
 ### thumb
 
-`string`, `HTMLImageElement` or `function`
+`string` or `HTMLImageElement`
 
 The thumbnail shown before the item loads. Defaults to the first image inside the element. An image element is also used to detect [`fit`](#fit).
 
 ### fit
 
-`string` or `function`
+`string`
 
 How the item zooms out of its thumbnail and back: `cover` (keeps the crop), `contain` (keeps the letterboxing) or `fill`. By default it is read from the thumbnail's `object-fit`.
 
@@ -423,13 +414,13 @@ The largest height of the item in pixels. Not needed for HTML.
 
 ### alt
 
-`string` or `function`
+`string`
 
 Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`.
 
 ### caption
 
-`string` or `function`
+`string`
 
 Text shown in the built-in caption. It may contain HTML, and can be styled with CSS.
 
@@ -452,13 +443,13 @@ Text tracks for videos, such as subtitles in several languages. A string is pars
 
 ### attr
 
-`object`, `string` or `function`
+`object` or `string`
 
 Adds or overrides attributes of the `<img>`, `<iframe>`, `<video>` or `<audio>` element. Items can share one object.
 
 <!-- prettier-ignore -->
 ```html
-<a href="https://example.com" data-iframe="https://example.com" data-attr='{"credentialless": true, "referrerpolicy": "no-referrer"}'>
+<a href="https://example.com" data-type="iframe" data-attr='{"credentialless": true, "referrerpolicy": "no-referrer"}'>
 ```
 
 ### sizes
@@ -483,7 +474,7 @@ The gallery works on copies and leaves your objects unchanged. `activeItem` in c
 bp.open({
   items: [
     {
-      img: 'photo.jpg',
+      link: 'photo.jpg',
       thumb: 'photo_thumb.jpg',
       alt: 'Example',
       width: 2500,
@@ -520,6 +511,14 @@ html {
 	scrollbar-gutter: stable;
 }
 ```
+
+## Upgrading from 1.x
+
+- `img` and `iframe` are now [`link`](#link): `data-img` becomes `data-link`, and `data-iframe="url"` becomes `data-link="url" data-type="iframe"`. A `srcset` value is detected as an image.
+- [`type`](#type) shows the link as that type even when it is detected as another one, and also accepts `video` and `audio`.
+- Item properties no longer accept functions. Compute the values before calling `open`.
+- Audio is its own `audio` type, in [`types`](#types) and in `activeItem.type`.
+- `activeItem.link` is the URL shown, and `activeItem.img` and `activeItem.iframe` are gone.
 
 ## Development
 

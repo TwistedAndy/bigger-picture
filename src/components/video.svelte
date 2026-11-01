@@ -23,23 +23,20 @@
 	/** create audio / video element */
 	const onMount = (node) => {
 
-		let mediaElement;
+		const mediaElement = document.createElement(activeItem.type);
+
+		addAttributes(mediaElement, {
+			controls: true, autoplay: true, playsinline: true, tabindex: '0'
+		});
+		// the alt text names the player for screen readers
+		if (activeItem.alt) {
+			mediaElement.setAttribute('aria-label', activeItem.alt);
+		}
+		addAttributes(mediaElement, activeItem.attr);
 
 		/** takes supplied object and creates elements in video */
 		const appendToVideo = (tag, list) => {
 			for (let item of list) {
-				// create media element if it doesn't exist
-				if (!mediaElement) {
-					mediaElement = document.createElement(item.type?.includes('audio') ? 'audio' : 'video');
-					addAttributes(mediaElement, {
-						controls: true, autoplay: true, playsinline: true, tabindex: '0'
-					});
-					// the alt text names the player for screen readers
-					if (activeItem.alt) {
-						mediaElement.setAttribute('aria-label', activeItem.alt);
-					}
-					addAttributes(mediaElement, activeItem.attr);
-				}
 				// add sources / tracks to media element
 				let el = document.createElement(tag);
 				addAttributes(el, item);

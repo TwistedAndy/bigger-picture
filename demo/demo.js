@@ -70,14 +70,16 @@
 
 	const objectItems = objectButtons.map((button) => {
 		const thumb = $('img', button)
+		const width = thumb.getAttribute('width')
+		const height = thumb.getAttribute('height')
 		return {
-			img: thumb.src.replace('_thumb', ''),
+			link: thumb.src.replace('_thumb', ''),
 			thumb: thumb.src,
 			alt: thumb.alt,
-			width: thumb.getAttribute('width'),
-			height: thumb.getAttribute('height'),
+			width,
+			height,
 			element: button,
-			caption: (item) => `${item.alt}, ${item.width} × ${item.height}`,
+			caption: `${thumb.alt}, ${width} × ${height}`,
 		}
 	})
 
@@ -300,7 +302,7 @@
 	$('#type_filter')?.addEventListener('change', (event) => {
 		filterTypes = event.target.value ? event.target.value.split(',') : undefined
 		for (const link of $$('a', filterGrid)) {
-			link.classList.toggle('disabled', !!filterTypes && !filterTypes.includes(link.dataset.type))
+			link.classList.toggle('disabled', !!filterTypes && !filterTypes.includes(link.dataset.kind))
 		}
 	})
 

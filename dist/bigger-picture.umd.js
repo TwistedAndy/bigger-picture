@@ -2087,7 +2087,7 @@
 
 		const addSrc = node => {
 			addAttributes(node, activeItem.attr);
-			node.src = activeItem.iframe;
+			node.src = activeItem.link;
 		};
 
 		const load_handler = () => $$invalidate(1, loaded = true);
@@ -2189,30 +2189,25 @@
 
 		/** create audio / video element */
 		const onMount = node => {
-			let mediaElement;
+			const mediaElement = document.createElement(activeItem.type);
+
+			addAttributes(mediaElement, {
+				controls: true,
+				autoplay: true,
+				playsinline: true,
+				tabindex: '0'
+			});
+
+			// the alt text names the player for screen readers
+			if (activeItem.alt) {
+				mediaElement.setAttribute('aria-label', activeItem.alt);
+			}
+
+			addAttributes(mediaElement, activeItem.attr);
 
 			/** takes supplied object and creates elements in video */
 			const appendToVideo = (tag, list) => {
 				for (let item of list) {
-					// create media element if it doesn't exist
-					if (!mediaElement) {
-						mediaElement = document.createElement((item.type?.includes('audio')) ? 'audio' : 'video');
-
-						addAttributes(mediaElement, {
-							controls: true,
-							autoplay: true,
-							playsinline: true,
-							tabindex: '0'
-						});
-
-						// the alt text names the player for screen readers
-						if (activeItem.alt) {
-							mediaElement.setAttribute('aria-label', activeItem.alt);
-						}
-
-						addAttributes(mediaElement, activeItem.attr);
-					}
-
 					// add sources / tracks to media element
 					let el = document.createElement(tag);
 
@@ -2315,7 +2310,7 @@
 		};
 	}
 
-	// (876:2) {#if !dialog}
+	// (862:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 
@@ -2335,7 +2330,7 @@
 		};
 	}
 
-	// (887:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (873:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2345,9 +2340,9 @@
 		const if_blocks = [];
 
 		function select_block_type(ctx, dirty) {
-			if (/*activeItem*/ ctx[8].img) return 0;
+			if (/*activeItem*/ ctx[8].type === 'image') return 0;
 			if (/*activeItem*/ ctx[8].sources) return 1;
-			if (/*activeItem*/ ctx[8].iframe) return 2;
+			if (/*activeItem*/ ctx[8].type === 'iframe') return 2;
 			return 3;
 		}
 
@@ -2410,10 +2405,10 @@
 		};
 	}
 
-	// (887:340) {:else}
+	// (873:364) {:else}
 	function create_else_block(ctx) {
 		let div;
-		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
+		let raw_value = /*activeItem*/ ctx[8].html + "";
 
 		return {
 			c() {
@@ -2425,7 +2420,7 @@
 				div.innerHTML = raw_value;
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*activeItem*/ 256 && raw_value !== (raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "")) div.innerHTML = raw_value;		},
+				if (dirty[0] & /*activeItem*/ 256 && raw_value !== (raw_value = /*activeItem*/ ctx[8].html + "")) div.innerHTML = raw_value;		},
 			i: noop,
 			o: noop,
 			d(detaching) {
@@ -2436,7 +2431,7 @@
 		};
 	}
 
-	// (887:287) 
+	// (873:311) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -2476,7 +2471,7 @@
 		};
 	}
 
-	// (887:207) 
+	// (873:220) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -2516,7 +2511,7 @@
 		};
 	}
 
-	// (887:53) {#if activeItem.img}
+	// (873:53) {#if activeItem.type === 'image'}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -2562,7 +2557,7 @@
 		};
 	}
 
-	// (876:94) {#key activeItem.i}
+	// (862:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let current;
@@ -2637,7 +2632,7 @@
 		};
 	}
 
-	// (887:502) {#if activeItem.caption}
+	// (873:494) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2661,7 +2656,7 @@
 		};
 	}
 
-	// (887:719) {#if items.length > 1}
+	// (873:711) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2713,7 +2708,7 @@
 		};
 	}
 
-	// (897:25) {#if opts.thumbs && items.length > 1}
+	// (883:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2755,7 +2750,7 @@
 		};
 	}
 
-	// (867:20) <svelte:element    this={dialog ? 'dialog' : 'div'}    use:containerActions    class="bp-wrap"    class:bp-zoomed={$zoomed}    class:bp-inline={inline}    class:bp-small={smallScreen}    class:bp-noclose={opts.noClose}    class:bp-closing={$closing}   >
+	// (853:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3235,23 +3230,6 @@
 			? { element: item, ...item.dataset }
 			: { ...item };
 
-			[
-				'link',
-				'thumb',
-				'iframe',
-				'html',
-				'img',
-				'sources',
-				'caption',
-				'alt',
-				'fit',
-				'attr'
-			].forEach(key => {
-				if (typeof item[key] === 'function') {
-					item[key] = item[key](item);
-				}
-			});
-
 			// data attributes pass these as JSON
 			['sources', 'tracks', 'attr'].forEach(key => {
 				if (typeof item[key] === 'string') {
@@ -3262,25 +3240,21 @@
 			// a copy too, the gallery writes the image src, srcset and sizes into it
 			item.attr = { ...item.attr };
 
-			let link = item.link || item.element?.href;
+			let link = item.link = item.link || item.element?.href, type = item.type;
 
 			if (item.sources) {
-				item.type = 'video';
-			} else if (item.iframe) {
-				item.type = 'iframe';
-			} else if (item.img) {
-				item.type = 'image';
+				item.type = type === 'audio' || (/^audio/).test(item.sources[0]?.type)
+				? 'audio'
+				: 'video';
 			} else if (item.html != null) {
 				item.type = 'html';
-			} else if (!(link && parseLink(link, item))) {
-				// links of unknown types need an explicit type, e.g. a page in an iframe
-				if (link && item.type === 'iframe') {
-					item.iframe = link;
-				} else if (link && item.type === 'image') {
-					item.img = link;
-				} else {
-					return false;
-				}
+			} else if (!link) {
+				return false;
+			} else if (type === 'video' || type === 'audio') {
+				// a set type shows the link as it is, without detection
+				item.sources = [{ src: link }];
+			} else if (type !== 'image' && type !== 'iframe' && !parseLink(link, item)) {
+				return false;
 			}
 
 			if (opts.types && opts.types.indexOf(item.type) === -1) {
@@ -3299,11 +3273,11 @@
 	 * @returns {Object|false} the item, or false for a link of an unknown type
 	 */
 		const parseLink = (link, item) => {
-			let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#].*)?$/i);
+			// also matches the first candidate of a srcset
+			let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
 
 			if (match) {
 				item.type = 'image';
-				item.img = link;
 				return item;
 			}
 
@@ -3349,7 +3323,7 @@
 					weba: 'webm'
 				};
 
-				item.type = 'video';
+				item.type = 'audio';
 
 				item.sources = [
 					{
@@ -3387,7 +3361,7 @@
 				}
 
 				item.type = 'iframe';
-				item.iframe = targetURL.toString();
+				item.link = targetURL.toString();
 				item.preview = 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
 				return item;
 			}
@@ -3417,7 +3391,7 @@
 				}
 
 				item.type = 'iframe';
-				item.iframe = targetURL.toString();
+				item.link = targetURL.toString();
 				return item;
 			}
 
@@ -3430,7 +3404,7 @@
 				let targetURL = new URL('https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0');
 				targetURL.searchParams.set('url', link);
 				item.type = 'iframe';
-				item.iframe = targetURL.toString();
+				item.link = targetURL.toString();
 				return item;
 			}
 
@@ -3442,17 +3416,14 @@
 			if (match) {
 				if (match[1] && match[2]) {
 					// Google Drive
-					item.iframe = `https://drive.google.com/file/d/${match[2]}/preview`;
+					item.link = `https://drive.google.com/file/d/${match[2]}/preview`;
 				} else if (match[3]) {
 					// Dropbox
 					const url = new URL(link);
 
 					url.searchParams.set('raw', '1');
 					url.searchParams.delete('dl');
-					item.iframe = url.toString();
-				} else if (match[4]) {
-					// PDF Files
-					item.iframe = link;
+					item.link = url.toString();
 				}
 
 				if (!item.width || !item.height) {
@@ -3570,9 +3541,9 @@
 	 * @param {Object} item
 	 */
 		const loadImage = item => {
-			if (item.img) {
+			if (item.type === 'image') {
 				let image = document.createElement('img'),
-					src = decodeURIComponent(item.img),
+					src = decodeURIComponent(item.link),
 					srcset = '';
 
 				if ((/\s+\d+[wx]/).test(src)) {
@@ -3669,7 +3640,7 @@
 				$$invalidate(13, containerHeight = ruler.clientHeight);
 			}
 
-			if (!activeItem.img && !activeItem.sources && !activeItem.iframe) {
+			if (activeItem.type === 'html') {
 				const bpItem = node.firstElementChild.firstElementChild;
 				dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 			} else {

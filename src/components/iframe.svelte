@@ -11,7 +11,7 @@
 
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr);
-		node.src = activeItem.iframe;
+		node.src = activeItem.link;
 	};
 
 </script>
