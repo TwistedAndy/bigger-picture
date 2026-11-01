@@ -33,13 +33,13 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.0/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.1/dist/bigger-picture.css"
   integrity="sha384-m8NWHvUkoSwZKuPS0FFaXdBzl8CkJ1zTCnkRs6joNpQ+60IaFBDMnCnAdhRfxCL+"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.0/dist/bigger-picture.umd.js"
-  integrity="sha384-H491mEyFBWIcjdERofosyO1A10rZn3r49vcc8hthPdWspMwGeTylP3RT5ka8+tFB"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.1/dist/bigger-picture.umd.js"
+  integrity="sha384-qKax1NfKqtbff0A1PAWxyuqnyUSTDrtKwhyJaWPrLwG6K6Hzo9Q5J6HxH7NCIPWY"
   crossorigin="anonymous"
 ></script>
 ```
