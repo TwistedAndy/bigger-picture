@@ -62,8 +62,10 @@ interface item {
 	width?: string | number
 	/** Largest possible height of media item in pixels. Not required for HTML, which can be sized via CSS. */
 	height?: string | number
-	/** A link to an image, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive, or Dropbox. It will be automatically parsed and displayed */
+	/** A link to an image, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive, or Dropbox. It will be automatically parsed and displayed. Links of other types are skipped unless `type` is set. */
 	link?: string | ((item: item) => string)
+	/** Shows a `link` that isn't detected as an iframe (a web page) or an image. Attribute name is `data-type`. */
+	type?: 'image' | 'iframe'
 	/** An image element, image URL or path to image used for thumbnail displayed before media loads. If an image element is provided, it will be used to detect the fit mode */
 	thumb?: string | HTMLImageElement | ((item: item) => string | HTMLImageElement)
 	/** URL or path to full image. Can be a `srcset` value.
@@ -85,15 +87,15 @@ interface item {
    * },
   ``` */
 	html?: string | ((item: item) => string)
-	/** Image alternative text */
+	/** Alternative text of the image, also used as the iframe title and the `aria-label` of video and audio players. */
 	alt?: string | ((item: item) => string)
 	/** URL or path to iframe source */
 	iframe?: string | ((item: item) => string)
-	/** Title attribute for iframes */
+	/** Title attribute for iframes. Defaults to `alt`. */
 	title?: string
 	/** Text to be displayed using built in caption. You may pass html tags and styles can be overriden via CSS. */
 	caption?: string | ((item: item) => string)
-	/** Sets the sizes attribute if you're using `srcset`. */
+	/** Sets the sizes attribute if you're using `srcset`, overriding the `sizes` option. */
 	sizes?: string
 	/** Restricts an image's maximum zoom level to `maxZoom` times the starting size, even if the item's `width` / `height` is larger. For example, a `maxZoom` of 2 on an image that is 800px wide when zoomed out would limit the image to a maximum zoom of 1600px width.
 	 *
@@ -103,13 +105,18 @@ interface item {
 	tracks?: string | object[]
 	/** To control the default open / close animation, add a property `element` to each item that contains a node on the page. The active item's `element` will be where the animation opens from / closes to. If you're not using the default scale animation, this is not needed. */
 	element?: HTMLElement | EventTarget
-	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. */
+	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. Items may share one object. */
 	attr?: Record<string, string | boolean> | object | ((item: item) => Record<string, string | boolean> | object)
 	/** Controls how images are sized during the open and close animations. Accepts: 'cover', 'contain', and 'fill'. Default: 'fill' */
 	fit?: string | ((item: item) => string)
 }
 
-export interface activeItem extends item {
+/** A normalized copy of the item, the objects passed to `open` stay unchanged. */
+export interface activeItem extends Omit<item, 'type'> {
+	/** Index of the item in the gallery */
+	readonly i: number
+	/** Detected type of the item */
+	readonly type: 'image' | 'video' | 'iframe' | 'html'
 	/** Read or set zoom state */
 	zoom?: boolean
 }

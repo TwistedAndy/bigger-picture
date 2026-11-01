@@ -1909,7 +1909,7 @@
 		return {
 			c() {
 				img = element("img");
-				attr(img, "sizes", img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`);
+				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[8].sizes || /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`);
 				attr(img, "alt", /*activeItem*/ ctx[8].alt);
 			},
 			m(target, anchor) {
@@ -1925,7 +1925,7 @@
 				}
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`)) {
+				if (dirty[0] & /*sizes*/ 2 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[8].sizes || /*opts*/ ctx[9].sizes || `${/*sizes*/ ctx[1]}px`)) {
 					attr(img, "sizes", img_sizes_value);
 				}
 			},
@@ -2607,7 +2607,7 @@
 				iframe = element("iframe");
 				create_component(loading.$$.fragment);
 				attr(iframe, "allow", "autoplay; fullscreen");
-				attr(iframe, "title", /*activeItem*/ ctx[2].title);
+				attr(iframe, "title", /*activeItem*/ ctx[2].title || /*activeItem*/ ctx[2].alt);
 				attr(div, "class", "bp-iframe");
 				set_style(div, "width", style_width);
 				set_style(div, "height", style_height);
@@ -2772,10 +2772,6 @@
 
 			/** takes supplied object and creates elements in video */
 			const appendToVideo = (tag, list) => {
-				if (!Array.isArray(list)) {
-					list = JSON.parse(list);
-				}
-
 				for (let item of list) {
 					// create media element if it doesn't exist
 					if (!mediaElement) {
@@ -2787,6 +2783,11 @@
 							playsinline: true,
 							tabindex: '0'
 						});
+
+						// the alt text names the player for screen readers
+						if (activeItem.alt) {
+							mediaElement.setAttribute('aria-label', activeItem.alt);
+						}
 
 						addAttributes(mediaElement, activeItem.attr);
 					}
@@ -2888,7 +2889,7 @@
 		};
 	}
 
-	// (822:2) {#if !dialog}
+	// (832:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 		let div_intro;
@@ -2931,7 +2932,7 @@
 		};
 	}
 
-	// (834:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (844:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -3006,7 +3007,7 @@
 		};
 	}
 
-	// (834:340) {:else}
+	// (844:340) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = (/*activeItem*/ ctx[8].html ?? /*activeItem*/ ctx[8].element.outerHTML) + "";
@@ -3032,7 +3033,7 @@
 		};
 	}
 
-	// (834:287) 
+	// (844:287) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -3072,7 +3073,7 @@
 		};
 	}
 
-	// (834:207) 
+	// (844:207) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -3112,7 +3113,7 @@
 		};
 	}
 
-	// (834:53) {#if activeItem.img}
+	// (844:53) {#if activeItem.img}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -3158,7 +3159,7 @@
 		};
 	}
 
-	// (822:177) {#key activeItem.i}
+	// (832:177) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let div_intro;
@@ -3245,7 +3246,7 @@
 		};
 	}
 
-	// (834:502) {#if activeItem.caption}
+	// (844:502) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -3292,7 +3293,7 @@
 		};
 	}
 
-	// (834:885) {#if items.length > 1}
+	// (844:885) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -3344,7 +3345,7 @@
 		};
 	}
 
-	// (844:25) {#if opts.thumbs && items.length > 1}
+	// (854:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -3386,7 +3387,7 @@
 		};
 	}
 
-	// (813:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+	// (823:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3873,11 +3874,10 @@
 	 * @param {Object} item
 	 */
 		const prepareItem = item => {
-			if (item instanceof HTMLElement) {
-				item = { element: item, ...item.dataset };
-			}
-
-			item.attr = item.attr || {};
+			// work on a copy, the gallery adds its own fields and the caller's objects stay as they are
+			item = item instanceof HTMLElement
+			? { element: item, ...item.dataset }
+			: { ...item };
 
 			[
 				'link',
@@ -3896,9 +3896,17 @@
 				}
 			});
 
-			if (item.sources && typeof item.sources === 'string') {
-				item.sources = JSON.parse(item.sources);
-			}
+			// data attributes pass these as JSON
+			['sources', 'tracks', 'attr'].forEach(key => {
+				if (typeof item[key] === 'string') {
+					item[key] = JSON.parse(item[key]);
+				}
+			});
+
+			// a copy too, the gallery writes the image src, srcset and sizes into it
+			item.attr = { ...item.attr };
+
+			let link = item.link || item.element?.href;
 
 			if (item.sources) {
 				item.type = 'video';
@@ -3908,11 +3916,12 @@
 				item.type = 'image';
 			} else if (item.html != null) {
 				item.type = 'html';
-			} else {
-				let link = item.link || item.element?.href || '';
-
-				if (link) {
-					item = parseLink(link, item);
+			} else if (!(link && parseLink(link, item))) {
+				// links of unknown types need an explicit type, e.g. a page in an iframe
+				if (link && item.type === 'iframe') {
+					item.iframe = link;
+				} else if (link && item.type === 'image') {
+					item.img = link;
 				} else {
 					return false;
 				}
@@ -3931,7 +3940,7 @@
 	 * @param {string} link
 	 * @param {Object} item
 	 *
-	 * @returns {Object}
+	 * @returns {Object|false} the item, or false for a link of an unknown type
 	 */
 		const parseLink = (link, item) => {
 			let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#].*)?$/i);
@@ -3992,6 +4001,8 @@
 						type: 'audio/' + (mimeMap[ext] || ext)
 					}
 				];
+
+				return item;
 			}
 
 			/**
@@ -4092,9 +4103,12 @@
 					item.width = containerWidth;
 					item.height = containerHeight;
 				}
+
+				item.type = 'iframe';
+				return item;
 			}
 
-			return item;
+			return false;
 		};
 
 		/**
@@ -4236,7 +4250,7 @@
 						image.srcset = srcset;
 					}
 
-					image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
+					image.sizes = item.sizes || opts.sizes || `${calculateDimensions(item)[0]}px`;
 					item.attr.sizes = image.sizes;
 					item.attr.srcset = srcset;
 				} else {

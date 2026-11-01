@@ -372,7 +372,7 @@
 		{#if loaded}
 			<img
 				use:addSrc
-				sizes={opts.sizes || `${sizes}px`}
+				sizes={activeItem.sizes || opts.sizes || `${sizes}px`}
 				alt={activeItem.alt}
 				on:error={(error) => opts.onError?.(container, activeItem, error)}
 			/>

@@ -33,13 +33,13 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.1/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.2/dist/bigger-picture.css"
   integrity="sha384-Wi6gMclvFmcAz1fkN5w1e5df8wp+qSjUToYNwEuIB7udol0iHbzctL/7nOXhY2Wv"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.1/dist/bigger-picture.umd.js"
-  integrity="sha384-vsCOtteIZL9HS6fiqmBFM+UbN4YH22rw9MkpnGcDeC0KnlX6NBBX6yIDP8NREzHi"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.2.2/dist/bigger-picture.umd.js"
+  integrity="sha384-xtBaFTVGyzdj/F/xEIQyrZEyt2+fdQPK13JIgLiZMtyGU2erc0v4ISMVOaVwPuhk"
   crossorigin="anonymous"
 ></script>
 ```
@@ -317,6 +317,7 @@ Pass them as data attributes (`data-img`, `data-max-zoom`) on elements, or as pr
 | Property                 | Type                                   | Description                                                |
 | ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
 | [`link`](#link)          | `string`                               | A URL to detect the type from. Defaults to `href`.         |
+| [`type`](#type)          | `string`                               | `image` or `iframe` for a link of an unknown type.         |
 | [`img`](#img)            | `string`                               | Image URL or `srcset`.                                     |
 | [`sources`](#sources)    | `Array` or `string`                    | Video or audio sources.                                    |
 | [`iframe`](#iframe)      | `string`                               | Iframe URL.                                                |
@@ -325,9 +326,9 @@ Pass them as data attributes (`data-img`, `data-max-zoom`) on elements, or as pr
 | [`fit`](#fit)            | `string`                               | How the item zooms out of its thumbnail.                   |
 | [`width`](#width)        | `number`                               | Full width in pixels, `1920` by default.                   |
 | [`height`](#height)      | `number`                               | Full height in pixels, `1080` by default.                  |
-| [`alt`](#alt)            | `string`                               | Image alternative text.                                    |
+| [`alt`](#alt)            | `string`                               | Alternative text, also names iframes and players.          |
 | [`caption`](#caption)    | `string`                               | Caption below the item.                                    |
-| [`title`](#title)        | `string`                               | Iframe title.                                              |
+| [`title`](#title)        | `string`                               | Iframe title, `alt` by default.                            |
 | [`tracks`](#tracks)      | `Array` or `string`                    | Video text tracks.                                         |
 | [`attr`](#attr)          | `object` or `string`                   | Extra attributes for the media element.                    |
 | [`sizes`](#sizes-1)      | `string`                               | `sizes` attribute for a `srcset` image.                    |
@@ -339,6 +340,20 @@ Pass them as data attributes (`data-img`, `data-max-zoom`) on elements, or as pr
 `string` or `function`
 
 A link to an image, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive or Dropbox file. It is parsed and shown with the right player. For elements it defaults to their `href`.
+
+Links of other types are skipped, unless [`type`](#type) says how to show them.
+
+### type
+
+`string`
+
+Shows a link that isn't detected automatically: `iframe` opens it in an iframe, `image` as an image. Detected links ignore it.
+
+```html
+<a href="https://example.com" data-type="iframe" data-width="1200" data-height="800">Example</a>
+```
+
+In callbacks, `activeItem.type` is the detected type: `image`, `video` (also for audio), `iframe` or `html`.
 
 ### img
 
@@ -408,7 +423,7 @@ The largest height of the item in pixels. Not needed for HTML.
 
 `string` or `function`
 
-Image alternative text.
+Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`.
 
 ### caption
 
@@ -420,7 +435,7 @@ Text shown in the built-in caption. It may contain HTML, and can be styled with 
 
 `string`
 
-The title attribute of an iframe.
+The title attribute of an iframe. Defaults to [`alt`](#alt).
 
 ### tracks
 
@@ -437,7 +452,7 @@ Text tracks for videos, such as subtitles in several languages. A string is pars
 
 `object`, `string` or `function`
 
-Adds or overrides attributes of the `<img>`, `<iframe>`, `<video>` or `<audio>` element.
+Adds or overrides attributes of the `<img>`, `<iframe>`, `<video>` or `<audio>` element. Items can share one object.
 
 <!-- prettier-ignore -->
 ```html
@@ -448,7 +463,7 @@ Adds or overrides attributes of the `<img>`, `<iframe>`, `<video>` or `<audio>` 
 
 `string`
 
-Sets the `sizes` attribute of an image with a `srcset`.
+Sets the `sizes` attribute of an image with a `srcset`, overriding the [`sizes`](#sizes) option.
 
 ### maxZoom
 
@@ -459,6 +474,8 @@ The maximum zoom of this item, overriding the [`maxZoom`](#maxzoom) option. The 
 ## Passing items as objects
 
 Use objects when the data doesn't live in the page. Add an `element` to zoom from it and back into it.
+
+The gallery works on copies and leaves your objects unchanged. `activeItem` in callbacks is such a copy, so compare it by `activeItem.i` or `activeItem.element`.
 
 ```js
 bp.open({

@@ -24,7 +24,7 @@
 	<iframe
 		use:addSrc
 		allow="autoplay; fullscreen"
-		title={activeItem.title}
+		title={activeItem.title || activeItem.alt}
 		on:load={() => (loaded = true)}
 	></iframe>
 	<Loading {activeItem} {loaded} />

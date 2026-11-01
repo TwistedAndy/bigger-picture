@@ -235,13 +235,8 @@
 	 */
 	const prepareItem = (item) => {
 
-		if (item instanceof HTMLElement) {
-			item = {
-				element: item, ...item.dataset
-			};
-		}
-
-		item.attr = item.attr || {};
+		// work on a copy, the gallery adds its own fields and the caller's objects stay as they are
+		item = item instanceof HTMLElement ? { element: item, ...item.dataset } : { ...item };
 
 		['link', 'thumb', 'iframe', 'html', 'img', 'sources', 'caption', 'alt', 'fit', 'attr'].forEach(key => {
 			if (typeof item[key] === 'function') {
@@ -249,9 +244,17 @@
 			}
 		});
 
-		if (item.sources && typeof item.sources === 'string') {
-			item.sources = JSON.parse(item.sources);
-		}
+		// data attributes pass these as JSON
+		['sources', 'tracks', 'attr'].forEach(key => {
+			if (typeof item[key] === 'string') {
+				item[key] = JSON.parse(item[key]);
+			}
+		});
+
+		// a copy too, the gallery writes the image src, srcset and sizes into it
+		item.attr = { ...item.attr };
+
+		let link = item.link || item.element?.href;
 
 		if (item.sources) {
 			item.type = 'video';
@@ -261,10 +264,12 @@
 			item.type = 'image';
 		} else if (item.html != null) {
 			item.type = 'html';
-		} else {
-			let link = item.link || item.element?.href || '';
-			if (link) {
-				item = parseLink(link, item);
+		} else if (!(link && parseLink(link, item))) {
+			// links of unknown types need an explicit type, e.g. a page in an iframe
+			if (link && item.type === 'iframe') {
+				item.iframe = link;
+			} else if (link && item.type === 'image') {
+				item.img = link;
 			} else {
 				return false;
 			}
@@ -284,7 +289,7 @@
 	 * @param {string} link
 	 * @param {Object} item
 	 *
-	 * @returns {Object}
+	 * @returns {Object|false} the item, or false for a link of an unknown type
 	 */
 	const parseLink = (link, item) => {
 
@@ -345,6 +350,7 @@
 					type: 'audio/' + (mimeMap[ext] || ext)
 				}
 			];
+			return item;
 		}
 
 		/**
@@ -455,9 +461,13 @@
 				item.height = containerHeight;
 			}
 
+			item.type = 'iframe';
+
+			return item;
+
 		}
 
-		return item;
+		return false;
 
 	};
 
@@ -608,7 +618,7 @@
 					image.srcset = srcset;
 				}
 
-				image.sizes = opts.sizes || `${calculateDimensions(item)[0]}px`;
+				image.sizes = item.sizes || opts.sizes || `${calculateDimensions(item)[0]}px`;
 				item.attr.sizes = image.sizes;
 				item.attr.srcset = srcset;
 
