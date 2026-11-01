@@ -99,11 +99,11 @@ The image inside each link is used as the thumbnail. See the [documentation](htt
 
 | Option   | Type          | Description                                                                                                        |
 | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `target` | `HTMLElement` | Element the gallery is mounted in.                                                                                 |
+| `target` | `HTMLElement` | Element the gallery is mounted in, `document.body` by default.                                                     |
 | `dialog` | `boolean`     | Renders the gallery as a `<dialog>` opened with `showModal()`, so it appears in the top layer above other modals. |
 
 ```js
-const bp = BiggerPicture({ target: document.body, dialog: true })
+const bp = BiggerPicture({ dialog: true })
 ```
 
 ## Methods

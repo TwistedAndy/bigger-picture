@@ -197,6 +197,17 @@ function set_dynamic_element_data(tag) {
 }
 
 /**
+ * @param {Text} text
+ * @param {unknown} data
+ * @returns {void}
+ */
+function set_data(text, data) {
+	data = '' + data;
+	if (text.data === data) return;
+	text.data = /** @type {string} */ (data);
+}
+
+/**
  * @returns {void} */
 function set_style(node, key, value, important) {
 	if (value == null) {
@@ -2300,7 +2311,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (763:2) {#if !dialog}
+// (709:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 
@@ -2320,7 +2331,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (774:6) {#if containerWidth > 0 && containerHeight > 0}
+// (720:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2395,7 +2406,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (774:364) {:else}
+// (720:364) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2421,7 +2432,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (774:311) 
+// (720:311) 
 function create_if_block_7(ctx) {
 	let iframe;
 	let current;
@@ -2461,7 +2472,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (774:220) 
+// (720:220) 
 function create_if_block_6(ctx) {
 	let video;
 	let current;
@@ -2501,7 +2512,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (774:53) {#if activeItem.type === 'image'}
+// (720:53) {#if activeItem.type === 'image'}
 function create_if_block_5(ctx) {
 	let imageitem;
 	let current;
@@ -2547,7 +2558,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (763:94) {#key activeItem.i}
+// (709:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let current;
@@ -2622,7 +2633,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (774:494) {#if activeItem.caption}
+// (720:494) {#if activeItem.caption}
 function create_if_block_3(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2646,10 +2657,14 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (774:711) {#if items.length > 1}
+// (720:711) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
-	let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
+	let t0_value = /*position*/ ctx[6] + 1 + "";
+	let t0;
+	let t1;
+	let t2_value = /*items*/ ctx[0].length + "";
+	let t2;
 	let button0;
 	let button1;
 	let mounted;
@@ -2658,6 +2673,9 @@ function create_if_block_2(ctx) {
 	return {
 		c() {
 			div = element("div");
+			t0 = text(t0_value);
+			t1 = text(" / ");
+			t2 = text(t2_value);
 			button0 = element("button");
 			button1 = element("button");
 			attr(div, "class", "bp-count");
@@ -2670,7 +2688,9 @@ function create_if_block_2(ctx) {
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
-			div.innerHTML = raw_value;
+			append(div, t0);
+			append(div, t1);
+			append(div, t2);
 			insert(target, button0, anchor);
 			insert(target, button1, anchor);
 
@@ -2684,7 +2704,9 @@ function create_if_block_2(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*position, items*/ 65 && raw_value !== (raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "")) div.innerHTML = raw_value;		},
+			if (dirty[0] & /*position*/ 64 && t0_value !== (t0_value = /*position*/ ctx[6] + 1 + "")) set_data(t0, t0_value);
+			if (dirty[0] & /*items*/ 1 && t2_value !== (t2_value = /*items*/ ctx[0].length + "")) set_data(t2, t2_value);
+		},
 		d(detaching) {
 			if (detaching) {
 				detach(div);
@@ -2698,7 +2720,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (784:25) {#if opts.thumbs && items.length > 1}
+// (730:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2740,7 +2762,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (754:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (700:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3080,13 +3102,9 @@ function instance($$self, $$props, $$invalidate) {
 		// Set the gallery items, el is the deprecated name of current
 		const list = [], current = opts.current || opts.el;
 
-		if (opts.items instanceof HTMLElement) {
-			$$invalidate(9, opts.items = [opts.items], opts);
-		} else {
-			$$invalidate(9, opts.items = Array.from(opts.items), opts);
-		}
-
-		opts.items.forEach((item, i) => {
+		(opts.items instanceof HTMLElement
+		? [opts.items]
+		: [...opts.items]).forEach((item, i) => {
 			item = prepareItem(item);
 
 			if (typeof item !== 'object') {
@@ -3230,11 +3248,7 @@ function instance($$self, $$props, $$invalidate) {
 			return false;
 		}
 
-		if (opts.types && opts.types.indexOf(item.type) === -1) {
-			return false;
-		} else {
-			return parseThumbnail(item);
-		}
+		return (!opts.types || opts.types.includes(item.type)) && parseThumbnail(item);
 	};
 
 	// Parse the link and detect the content type
@@ -3247,36 +3261,16 @@ function instance($$self, $$props, $$invalidate) {
 			return item;
 		}
 
-		// HTML5 Video
-		match = link.match(/\.(mp4|mpeg|mov|ogv|webm|avi|h264)((\?|#).*)?$/i);
+		// HTML5 video and audio, the first group holds a video extension
+		match = link.match(/\.(?:(mp4|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
 
 		if (match) {
-			item.type = 'video';
-			let ext = match[1].toLowerCase();
+			const ext = (match[1] || match[2]).toLowerCase();
 
-			let mimeMap = {
+			const mimeMap = {
 				ogv: 'ogg',
 				mov: 'quicktime',
-				avi: 'x-msvideo'
-			};
-
-			item.sources = [
-				{
-					'src': link,
-					'type': 'video/' + (mimeMap[ext] || ext)
-				}
-			];
-
-			return item;
-		}
-
-		// HTML5 Audio
-		match = link.match(/\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid)((\?|#).*)?$/i);
-
-		if (match) {
-			let ext = match[1].toLowerCase();
-
-			let mimeMap = {
+				avi: 'x-msvideo',
 				mp3: 'mpeg',
 				m4a: 'mp4',
 				oga: 'ogg',
@@ -3285,12 +3279,12 @@ function instance($$self, $$props, $$invalidate) {
 				weba: 'webm'
 			};
 
-			item.type = 'audio';
+			item.type = match[1] ? 'video' : 'audio';
 
 			item.sources = [
 				{
 					src: link,
-					type: 'audio/' + (mimeMap[ext] || ext)
+					type: item.type + '/' + (mimeMap[ext] || ext)
 				}
 			];
 
@@ -3322,7 +3316,7 @@ function instance($$self, $$props, $$invalidate) {
 
 			item.type = 'iframe';
 			item.link = targetURL.toString();
-			item.preview = 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
+			item.thumb = item.thumb || 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
 			return item;
 		}
 
@@ -3341,7 +3335,7 @@ function instance($$self, $$props, $$invalidate) {
 			if (match[5]) {
 				targetURL.searchParams.set('h', match[5]);
 			} else {
-				item.preview = 'https://vumbnail.com/' + videoID + '.jpg';
+				item.thumb = item.thumb || 'https://vumbnail.com/' + videoID + '.jpg';
 			}
 
 			if (sourceURL.hash && sourceURL.hash.startsWith('#t=')) {
@@ -3408,8 +3402,6 @@ function instance($$self, $$props, $$invalidate) {
 			thumbElement = item.thumb;
 		} else if (item.thumb) {
 			thumbLink = item.thumb;
-		} else if (item.preview) {
-			thumbLink = item.preview;
 		}
 
 		item.source = item.element;
@@ -3439,7 +3431,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	// Set item dimensions based on a thumbnail image if not already specified
 	const setDimensions = (item, thumb) => {
-		if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
+		if (!item.width || !item.height) {
 			let dimensions = calculateDimensions({
 				width: thumb.naturalWidth,
 				height: thumb.naturalHeight
@@ -3483,36 +3475,23 @@ function instance($$self, $$props, $$invalidate) {
 				srcset = '';
 
 			if ((/\s+\d+[wx]/).test(src)) {
-				let match = '',
-					parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
-						url: match[1],
-						value: parseInt(match[2]),
-						type: match[3]
-					}));
+				const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
+					url: match[1],
+					value: parseInt(match[2]),
+					type: match[3]
+				}));
 
 				srcset = src;
 
-				if (parts.length > 1) {
-					if (parts[0].type === 'w') {
-						parts.sort((a, b) => a.value - b.value);
-						match = parts.find(c => c.value >= containerWidth) || parts[parts.length - 1];
-					} else {
-						let dpr = window.devicePixelRatio || 1;
-						match = parts.find(c => c.value >= dpr) || parts[parts.length - 1];
-					}
-				}
+				// The first candidate wide enough for the container or the screen density, the largest otherwise
+				parts.sort((a, b) => a.value - b.value);
 
-				if (!match && parts[0]) {
-					match = parts[0];
-				}
+				const match = parts.find(c => c.value >= (c.type === 'w'
+				? containerWidth
+				: window.devicePixelRatio || 1)) || parts[parts.length - 1];
 
-				if (match && match.url) {
-					image.src = match.url;
-					item.attr.src = match.url;
-				} else {
-					image.srcset = srcset;
-				}
-
+				image.src = match.url;
+				item.attr.src = match.url;
 				image.sizes = item.sizes || opts.sizes || `${calculateDimensions(item)[0]}px`;
 				item.attr.sizes = image.sizes;
 				item.attr.srcset = srcset;
@@ -3521,7 +3500,7 @@ function instance($$self, $$props, $$invalidate) {
 				item.attr.src = src;
 			}
 
-			image.preload = true;
+			item.preload = true;
 
 			return image.decode().then(() => {
 				if (item.scaled && image.naturalWidth > 0 && image.naturalHeight > 0) {
@@ -3530,7 +3509,7 @@ function instance($$self, $$props, $$invalidate) {
 				}
 
 				// It's important to set srcset after we read the image dimensions
-				if (image.src && srcset) {
+				if (srcset) {
 					image.srcset = srcset;
 				}
 			}).catch(error => {
@@ -3567,7 +3546,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		// Rect is the content box of the trigger element, the image is drawn inside its padding and border
-		const source = activeItem.source || activeItem.element || focusTrigger;
+		const source = activeItem.source || focusTrigger;
 
 		const style = window.getComputedStyle(source);
 		const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
@@ -3843,15 +3822,8 @@ class Bigger_picture extends SvelteComponent {
 
 // Initializes BiggerPicture and assigns provided options to a props property
 function biggerPicture (options) {
-	if (typeof options !== 'object') {
-		options = {
-			target: document.body
-		};
-	}
-	options = {
-		...options,
-		props: options,
-	};
+	options = { target: document.body, ...options };
+	options = { ...options, props: options };
 	// Svelte 5 apps compiling the source mount components with a function, Svelte 4 uses classes
 	return new Bigger_picture(options)
 }

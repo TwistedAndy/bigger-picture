@@ -98,13 +98,7 @@
 		const list = [],
 			current = opts.current || opts.el;
 
-		if (opts.items instanceof HTMLElement) {
-			opts.items = [opts.items];
-		} else {
-			opts.items = Array.from(opts.items);
-		}
-
-		opts.items.forEach((item, i) => {
+		(opts.items instanceof HTMLElement ? [opts.items] : [...opts.items]).forEach((item, i) => {
 
 			item = prepareItem(item);
 
@@ -249,11 +243,7 @@
 			return false;
 		}
 
-		if (opts.types && opts.types.indexOf(item.type) === -1) {
-			return false;
-		} else {
-			return parseThumbnail(item);
-		}
+		return (!opts.types || opts.types.includes(item.type)) && parseThumbnail(item);
 
 	};
 
@@ -268,37 +258,15 @@
 			return item;
 		}
 
-		// HTML5 Video
-		match = link.match(/\.(mp4|mpeg|mov|ogv|webm|avi|h264)((\?|#).*)?$/i);
+		// HTML5 video and audio, the first group holds a video extension
+		match = link.match(/\.(?:(mp4|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
 
 		if (match) {
-
-			item.type = 'video';
-
-			let ext = match[1].toLowerCase();
-			let mimeMap = {
+			const ext = (match[1] || match[2]).toLowerCase();
+			const mimeMap = {
 				ogv: 'ogg',
 				mov: 'quicktime',
-				avi: 'x-msvideo'
-			};
-
-			item.sources = [
-				{
-					'src': link,
-					'type': 'video/' + (mimeMap[ext] || ext)
-				}
-			];
-
-			return item;
-
-		}
-
-		// HTML5 Audio
-		match = link.match(/\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid)((\?|#).*)?$/i);
-
-		if (match) {
-			let ext = match[1].toLowerCase();
-			let mimeMap = {
+				avi: 'x-msvideo',
 				mp3: 'mpeg',
 				m4a: 'mp4',
 				oga: 'ogg',
@@ -306,13 +274,8 @@
 				mid: 'midi',
 				weba: 'webm'
 			};
-			item.type = 'audio';
-			item.sources = [
-				{
-					src: link,
-					type: 'audio/' + (mimeMap[ext] || ext)
-				}
-			];
+			item.type = match[1] ? 'video' : 'audio';
+			item.sources = [{ src: link, type: item.type + '/' + (mimeMap[ext] || ext) }];
 			return item;
 		}
 
@@ -340,7 +303,7 @@
 
 			item.type = 'iframe';
 			item.link = targetURL.toString();
-			item.preview = 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
+			item.thumb = item.thumb || 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
 
 			return item;
 
@@ -362,7 +325,7 @@
 			if (match[5]) {
 				targetURL.searchParams.set('h', match[5]);
 			} else {
-				item.preview = 'https://vumbnail.com/' + videoID + '.jpg';
+				item.thumb = item.thumb || 'https://vumbnail.com/' + videoID + '.jpg';
 			}
 
 			if (sourceURL.hash && sourceURL.hash.startsWith('#t=')) {
@@ -441,8 +404,6 @@
 			thumbElement = item.thumb;
 		} else if (item.thumb) {
 			thumbLink = item.thumb;
-		} else if (item.preview) {
-			thumbLink = item.preview;
 		}
 
 		item.source = item.element;
@@ -472,7 +433,7 @@
 	// Set item dimensions based on a thumbnail image if not already specified
 	const setDimensions = (item, thumb) => {
 
-		if (thumb instanceof HTMLImageElement && (!item.width || !item.height)) {
+		if (!item.width || !item.height) {
 
 			let dimensions = calculateDimensions({
 				width: thumb.naturalWidth,
@@ -522,35 +483,20 @@
 
 			if (/\s+\d+[wx]/.test(src)) {
 
-				let match = '',
-					parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
-						url: match[1],
-						value: parseInt(match[2]),
-						type: match[3]
-					}));
+				const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
+					url: match[1],
+					value: parseInt(match[2]),
+					type: match[3]
+				}));
 
 				srcset = src;
 
-				if (parts.length > 1) {
-					if (parts[0].type === 'w') {
-						parts.sort((a, b) => a.value - b.value);
-						match = parts.find(c => c.value >= containerWidth) || parts[parts.length - 1];
-					} else {
-						let dpr = window.devicePixelRatio || 1;
-						match = parts.find(c => c.value >= dpr) || parts[parts.length - 1];
-					}
-				}
+				// The first candidate wide enough for the container or the screen density, the largest otherwise
+				parts.sort((a, b) => a.value - b.value);
+				const match = parts.find(c => c.value >= (c.type === 'w' ? containerWidth : window.devicePixelRatio || 1)) || parts[parts.length - 1];
 
-				if (!match && parts[0]) {
-					match = parts[0];
-				}
-
-				if (match && match.url) {
-					image.src = match.url;
-					item.attr.src = match.url;
-				} else {
-					image.srcset = srcset;
-				}
+				image.src = match.url;
+				item.attr.src = match.url;
 
 				image.sizes = item.sizes || opts.sizes || `${calculateDimensions(item)[0]}px`;
 				item.attr.sizes = image.sizes;
@@ -561,7 +507,7 @@
 				item.attr.src = src;
 			}
 
-			image.preload = true;
+			item.preload = true;
 
 			return image.decode().then(() => {
 
@@ -571,7 +517,7 @@
 				}
 
 				// It's important to set srcset after we read the image dimensions
-				if (image.src && srcset) {
+				if (srcset) {
 					image.srcset = srcset;
 				}
 
@@ -609,7 +555,7 @@
 		}
 
 		// Rect is the content box of the trigger element, the image is drawn inside its padding and border
-		const source = activeItem.source || activeItem.element || focusTrigger;
+		const source = activeItem.source || focusTrigger;
 		const style = window.getComputedStyle(source);
 		const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
 		const bounds = source.getBoundingClientRect();
@@ -814,7 +760,7 @@
 			{#if items.length > 1}
 				<!-- Counter -->
 				<div class="bp-count">
-					{@html `${position + 1} / ${items.length}`}
+					{position + 1} / {items.length}
 				</div>
 				<!-- Forward / back buttons -->
 				<button

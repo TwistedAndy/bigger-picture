@@ -141,8 +141,8 @@ export interface BiggerPictureInstance {
 }
 
 interface initObject {
-	/** Specifies parent element inside which the gallery will be mounted. Call `BiggerPicture()` without options to mount it in `document.body`. */
-	target: HTMLElement
+	/** Specifies parent element inside which the gallery will be mounted. Defaults to `document.body`. */
+	target?: HTMLElement
 	/** Renders the gallery as a `<dialog>` opened with `showModal()`, placing it in the browser's top layer above other modals. */
 	dialog?: boolean
 }

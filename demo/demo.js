@@ -304,7 +304,7 @@
 
 	// Dialog mode
 
-	const dialogBp = BiggerPicture({ target: document.body, dialog: true })
+	const dialogBp = BiggerPicture({ dialog: true })
 	const useDialog = $('#use_dialog')
 
 	document.addEventListener('click', (event) => {
