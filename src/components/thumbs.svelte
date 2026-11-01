@@ -1,7 +1,5 @@
 <script>
-	import { tweened } from 'svelte/motion';
-	import { fly } from 'svelte/transition';
-	import { defaultTweenOptions, getThumbBackground } from '../stores.js';
+	import { getThumbBackground } from '../stores.js';
 
 	export let items;
 	export let position;
@@ -11,7 +9,8 @@
 	let thumbsPanel;
 	let thumbsPanelWidth;
 	let initialTranslate = 0;
-	let thumbsTranslate = tweened(0, defaultTweenOptions(250));
+	/** translate of the strip, a CSS transition animates it */
+	let thumbsTranslate = 0;
 
 	let isPointerDown, pointerDownX, hasDragged;
 
@@ -28,21 +27,23 @@
 		let margin = 3;
 		let { offsetLeft } = activeBtn;
 		if (left + width > thumbsPanelWidth) {
-			$thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin);
+			thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin);
 		} else if (right - width < 0) {
-			$thumbsTranslate = boundTranslate(-offsetLeft + margin);
+			thumbsTranslate = boundTranslate(-offsetLeft + margin);
 		}
 
-		initialTranslate = $thumbsTranslate;
+		initialTranslate = thumbsTranslate;
 
 	};
 
 	const boundTranslate = (int) => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
-	const pointerDown = (e) => {
+	const pointerDown = function (e) {
 		if (thumbsWidth >= thumbsPanelWidth) {
 			isPointerDown = true;
 			pointerDownX = e.clientX;
+			// stop the transition where it is, the drag moves the strip without one
+			thumbsTranslate = initialTranslate = new DOMMatrix(getComputedStyle(this).transform).m41;
 		}
 	};
 
@@ -50,9 +51,7 @@
 		if (isPointerDown) {
 			let dragAmount = -(pointerDownX - e.clientX);
 			if (hasDragged) {
-				thumbsTranslate.set(boundTranslate(initialTranslate + dragAmount), {
-					duration: 0
-				});
+				thumbsTranslate = boundTranslate(initialTranslate + dragAmount);
 				dragPositions.push(e.clientX);
 			} else {
 				hasDragged = Math.abs(dragAmount) > 5;
@@ -66,13 +65,13 @@
 			if (dragPositions.length > 1) {
 				let xDiff = dragPositions[0] - dragPositions.pop();
 				if (Math.abs(xDiff) > 5) {
-					$thumbsTranslate = boundTranslate($thumbsTranslate - xDiff * 5);
+					thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5);
 				}
 			}
 		}
 		dragPositions = [];
 		isPointerDown = hasDragged = false;
-		initialTranslate = $thumbsTranslate;
+		initialTranslate = thumbsTranslate;
 	};
 
 	/**
@@ -114,8 +113,6 @@
 <div
 	use:thumbsActions
 	role="none"
-	in:fly|global={defaultTweenOptions(500)}
-	out:fly|global={defaultTweenOptions(500)}
 	on:pointermove={pointerMove}
 	on:pointerup={pointerUp}
 	on:pointercancel={pointerUp}
@@ -123,8 +120,9 @@
 >
 	<div
 		class="bp-thumbs-outer"
+		class:bp-drag={isPointerDown}
 		role="none"
-		style:transform="translateX({$thumbsTranslate}px)"
+		style:transform="translateX({thumbsTranslate}px)"
 		on:pointerdown={pointerDown}
 	>
 		<div

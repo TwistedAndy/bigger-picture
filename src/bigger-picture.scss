@@ -1,6 +1,6 @@
 :root {
-	--bp-clip-y: 0px;
-	--bp-clip-x: 0px;
+	--bp-duration: 500ms;
+	--bp-easing: cubic-bezier(0.33, 1, 0.68, 1);
 	--bp-stage-gap: 10px;
 	--bp-thumb-gap: 5px;
 	--bp-thumb-height: 70px;
@@ -39,12 +39,28 @@
 		overflow: visible;
 
 		&::backdrop {
-			background: rgba(0, 0, 0, 0);
-			animation: bp-backdrop-in 500ms linear forwards;
+			background: rgba(0, 0, 0, 0.75);
+			animation: bp-fade 500ms;
 		}
 
 		&.bp-closing::backdrop {
-			animation: bp-backdrop-out 500ms linear forwards;
+			animation: bp-fade-out 500ms forwards;
+		}
+	}
+
+	&.bp-closing {
+
+		// the wrap keeps taking the input, so the page under it can't be scrolled or clicked during the outro
+		* {
+			pointer-events: none;
+		}
+
+		.bp-overlay,
+		.bp-controls,
+		.bp-caption,
+		.bp-thumbs {
+			animation-name: bp-fade-out;
+			animation-fill-mode: forwards;
 		}
 	}
 
@@ -90,18 +106,59 @@
 
 }
 
+// keeps the space of the hidden scrollbar, so the page doesn't shift,
+// an overflow on the body would break the sticky elements of the page
 .bp-lock {
 	overflow-y: hidden;
-
-	body {
-		overflow: scroll;
-	}
-
+	scrollbar-gutter: stable;
 }
 
 .bp-overlay {
 	@extend %fill;
 	background: rgba(0, 0, 0, 0.75);
+}
+
+.bp-overlay,
+.bp-controls,
+.bp-caption,
+.bp-thumbs,
+// the thumbnail fading in over the item on close
+.bp-load:empty {
+	animation: bp-fade var(--bp-duration) var(--bp-easing);
+}
+
+// the slide animates from or to the --bp-transform and --bp-opacity set by the script
+.bp-slide {
+	animation: bp-in var(--bp-duration) var(--bp-easing);
+}
+
+.bp-nav {
+	animation-duration: calc(var(--bp-duration) / 2);
+}
+
+.bp-out {
+	animation-name: bp-out;
+	animation-fill-mode: forwards;
+}
+
+// crop the item like the thumbnail during the zoom
+.bp-clip {
+
+	.bp-img,
+	.bp-iframe,
+	.bp-video {
+		animation: bp-clip-in var(--bp-duration) var(--bp-easing);
+	}
+
+	&.bp-out {
+
+		.bp-img,
+		.bp-iframe,
+		.bp-video {
+			animation-name: bp-clip-out;
+			animation-fill-mode: forwards;
+		}
+	}
 }
 
 .bp-stage {
@@ -148,8 +205,9 @@
 	left: 50%;
 	background: 50% 50% / contain no-repeat;
 	user-select: none;
-	clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
-	will-change: clip-path;
+	// centers the image, the script sets the transform for the zoom and pan
+	translate: -50% -50%;
+	transition: transform var(--bp-duration) var(--bp-easing);
 
 	&-wrap {
 		@extend %fill;
@@ -161,6 +219,7 @@
 
 		.bp-drag {
 			cursor: grabbing;
+			transition: none;
 		}
 
 	}
@@ -181,8 +240,6 @@
 	position: relative;
 	margin: auto;
 	background: #000 50% 50% / contain no-repeat;
-	clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
-	will-change: clip-path;
 
 	iframe,
 	video,
@@ -303,6 +360,10 @@
 	z-index: 1;
 }
 
+.bp-loaded {
+	animation: bp-fade-out var(--bp-duration) var(--bp-easing) forwards;
+}
+
 .bp-bar {
 	position: absolute;
 	top: 0;
@@ -344,7 +405,7 @@
 	line-height: 1.25rem;
 	text-align: center;
 	transition: opacity 0.25s;
-	transform: translateX(-50%);
+	translate: -50%;
 
 	a {
 		color: inherit;
@@ -362,11 +423,20 @@
 	height: var(--bp-thumb-height);
 	background: #12161a;
 	z-index: 1;
+	// keeps the layer of the fade in, dropping it once the intro ends repaints the bar and can blink
+	will-change: opacity;
 
 	&-outer {
 		display: table;
 		height: 100%;
 		margin: 0 auto;
+		transition: transform calc(var(--bp-duration) / 2) var(--bp-easing);
+		// a layer of its own for good, adding and dropping one on every scroll repaints the thumbnails
+		will-change: transform;
+
+		&.bp-drag {
+			transition: none;
+		}
 	}
 
 	&-inner {
@@ -386,8 +456,8 @@
 		padding: 0;
 		border: 0;
 		border-radius: 4px;
+		// no transition, fading the opacity or filter lifts the thumbnail and the ones after it into layers
 		background: rgba(#ffffff, 0.1) 50% 50% / cover no-repeat;
-		transition: 0.15s;
 		cursor: pointer;
 		user-select: none;
 		opacity: 0.5;
@@ -468,15 +538,51 @@
 	.bp-wrap *,
 	.bp-wrap::backdrop {
 		animation-duration: 0s !important;
+		transition-duration: 0s !important;
 	}
 }
 
-@keyframes bp-fadein {
+@keyframes bp-fade {
 	from {
-		opacity: 0.01;
+		opacity: 0;
+	}
+}
+
+@keyframes bp-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes bp-in {
+	from {
+		opacity: var(--bp-opacity);
+		transform: var(--bp-transform);
+	}
+}
+
+@keyframes bp-out {
+	to {
+		opacity: var(--bp-opacity);
+		transform: var(--bp-transform);
+	}
+}
+
+@keyframes bp-clip-in {
+	from {
+		clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
 	}
 	to {
-		opacity: 1;
+		clip-path: inset(0);
+	}
+}
+
+@keyframes bp-clip-out {
+	from {
+		clip-path: inset(0);
+	}
+	to {
+		clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
 	}
 }
 
@@ -495,23 +601,5 @@
 	}
 	to {
 		transform: rotate(360deg);
-	}
-}
-
-@keyframes bp-backdrop-in {
-	from {
-		background: rgba(0, 0, 0, 0);
-	}
-	to {
-		background: rgba(0, 0, 0, 0.75);
-	}
-}
-
-@keyframes bp-backdrop-out {
-	from {
-		background: rgba(0, 0, 0, 0.75);
-	}
-	to {
-		background: rgba(0, 0, 0, 0);
 	}
 }

@@ -1,9 +1,8 @@
 <svelte:options accessors={true} />
 
 <script>
-	import { closing, defaultTweenOptions } from './stores';
+	import { closing } from './stores';
 	import { writable } from 'svelte/store';
-	import { fly } from 'svelte/transition';
 	import Thumbs from './components/thumbs.svelte';
 	import ImageItem from './components/image.svelte';
 	import Iframe from './components/iframe.svelte';
@@ -45,6 +44,9 @@
 
 	/** stores target on pointerdown (ref for overlay close) */
 	let clickedEl;
+
+	/** slide of the active item */
+	let slide;
 
 	let ruler;
 	let container;
@@ -151,12 +153,24 @@
 		isClosing = true;
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
+		window.removeEventListener('keydown', onKeydown);
+		// no slide yet when closed in the same tick as opened
+		slide && zoom(slide, 'bp-out');
 
-		setTimeout(() => {
+		// remove the gallery once the slide has finished its outro
+		afterAnimations(slide, () => {
 			items = null;
 			focusTrigger?.focus({ preventScroll: true });
-		}, 1);
+		});
 	};
+
+	/**
+	 * Run a callback once the animations of a node are finished, right away if it has none
+	 *
+	 * @param {HTMLElement} node
+	 * @param {Function} callback
+	 */
+	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map((animation) => animation.finished) || []).finally(callback);
 
 	/**
 	 * Switch to the previous item
@@ -649,27 +663,32 @@
 		}
 	};
 
-	/** svelte transition to control opening / changing */
-	const mediaTransition = (node, isEntering) => {
-		if (!isOpen || !items) {
-			// entrance / exit transition
-			isOpen = isEntering;
-			return opts.intro ? fly(node, { y: isEntering ? 10 : -10 }) : scaleIn(node);
-		}
-		// forward / backward transition
-		return fly(node, {
-			...defaultTweenOptions(250),
-			x: (movement > 0 ? 20 : -20) * (isEntering ? 1 : -1)
-		});
+	/**
+	 * Set the state a slide animates from or to, the CSS animations of the classes do the rest
+	 *
+	 * @param {HTMLElement} node
+	 * @param {string} className
+	 * @param {string} transform
+	 * @param {string} css
+	 */
+	const animate = (node, className, transform, css = '--bp-opacity:0') => {
+		node.className = 'bp-slide ' + className;
+		node.style.cssText = `--bp-transform:${transform};${css}`;
 	};
 
 	/**
-	 * Custom svelte transition for entrance zoom, deferred so Svelte 5 measures
-	 * the item after the container action has called onOpen
+	 * Zoom the slide out of the thumbnail on open and back into it on close,
+	 * or fade it up with the intro option
+	 *
+	 * @param {HTMLElement} node
+	 * @param {string} className bp-out for the outro
 	 */
-	const scaleIn = (node) => () => {
+	const zoom = (node, className) => {
+		if (opts.intro) {
+			return animate(node, className, `translateY(${className ? -10 : 10}px)`);
+		}
+
 		let dimensions;
-		let css;
 
 		/**
 		 * Update the container dimensions before triggering an animation
@@ -699,32 +718,46 @@
 		};
 		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
 		const centerTop = rect.top - (containerHeight - rect.height) / 2;
-		const scaleWidth = rect.width / dimensions[0];
-		const scaleHeight = rect.height / dimensions[1];
+		let scaleWidth = rect.width / dimensions[0];
+		let scaleHeight = rect.height / dimensions[1];
+		let css = '--bp-opacity:1';
 
 		if (activeItem.fit === 'cover') {
-			const scale = Math.max(scaleHeight, scaleWidth),
-				offsetVertical = Math.max((dimensions[1] - rect.height / scale) / 2, 0),
-				offsetHorizontal = Math.max((dimensions[0] - rect.width / scale) / 2, 0);
-			css = (t, u) => {
-				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);
-				--bp-clip-y: ${offsetVertical * u}px;
-				--bp-clip-x: ${offsetHorizontal * u}px;`;
-			};
+			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
+			// crop the item like the thumbnail
+			css += `;--bp-clip-y:${Math.max((dimensions[1] - rect.height / scaleHeight) / 2, 0)}px;--bp-clip-x:${Math.max((dimensions[0] - rect.width / scaleWidth) / 2, 0)}px`;
+			className += ' bp-clip';
 		} else if (activeItem.fit === 'contain') {
-			const scale = Math.min(scaleHeight, scaleWidth);
-			css = (t, u) => {
-				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scale + t * (1 - scale)}, ${scale + t * (1 - scale)}, 1);`;
-			};
+			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
+		}
+
+		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})`, css);
+	};
+
+	/**
+	 * Animate the slides, the first one zooms in, the next ones slide in and out
+	 */
+	const slideActions = (node) => {
+		slide = node;
+
+		if (isOpen) {
+			animate(node, 'bp-nav', `translate(${movement > 0 ? 20 : -20}px)`);
 		} else {
-			css = (t, u) => {
-				return `transform: translate3d(${leftOffset * u}px, ${centerTop * u}px, 0) scale3d(${scaleWidth + t * (1 - scaleWidth)}, ${scaleHeight + t * (1 - scaleHeight)}, 1);`;
-			};
+			isOpen = true;
+			// deferred so the item is measured after the container action has shown the dialog and called onOpen
+			queueMicrotask(() => zoom(node, ''));
 		}
 
 		return {
-			...defaultTweenOptions(500),
-			css: css
+			destroy() {
+				// the items are removed on close, the slide leaves with the gallery then
+				if (items) {
+					// Svelte has removed the previous slide, put it back under the new one until it slides out
+					animate(node, 'bp-nav bp-out', `translate(${movement > 0 ? -20 : 20}px)`);
+					ruler.parentNode.prepend(node);
+					afterAnimations(node, () => node.remove());
+				}
+			}
 		};
 	};
 
@@ -774,6 +807,7 @@
 				}
 				window.removeEventListener('keydown', onKeydown);
 				closing.set(false);
+				isOpen = false;
 				isClosing = false;
 				// remove class hiding scroll
 				html.classList.remove('bp-lock');
@@ -836,7 +870,7 @@
 		class:bp-closing={$closing}
 	>
 		{#if !dialog}
-			<div class="bp-overlay" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}></div>
+			<div class="bp-overlay"></div>
 		{/if}
 		<div class="bp-stage">
 			<div class="bp-inner">
@@ -844,8 +878,7 @@
 					<div
 						class="bp-slide"
 						role="none"
-						in:mediaTransition|global={true}
-						out:mediaTransition|global={false}
+						use:slideActions
 						on:pointerdown={(e) => (clickedEl = e.target)}
 						on:pointerup={function (e) {
 						// only close if left click on self and not dragged
@@ -872,12 +905,12 @@
 				<div class="bp-ruler" use:rulerActions></div>
 			</div>
 			{#if activeItem.caption}
-				<div class="bp-caption" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}>
+				<div class="bp-caption">
 					{@html activeItem.caption}
 				</div>
 			{/if}
 		</div>
-		<div class="bp-controls" in:fly|global={defaultTweenOptions(500)} out:fly|global={defaultTweenOptions(500)}>
+		<div class="bp-controls">
 			<!-- close button -->
 			<button class="bp-x" title="Close" aria-label="Close" on:click={close}></button>
 

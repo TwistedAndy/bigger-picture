@@ -1,15 +1,18 @@
 <script>
-	import { fly } from 'svelte/transition';
-	import { closing, getThumbBackground, defaultTweenOptions } from '../stores';
+	import { closing, getThumbBackground } from '../stores';
 
 	export let activeItem;
 	export let loaded;
+
+	/** true once the loader has faded out */
+	let hidden;
 </script>
 
-{#if !loaded}
+{#if !hidden}
 	<div
 		class="bp-load"
-		out:fly|local={defaultTweenOptions(500)}
+		class:bp-loaded={loaded}
+		on:animationend={(e) => (hidden = e.animationName === 'bp-fade-out')}
 		style:background-image={getThumbBackground(activeItem)}
 	>
 		<span class="bp-bar"></span>
@@ -20,7 +23,6 @@
 {#if $closing}
 	<div
 		class="bp-load"
-		in:fly|global={defaultTweenOptions(500)}
 		style:background-image={getThumbBackground(activeItem)}
 	></div>
 {/if}

@@ -1,6 +1,5 @@
 <script>
-	import { tweened } from 'svelte/motion';
-	import { addAttributes, closing, defaultTweenOptions, getThumbBackground } from '../stores';
+	import { addAttributes, closing, getThumbBackground } from '../stores';
 
 	import Loading from './loading.svelte';
 
@@ -32,7 +31,7 @@
 	let pointerDown, hasDragged;
 	let dragStartX, dragStartY;
 
-	/** zoomDragTranslate values on start of drag */
+	/** translate values on start of drag */
 	let dragStartTranslateX, dragStartTranslateY;
 
 	/** if true, adds class to .bp-wrap to avoid image cropping */
@@ -46,28 +45,27 @@
 	/** cache pointer events to handle pinch */
 	const pointerCache = new Map();
 
-	/** tween to control image size */
-	const imageDimensions = tweened(activeDimensions, defaultTweenOptions(500));
+	/** zoom level of the image, 1 is the starting size, a CSS transition animates it */
+	let scale = 1;
 
-	/** translate transform for pointerDown */
-	const zoomDragTranslate = tweened([0, 0], defaultTweenOptions(500));
+	/** translate of the zoomed image, animated with the scale */
+	let translate = [0, 0];
 
-	$: zoomed.set($imageDimensions[0] - 10 > activeDimensions[0]);
+	$: zoomed.set(activeDimensions[0] * (scale - 1) > 10);
 
 	// if zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
 	$: if ($closing && $zoomed && !opts.intro) {
-		const closeTweenOpts = defaultTweenOptions(500);
-		zoomDragTranslate.set([0, 0], closeTweenOpts);
-		imageDimensions.set(activeDimensions, closeTweenOpts);
+		scale = 1;
+		translate = [0, 0];
 		closingWhileZoomed = true;
 	}
 
 	/** calculate translate position with bounds */
-	const boundTranslateValues = ([x, y], newDimensions = $imageDimensions) => {
+	const boundTranslateValues = ([x, y], newScale = scale) => {
 		// image drag translate bounds
-		let maxTranslateX = (newDimensions[0] - containerWidth) / 2,
-			maxTranslateY = (newDimensions[1] - containerHeight) / 2;
+		let maxTranslateX = (activeDimensions[0] * newScale - containerWidth) / 2,
+			maxTranslateY = (activeDimensions[1] * newScale - containerHeight) / 2;
 		// x max drag
 		if (maxTranslateX < 0) {
 			x = 0;
@@ -113,45 +111,34 @@
 			return;
 		}
 
-		let maxWidth = activeDimensions[0] * maxZoom,
-			newWidth = $imageDimensions[0] + $imageDimensions[0] * amt,
-			newHeight = $imageDimensions[1] + $imageDimensions[1] * amt;
+		let newScale = scale + scale * amt;
 
 		if (amt > 0) {
-			if (newWidth > maxWidth) {
-				// requesting size large than max zoom
-				newWidth = maxWidth;
-				newHeight = activeDimensions[1] * maxZoom;
-			}
-			if (newWidth > naturalWidth) {
-				// if requesting zoom larger than natural size
-				newWidth = naturalWidth;
-				newHeight = +activeItem.height;
-			}
-		} else if (newWidth < activeDimensions[0]) {
+			// not larger than the max zoom and the natural size
+			newScale = Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]);
+		} else if (newScale < 1) {
 			// if requesting image smaller than starting size
-			imageDimensions.set(activeDimensions);
-			return zoomDragTranslate.set([0, 0]);
+			scale = 1;
+			return (translate = [0, 0]);
 		}
 
-		let { x, y, width, height } = bpImg.getBoundingClientRect();
+		let x = 0,
+			y = 0;
 
-		// distance clicked from center of image
-		let offsetX = e ? e.clientX - x - width / 2 : 0,
-			offsetY = e ? e.clientY - y - height / 2 : 0;
+		if (e) {
+			// distance clicked from center of image
+			const { left, top, width, height } = bpImg.parentNode.getBoundingClientRect();
+			x = e.clientX - left - width / 2 - translate[0];
+			y = e.clientY - top - height / 2 - translate[1];
+		}
 
-		x = -offsetX * (newWidth / width) + offsetX;
-		y = -offsetY * (newHeight / height) + offsetY;
+		// keep the clicked point in place
+		const ratio = 1 - newScale / scale;
 
-		let newDimensions = [newWidth, newHeight];
-
-		// set new dimensions and update sizes property
-		imageDimensions.set(newDimensions).then(() => {
-			sizes = Math.round(Math.max(sizes, newWidth));
-		});
-
-		// update translate value
-		zoomDragTranslate.set(boundTranslateValues([$zoomDragTranslate[0] + x, $zoomDragTranslate[1] + y], newDimensions));
+		// update sizes property, the browser loads a larger source if there is one
+		sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale));
+		translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale);
+		scale = newScale;
 	}
 
 	// allow zoom to be read / set externally
@@ -166,15 +153,15 @@
 		// zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		if (opts.inline) {
+		if (opts.inline || $closing) {
 			return;
 		}
 		if (zoom) {
 			changeZoom(zoom);
 		} else if (pan && $zoomed) {
 			e.preventDefault();
-			// update() starts from the target, so held keys keep panning while the tween runs
-			zoomDragTranslate.update(([x, y]) => boundTranslateValues([x + pan[0], y + pan[1]]));
+			// starts from the target, so held keys keep panning while the transition runs
+			translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]);
 		}
 	};
 
@@ -194,12 +181,19 @@
 		// don't run if right click
 		if (e.button !== 2) {
 			e.preventDefault();
+			if ($zoomed) {
+				// stop the transition where it is, the drag moves the image without one
+				const img = bpImg.getBoundingClientRect();
+				const wrap = bpImg.parentNode.getBoundingClientRect();
+				scale = img.width / activeDimensions[0];
+				translate = [img.left + img.width / 2 - wrap.left - wrap.width / 2, img.top + img.height / 2 - wrap.top - wrap.height / 2];
+			}
 			pointerDown = true;
 			pointerCache.set(e.pointerId, e);
 			dragStartX = e.clientX;
 			dragStartY = e.clientY;
-			dragStartTranslateX = $zoomDragTranslate[0];
-			dragStartTranslateY = $zoomDragTranslate[1];
+			dragStartTranslateX = translate[0];
+			dragStartTranslateY = translate[1];
 		}
 	};
 
@@ -249,7 +243,7 @@
 
 		// image drag when zoomed
 		if ($zoomed && hasDragged && !$closing) {
-			zoomDragTranslate.set(boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]), { duration: 0 });
+			translate = boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]);
 		}
 	};
 
@@ -305,7 +299,7 @@
 			const xDiff = posTwo.x - posThree.x;
 			const yDiff = posTwo.y - posThree.y;
 			if (Math.hypot(xDiff, yDiff) > 5) {
-				zoomDragTranslate.set(boundTranslateValues([$zoomDragTranslate[0] - (posOne.x - posThree.x) * 5, $zoomDragTranslate[1] - (posOne.y - posThree.y) * 5]));
+				translate = boundTranslateValues([translate[0] - (posOne.x - posThree.x) * 5, translate[1] - (posOne.y - posThree.y) * 5]);
 			}
 		} else if (!opts.onImageClick?.(container, activeItem)) {
 			changeZoom($zoomed ? -maxZoom : maxZoom, e);
@@ -337,8 +331,8 @@
 	};
 
 	$: if (activeDimensions && (opts.inline || !smallScreen)) {
-		imageDimensions.set(activeDimensions);
-		zoomDragTranslate.set([0, 0]);
+		scale = 1;
+		translate = [0, 0];
 	}
 
 </script>
@@ -359,14 +353,12 @@
 		use:onMount
 		class="bp-img"
 		class:bp-drag={pointerDown}
-		class:bp-canzoom={maxZoom > 1 && $imageDimensions[0] < naturalWidth}
+		class:bp-canzoom={maxZoom > 1 && activeDimensions[0] * scale < naturalWidth}
 		style:background-image={getThumbBackground(activeItem)}
-		style:transform="translate3d({$imageDimensions[0] / -2 +
-			$zoomDragTranslate[0]}px, {$imageDimensions[1] / -2 +
-			$zoomDragTranslate[1]}px, 0)"
+		style:transform="translate3d({translate[0]}px, {translate[1]}px, 0) scale({scale})"
 		style="
-			width:{$imageDimensions[0]}px;
-			height:{$imageDimensions[1]}px;
+			width:{activeDimensions[0]}px;
+			height:{activeDimensions[1]}px;
 		"
 	>
 		{#if loaded}

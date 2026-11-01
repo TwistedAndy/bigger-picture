@@ -4,7 +4,7 @@ import { cubicOut } from 'svelte/easing';
 /** true if gallery is in the process of closing */
 export const closing = writable(false);
 
-/** default options for tweens / transitions
+/** default options for tweens, the CSS animations take theirs from --bp-duration and --bp-easing
  * @param {number} duration
  */
 export const defaultTweenOptions = (duration) => ({
