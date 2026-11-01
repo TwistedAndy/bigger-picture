@@ -67,7 +67,7 @@
 	<div class="wrapper_box">
 		<div class="fixed">
 			<aside class="sidebar" aria-label="Table of contents">
-				<nav class="navigation"><ul class="menu"><li class="submenu"><span class="label">Getting started</span><ul class="sub-menu"><li><a href="#installation">Installation</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#providing-items">Providing items</a></li></ul></li><li class="submenu"><span class="label">Examples</span><ul class="sub-menu"><li><a href="#image-gallery">Image gallery</a></li><li><a href="#link-detection">Link detection</a></li><li><a href="#javascript-items">Items from JavaScript</a></li><li><a href="#video-audio">Video and audio</a></li><li><a href="#embeds">Embeds and iframes</a></li><li><a href="#thumbnail-fit">Cropped thumbnails</a></li><li><a href="#responsive-images">Responsive images</a></li><li><a href="#captions">Captions</a></li><li><a href="#html-content">HTML content</a></li><li><a href="#inline-gallery">Inline gallery</a></li><li><a href="#api">Controlling the gallery</a></li><li><a href="#filtering">Filtering by type</a></li><li><a href="#dialog-mode">Dialog mode</a></li><li><a href="#theming">Styling and theming</a></li></ul></li><li class="submenu"><span class="label">Reference</span><ul class="sub-menu"><li><a href="#options">Options</a></li><li><a href="#item-properties">Item properties</a></li><li><a href="#methods">Methods</a></li><li><a href="#interaction">Keyboard and touch</a></li></ul></li></ul></nav>
+				<nav class="navigation"><ul class="menu"><li class="submenu"><span class="label">Getting started</span><ul class="sub-menu"><li><a href="#installation">Installation</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#frameworks">Frameworks</a></li><li><a href="#providing-items">Providing items</a></li></ul></li><li class="submenu"><span class="label">Examples</span><ul class="sub-menu"><li><a href="#image-gallery">Image gallery</a></li><li><a href="#link-detection">Link detection</a></li><li><a href="#javascript-items">Items from JavaScript</a></li><li><a href="#video-audio">Video and audio</a></li><li><a href="#embeds">Embeds and iframes</a></li><li><a href="#thumbnail-fit">Cropped thumbnails</a></li><li><a href="#responsive-images">Responsive images</a></li><li><a href="#captions">Captions</a></li><li><a href="#html-content">HTML content</a></li><li><a href="#inline-gallery">Inline gallery</a></li><li><a href="#api">Controlling the gallery</a></li><li><a href="#filtering">Filtering by type</a></li><li><a href="#dialog-mode">Dialog mode</a></li><li><a href="#theming">Styling and theming</a></li></ul></li><li class="submenu"><span class="label">Reference</span><ul class="sub-menu"><li><a href="#options">Options</a></li><li><a href="#item-properties">Item properties</a></li><li><a href="#methods">Methods</a></li><li><a href="#interaction">Keyboard and touch</a></li></ul></li></ul></nav>
 			</aside>
 			<main class="container">
 
@@ -129,6 +129,118 @@ links.forEach((link) =&gt; {
 })</code></pre></div>
 	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>current</code> to start at the clicked item; the open and close animations then run from that link's image.</p>
 	
+	</div>
+</section>
+
+<section class="section" id="frameworks">
+	<div class="contents">
+		<h2><a href="#frameworks">Frameworks</a></h2>
+		<div class="content"><p>The gallery works the same way in React, Vue, Svelte or any other framework: create one instance once the component is mounted, and call <code>open</code> from a click handler. It mounts in <code>document.body</code>, outside the component tree, so the framework doesn't render or update it.</p></div>
+	</div>
+	<div class="content">
+	<h3>React</h3>
+	<div class="code"><div class="heading"><span class="label">JSX</span><button class="button" type="button" data-copy aria-label="Copy JSX code">Copy</button></div><pre><code class="language-jsx">'use client' // Next.js only
+
+import { useEffect, useRef } from 'react'
+import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
+
+export function Gallery({ images }) {
+  const bp = useRef(null)
+  const list = useRef(null)
+
+  useEffect(() =&gt; {
+    bp.current = BiggerPicture()
+    return () =&gt; bp.current.close()
+  }, [])
+
+  const open = (event) =&gt; {
+    event.preventDefault()
+    bp.current.open({
+      items: list.current.querySelectorAll('a'),
+      current: event.currentTarget,
+    })
+  }
+
+  return (
+    &lt;div ref={list}&gt;
+      {images.map((image) =&gt; (
+        &lt;a key={image.src} href={image.src} onClick={open}&gt;
+          &lt;img src={image.thumb} alt={image.alt} /&gt;
+        &lt;/a&gt;
+      ))}
+    &lt;/div&gt;
+  )
+}</code></pre></div>
+	<h3>Vue</h3>
+	<div class="code"><div class="heading"><span class="label">Vue</span><button class="button" type="button" data-copy aria-label="Copy Vue code">Copy</button></div><pre><code class="language-html">&lt;script setup&gt;
+import { onMounted, onBeforeUnmount, ref } from 'vue'
+import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
+
+defineProps(['images'])
+
+const list = ref(null)
+let bp
+
+onMounted(() =&gt; (bp = BiggerPicture()))
+onBeforeUnmount(() =&gt; bp.close())
+
+const open = (event) =&gt; {
+  bp.open({
+    items: list.value.querySelectorAll('a'),
+    current: event.currentTarget,
+  })
+}
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div ref="list"&gt;
+    &lt;a v-for="image in images" :key="image.src" :href="image.src" @click.prevent="open"&gt;
+      &lt;img :src="image.thumb" :alt="image.alt" /&gt;
+    &lt;/a&gt;
+  &lt;/div&gt;
+&lt;/template&gt;</code></pre></div>
+	<h3>Svelte</h3>
+	<p>Import the source from <code>@twistedandy/bigger-picture/svelte</code>, so the gallery uses the app's own Svelte runtime instead of bundling a second one. This is Svelte 5; in Svelte 4, use <code>export let images</code> and <code>on:click={open}</code>.</p>
+	<div class="code"><div class="heading"><span class="label">Svelte</span><button class="button" type="button" data-copy aria-label="Copy Svelte code">Copy</button></div><pre><code class="language-html">&lt;script&gt;
+  import { onMount } from 'svelte'
+  import BiggerPicture from '@twistedandy/bigger-picture/svelte'
+  import '@twistedandy/bigger-picture/css'
+
+  let { images } = $props()
+  let list
+  let bp
+
+  onMount(() =&gt; {
+    bp = BiggerPicture()
+    return () =&gt; bp.close()
+  })
+
+  const open = (event) =&gt; {
+    event.preventDefault()
+    bp.open({
+      items: list.querySelectorAll('a'),
+      current: event.currentTarget,
+    })
+  }
+&lt;/script&gt;
+
+&lt;div bind:this={list}&gt;
+  {#each images as image (image.src)}
+    &lt;a href={image.src} onclick={open}&gt;
+      &lt;img src={image.thumb} alt={image.alt} /&gt;
+    &lt;/a&gt;
+  {/each}
+&lt;/div&gt;</code></pre></div>
+	<h3>Things to know</h3>
+	<ul>
+		<li><strong>Server rendering:</strong> <code>BiggerPicture()</code> needs <code>document</code>, so create it after mount (<code>useEffect</code>, <code>onMounted</code>, <code>onMount</code>), never during the render on the server.</li>
+		<li><strong>One instance:</strong> create it once per app or layout and pass it down, or keep it in a module, rather than one per gallery.</li>
+		<li><strong>Items from data:</strong> instead of links, pass <a href="#javascript-items">objects</a> such as <code>{ link, thumb, alt, width, height, element }</code>. The <code>element</code> is the DOM node the gallery zooms from.</li>
+		<li><strong>Components in the gallery:</strong> an <a href="#html-content">HTML item</a> takes a string. To show a framework component, pass <code>html: ''</code> and mount the component in <code>onOpen</code> into <code>container.querySelector('.bp-html')</code>.</li>
+		<li><strong>State:</strong> the gallery reports back through the <a href="#options">callbacks</a>, for example <code>onUpdate</code> for the shown item and <code>onClosed</code> when it's gone.</li>
+	</ul>
 	</div>
 </section>
 
@@ -774,6 +886,7 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js" integrity="sha384-0mV13Neu0xhJFylI+HV43C+XiR13bGSeL7D0/7e6hK7sJgvyvK6HVjeQwmvXTstY" crossorigin="anonymous" defer></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js" integrity="sha384-7LHwxHIDSHTBleLmgDWZbC/IMJsfYfFVOihKhvsrxYW4j47YQcRwZja4ToFE3bA8" crossorigin="anonymous" defer></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js" integrity="sha384-D44bgYYKvaiDh4cOGlj1dbSDpSctn2FSUj118HZGmZEShZcO2v//Q5vvhNy206pp" crossorigin="anonymous" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js" integrity="sha384-nnKpKrv4RkNTjD3hNwkWsmHW8LBti5JWyAWAgeo8iC4QkFQn2Yn2Kj4mOTTNoI9V" crossorigin="anonymous" defer></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js" integrity="sha384-9WmlN8ABpoFSSHvBGGjhvB3E/D8UkNB9HpLJjBQFC2VSQsM1odiQDv4NbEo+7l15" crossorigin="anonymous" defer></script>
 	<script src="demo/demo.js" defer></script>
 </body>

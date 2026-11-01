@@ -92,6 +92,128 @@ document.addEventListener('click', (event) => {
 
 The image inside each link is used as the thumbnail. See the [documentation](https://twistedandy.github.io/bigger-picture/) for more examples: video with subtitles, embeds, captions, inline galleries, HTML content, filtering, dialog mode and theming.
 
+## Frameworks
+
+The gallery works the same way in any framework: create one instance once the component is mounted, and call `open` from a click handler. It mounts in `document.body`, outside the component tree, so the framework doesn't render or update it.
+
+### React
+
+```jsx
+'use client' // Next.js only
+
+import { useEffect, useRef } from 'react'
+import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
+
+export function Gallery({ images }) {
+  const bp = useRef(null)
+  const list = useRef(null)
+
+  useEffect(() => {
+    bp.current = BiggerPicture()
+    return () => bp.current.close()
+  }, [])
+
+  const open = (event) => {
+    event.preventDefault()
+    bp.current.open({
+      items: list.current.querySelectorAll('a'),
+      current: event.currentTarget,
+    })
+  }
+
+  return (
+    <div ref={list}>
+      {images.map((image) => (
+        <a key={image.src} href={image.src} onClick={open}>
+          <img src={image.thumb} alt={image.alt} />
+        </a>
+      ))}
+    </div>
+  )
+}
+```
+
+### Vue
+
+```vue
+<script setup>
+import { onMounted, onBeforeUnmount, ref } from 'vue'
+import BiggerPicture from '@twistedandy/bigger-picture'
+import '@twistedandy/bigger-picture/css'
+
+defineProps(['images'])
+
+const list = ref(null)
+let bp
+
+onMounted(() => (bp = BiggerPicture()))
+onBeforeUnmount(() => bp.close())
+
+const open = (event) => {
+  bp.open({
+    items: list.value.querySelectorAll('a'),
+    current: event.currentTarget,
+  })
+}
+</script>
+
+<template>
+  <div ref="list">
+    <a v-for="image in images" :key="image.src" :href="image.src" @click.prevent="open">
+      <img :src="image.thumb" :alt="image.alt" />
+    </a>
+  </div>
+</template>
+```
+
+### Svelte
+
+Import the source from `@twistedandy/bigger-picture/svelte`, so the gallery uses the app's own Svelte runtime instead of bundling a second one.
+
+```svelte
+<script>
+  import { onMount } from 'svelte'
+  import BiggerPicture from '@twistedandy/bigger-picture/svelte'
+  import '@twistedandy/bigger-picture/css'
+
+  let { images } = $props()
+  let list
+  let bp
+
+  onMount(() => {
+    bp = BiggerPicture()
+    return () => bp.close()
+  })
+
+  const open = (event) => {
+    event.preventDefault()
+    bp.open({
+      items: list.querySelectorAll('a'),
+      current: event.currentTarget,
+    })
+  }
+</script>
+
+<div bind:this={list}>
+  {#each images as image (image.src)}
+    <a href={image.src} onclick={open}>
+      <img src={image.thumb} alt={image.alt} />
+    </a>
+  {/each}
+</div>
+```
+
+This is Svelte 5. In Svelte 4, use `export let images` and `on:click={open}`.
+
+### Things to know
+
+- **Server rendering:** `BiggerPicture()` needs `document`, so create it after mount (`useEffect`, `onMounted`, `onMount`), never during the render on the server.
+- **One instance:** create it once per app or layout and pass it down, or keep it in a module, rather than one per gallery.
+- **Items from data:** instead of links, pass objects such as `{ link, thumb, alt, width, height, element }`. The `element` is the DOM node the gallery zooms from.
+- **Components in the gallery:** an [`html`](#html) item takes a string. To show a framework component, pass `html: ''` and mount the component in [`onOpen`](#onopen) into `container.querySelector('.bp-html')`.
+- **State:** the gallery reports back through the callbacks, for example [`onUpdate`](#onupdate) for the shown item and [`onClosed`](#onclosed) when it's gone.
+
 ## Initialization
 
 `BiggerPicture(options)` creates an instance. Without options it mounts in `document.body`. You only need one instance, unless you want galleries in different targets.
