@@ -79,7 +79,8 @@
 			return;
 		}
 
-		opts = options;
+		// intro and noClose are the deprecated names of zoom: false and persistent
+		opts = { zoom: !options.intro, persistent: options.noClose, ...options };
 		inline = opts.inline;
 
 		// Update trigger element to restore focus
@@ -93,8 +94,9 @@
 
 		position = 0;
 
-		// Set the gallery items
-		const list = [];
+		// Set the gallery items, el is the deprecated name of current
+		const list = [],
+			current = opts.current || opts.el;
 
 		if (opts.items instanceof HTMLElement) {
 			opts.items = [opts.items];
@@ -113,7 +115,8 @@
 			// Index in the filtered list, used for position and thumbnails
 			item.i = list.length;
 
-			if (opts.el ? opts.el === item.element : i === opts.position) {
+			// A set position wins, otherwise the item of current
+			if (opts.position == null ? current && current === item.element : i === opts.position) {
 				position = item.i;
 			}
 
@@ -189,7 +192,7 @@
 			shiftKey
 		} = e;
 		if (key === 'Escape') {
-			!opts.noClose && close();
+			!opts.persistent && close();
 		} else if (key === 'ArrowRight' && !$zoomed) {
 			// The zoomed image pans with the arrows instead
 			next();
@@ -226,6 +229,9 @@
 
 		// A copy too, the gallery writes the image src, srcset and sizes into it
 		item.attr = { ...item.attr };
+
+		// title is the deprecated name of alt
+		item.alt = item.alt || item.title;
 
 		let link = item.link = item.link || item.element?.href,
 			type = item.type;
@@ -581,9 +587,9 @@
 		node.style.cssText = `--bp-transform:${transform};${css}`;
 	};
 
-	// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with the intro option
+	// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with zoom: false
 	const zoom = (node, className) => {
-		if (opts.intro) {
+		if (!opts.zoom) {
 			return animate(node, className, `translateY(${className ? -10 : 10}px)`);
 		}
 
@@ -706,7 +712,7 @@
 				// Remove class hiding scroll
 				html.classList.remove('bp-lock');
 				html.style.paddingRight = '';
-				opts.onClosed?.();
+				opts.onClosed?.(container, activeItem);
 				if (pendingOptions) {
 					open(pendingOptions);
 					pendingOptions = null;
@@ -757,7 +763,7 @@
 		class:bp-zoomed={$zoomed}
 		class:bp-inline={inline}
 		class:bp-small={smallScreen}
-		class:bp-noclose={opts.noClose}
+		class:bp-noclose={opts.persistent}
 		class:bp-closing={$closing}
 	>
 		{#if !dialog}
@@ -774,7 +780,7 @@
 						on:pointerup={function (e) {
 						// Only close if left click on self and not dragged
 						if (e.button !== 2 && e.target === this && clickedEl === this) {
-							!opts.noClose && close()
+							!opts.persistent && close()
 						}
 					}}
 					>

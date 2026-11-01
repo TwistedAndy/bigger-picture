@@ -1354,7 +1354,7 @@
 		};
 	}
 
-	// (360:10) {#if showLoader}
+	// (361:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -1757,7 +1757,11 @@
 				// If multiple pointer events, pass to handlePinch function
 				$$invalidate(5, pointerDown = false);
 
-				return opts.noPinch?.(container) || handlePinch(e);
+				const { noPinch } = opts;
+
+				return (typeof noPinch == 'function'
+				? noPinch(container)
+				: noPinch) || handlePinch(e);
 			}
 
 			if (!pointerDown) {
@@ -1781,7 +1785,7 @@
 			if (!$zoomed) {
 				// Close if swipe up
 				if (y < -90) {
-					$$invalidate(5, pointerDown = !opts.noClose && props.close());
+					$$invalidate(5, pointerDown = !opts.persistent && props.close());
 				}
 
 				// Only handle left / right if not swiping vertically
@@ -1851,7 +1855,7 @@
 			$$invalidate(5, pointerDown = false);
 
 			// Close if overlay is clicked
-			if (e.target === this && !opts.noClose) {
+			if (e.target === this && !opts.persistent) {
 				return props.close();
 			}
 
@@ -1914,7 +1918,7 @@
 			if ($$self.$$.dirty[0] & /*$closing, $zoomed*/ 402653184) {
 				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
-				if ($closing && $zoomed && !opts.intro) {
+				if ($closing && $zoomed && opts.zoom) {
 					$$invalidate(1, scale = 1);
 					$$invalidate(8, translate = [0, 0]);
 					$$invalidate(6, closingWhileZoomed = true);
@@ -2016,7 +2020,7 @@
 				iframe = element("iframe");
 				create_component(loading.$$.fragment);
 				attr(iframe, "allow", "autoplay; fullscreen");
-				attr(iframe, "title", /*activeItem*/ ctx[2].title || /*activeItem*/ ctx[2].alt);
+				attr(iframe, "title", /*activeItem*/ ctx[2].alt);
 				attr(div, "class", "bp-iframe");
 				set_style(div, "width", style_width);
 				set_style(div, "height", style_height);
@@ -2301,7 +2305,7 @@
 		};
 	}
 
-	// (757:2) {#if !dialog}
+	// (763:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 
@@ -2321,7 +2325,7 @@
 		};
 	}
 
-	// (768:6) {#if containerWidth > 0 && containerHeight > 0}
+	// (774:6) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_4(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2396,7 +2400,7 @@
 		};
 	}
 
-	// (768:364) {:else}
+	// (774:364) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2422,7 +2426,7 @@
 		};
 	}
 
-	// (768:311) 
+	// (774:311) 
 	function create_if_block_7(ctx) {
 		let iframe;
 		let current;
@@ -2462,7 +2466,7 @@
 		};
 	}
 
-	// (768:220) 
+	// (774:220) 
 	function create_if_block_6(ctx) {
 		let video;
 		let current;
@@ -2502,7 +2506,7 @@
 		};
 	}
 
-	// (768:53) {#if activeItem.type === 'image'}
+	// (774:53) {#if activeItem.type === 'image'}
 	function create_if_block_5(ctx) {
 		let imageitem;
 		let current;
@@ -2548,7 +2552,7 @@
 		};
 	}
 
-	// (757:94) {#key activeItem.i}
+	// (763:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div;
 		let current;
@@ -2623,7 +2627,7 @@
 		};
 	}
 
-	// (768:494) {#if activeItem.caption}
+	// (774:494) {#if activeItem.caption}
 	function create_if_block_3(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2647,7 +2651,7 @@
 		};
 	}
 
-	// (768:711) {#if items.length > 1}
+	// (774:711) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let raw_value = `${/*position*/ ctx[6] + 1} / ${/*items*/ ctx[0].length}` + "";
@@ -2699,7 +2703,7 @@
 		};
 	}
 
-	// (778:25) {#if opts.thumbs && items.length > 1}
+	// (784:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2741,7 +2745,7 @@
 		};
 	}
 
-	// (748:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.noClose}   class:bp-closing={$closing}  >
+	// (754:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -2783,7 +2787,7 @@
 				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[15]);
 				toggle_class(svelte_element, "bp-inline", /*inline*/ ctx[11]);
 				toggle_class(svelte_element, "bp-small", /*smallScreen*/ ctx[10]);
-				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].noClose);
+				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
 				toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[16]);
 			},
 			m(target, anchor) {
@@ -2896,7 +2900,7 @@
 				}
 
 				if (!current || dirty[0] & /*opts*/ 512) {
-					toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].noClose);
+					toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
 				}
 
 				if (!current || dirty[0] & /*$closing*/ 65536) {
@@ -3055,7 +3059,13 @@
 				return;
 			}
 
-			$$invalidate(9, opts = options);
+			// intro and noClose are the deprecated names of zoom: false and persistent
+			$$invalidate(9, opts = {
+				zoom: !options.intro,
+				persistent: options.noClose,
+				...options
+			});
+
 			$$invalidate(11, inline = opts.inline);
 
 			// Update trigger element to restore focus
@@ -3072,8 +3082,8 @@
 
 			$$invalidate(6, position = 0);
 
-			// Set the gallery items
-			const list = [];
+			// Set the gallery items, el is the deprecated name of current
+			const list = [], current = opts.current || opts.el;
 
 			if (opts.items instanceof HTMLElement) {
 				$$invalidate(9, opts.items = [opts.items], opts);
@@ -3091,7 +3101,10 @@
 				// Index in the filtered list, used for position and thumbnails
 				item.i = list.length;
 
-				if (opts.el ? opts.el === item.element : i === opts.position) {
+				// A set position wins, otherwise the item of current
+				if (opts.position == null
+				? current && current === item.element
+				: i === opts.position) {
 					$$invalidate(6, position = item.i);
 				}
 
@@ -3163,7 +3176,7 @@
 			const { key, shiftKey } = e;
 
 			if (key === 'Escape') {
-				!opts.noClose && close();
+				!opts.persistent && close();
 			} else if (key === 'ArrowRight' && !$zoomed) {
 				// The zoomed image pans with the arrows instead
 				next();
@@ -3201,6 +3214,9 @@
 
 			// A copy too, the gallery writes the image src, srcset and sizes into it
 			item.attr = { ...item.attr };
+
+			// title is the deprecated name of alt
+			item.alt = item.alt || item.title;
 
 			let link = item.link = item.link || item.element?.href, type = item.type;
 
@@ -3534,9 +3550,9 @@
 			node.style.cssText = `--bp-transform:${transform};${css}`;
 		};
 
-		// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with the intro option
+		// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with zoom: false
 		const zoom = (node, className) => {
-			if (opts.intro) {
+			if (!opts.zoom) {
 				return animate(node, className, `translateY(${className ? -10 : 10}px)`);
 			}
 
@@ -3670,7 +3686,7 @@
 					html.classList.remove('bp-lock');
 
 					html.style.paddingRight = '';
-					opts.onClosed?.();
+					opts.onClosed?.(container, activeItem);
 
 					if (pendingOptions) {
 						open(pendingOptions);
@@ -3711,7 +3727,7 @@
 		const pointerup_handler = function (e) {
 			// Only close if left click on self and not dragged
 			if (e.button !== 2 && e.target === this && clickedEl === this) {
-				!opts.noClose && close();
+				!opts.persistent && close();
 			}
 		};
 

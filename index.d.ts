@@ -3,13 +3,15 @@ interface options {
 	 *
 	 * If using NodeList or Node, the information is passed via data attributes. If using Array, the information is passed via object. */
 	items: HTMLElement | HTMLCollection | NodeList | item[]
-	/** If the specified node matches a node in `items` (or matches the `element` value on an item if using an array), the gallery will start at that position.
+	/** The element of the item to start at, matched against the `items` elements (or the `element` of item objects). The gallery zooms out of it and back. Ignored when `position` is set.
 	 *
-	 * For example, you could use this inside a click handler by passing `event.target`. (See [codesandbox demo](https://codesandbox.io/s/bigger-picture-basic-gallery-o4kb82) for example.) */
+	 * For example, pass the clicked link in a click handler. */
+	current?: HTMLElement | EventTarget
+	/** @deprecated Use `current` */
 	el?: HTMLElement | EventTarget
 	/** Defines which types should be included to the gallery. Supported values: 'image', 'video', 'audio', 'iframe' and 'html' */
 	types?: string | string[]
-	/** Start position of gallery (zero-indexed). If using `el` this will be ignored. */
+	/** Start position of gallery (zero-indexed). Defaults to the item of `current`, or the first item. */
 	position?: number
 	/** Controls the size of the displayed item. Use `1` to fill item to screen edges. */
 	scale?: number
@@ -17,13 +19,17 @@ interface options {
 	thumbs?: boolean
 	/** Sets the sizes attribute for all images using `srcset`. By default it is updated automatically when an image is zoomed. */
 	sizes?: string
-	/** Overrides the default intro animation. Currently `fadeup` is the only alternative. */
+	/** Zooms the item out of its `element` on open and back into it on close. Set `false` to fade it up and down instead. Defaults to `true`. */
+	zoom?: boolean
+	/** @deprecated Use `zoom: false` */
 	intro?: string
 	/** Specifies that the lightbox is inline. Interaction events are modified to avoid hijacking scroll and tab press. */
 	inline?: boolean
 	/** Hides the close button and prevents the lightbox from closing unless the [`close`](https://github.com/TwistedAndy/bigger-picture#close) method is called. Recommended to use in combination with an inline gallery. */
+	persistent?: boolean
+	/** @deprecated Use `persistent` */
 	noClose?: boolean
-	/** Return a truthy value to disable pinch zoom. Function is executed at the time of the pinch. Supplies `container` - the gallery's wrapper element.
+	/** Disables pinch zoom. A function runs at the time of the pinch and disables it when it returns a truthy value. Supplies `container` - the gallery's wrapper element.
 	 *
 	 * ```js
 	 * bp.open({
@@ -31,7 +37,7 @@ interface options {
 	 * })
 	 * ```
 	 */
-	noPinch?: () => any
+	noPinch?: boolean | ((container: HTMLElement) => any)
 	/** Specify wrapper element to trap focus within on tab press. Useful when mounting a gallery inside a custom layout. */
 	focusWrap?: HTMLElement | EventTarget
 	/** Restricts an image's maximum zoom level to `maxZoom` times the starting size, even if the item's `width` / `height` is larger. For example, a `maxZoom` of 2 on an image that is 800px wide when zoomed out would limit the image to a maximum zoom of 1600px width. */
@@ -42,8 +48,8 @@ interface options {
 	onUpdate?: (container?: HTMLElement, activeItem?: activeItem) => void
 	/** Executes just before outro animation. Supplies `container` and `activeItem`. */
 	onClose?: (container?: HTMLElement, activeItem?: activeItem) => void
-	/** Executes just after the lightbox has been closed and removed from the page. */
-	onClosed?: () => void
+	/** Executes just after the lightbox has been closed and removed from the page. Supplies `container` and `activeItem`. */
+	onClosed?: (container?: HTMLElement, activeItem?: activeItem) => void
 	/** Executes when the dimensions of the gallery (not the window) are changed. Supplies `container` and `activeItem`. */
 	onResize?: (container?: HTMLElement, activeItem?: activeItem) => void
 	/** Executes when an image is clicked. Return a truthy value to prevent zooming. Supplies `container` and `activeItem`. */
@@ -85,7 +91,7 @@ interface item {
 	html?: string
 	/** Alternative text of the image, also used as the iframe title and the `aria-label` of video and audio players. */
 	alt?: string
-	/** Title attribute for iframes. Defaults to `alt`. */
+	/** @deprecated Use `alt` */
 	title?: string
 	/** Text to be displayed using built in caption. You may pass html tags and styles can be overriden via CSS. */
 	caption?: string

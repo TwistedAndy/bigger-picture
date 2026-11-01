@@ -9,7 +9,7 @@
 	const bp = BiggerPicture()
 
 	// Open a gallery when a matching element inside the container is clicked,
-	// passing the clicked element as `el` makes the gallery zoom out of it and back
+	// passing the clicked element as `current` makes the gallery zoom out of it and back
 	const delegate = (container, selector, getOptions, instance = bp) => {
 		container?.addEventListener('click', (event) => {
 			const element = event.target.closest(selector)
@@ -19,7 +19,7 @@
 			event.preventDefault()
 			const options = getOptions(element)
 			if (options) {
-				instance.open({ el: element, ...options })
+				instance.open({ current: element, ...options })
 			}
 		})
 	}
@@ -110,9 +110,9 @@
 		['03', 'Navigate as usual', 'Arrow keys, swipes and the counter work the same as for images.'],
 	]
 
-	// Every slide zooms from the same button, so start at the first one instead of matching `el`
+	// Every slide zooms from the same button, so start at the first one instead of matching `current`
 	delegate($('#html_grid'), '#html_slides', (button) => ({
-		el: null,
+		position: 0,
 		items: slides.map(([number, title, text]) => ({
 			html: `<div class="message_box is_slide"><span class="caption">${number}</span><h3>${title}</h3><p class="text">${text}</p></div>`,
 			element: button,
@@ -179,9 +179,9 @@
 		inline.open({
 			items,
 			position: 2,
-			intro: 'fadeup',
+			zoom: false,
 			inline: true,
-			noClose: true,
+			persistent: true,
 			thumbs: true,
 			onImageClick(container, activeItem) {
 				bp.open({
@@ -223,9 +223,9 @@
 		apiInstance ??= BiggerPicture({ target: apiWrap })
 		apiInstance.open({
 			items: datasetItems('#image_gallery a').slice(0, 6),
-			intro: 'fadeup',
+			zoom: false,
 			inline: true,
-			noClose: true,
+			persistent: true,
 			onOpen(container, item) {
 				apiItem = item
 				log('onOpen', describe(item))
@@ -320,7 +320,7 @@
 			event.preventDefault()
 			// A regular gallery is drawn under the modal, because the modal is in the top layer
 			const instance = useDialog.checked ? dialogBp : bp
-			instance.open({ items: $$('#modal_grid a'), el: link })
+			instance.open({ items: $$('#modal_grid a'), current: link })
 		}
 	})
 

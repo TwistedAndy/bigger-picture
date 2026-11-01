@@ -123,11 +123,11 @@ links.forEach((link) =&gt; {
     event.preventDefault()
     bp.open({
       items: links,
-      el: link,
+      current: link,
     })
   })
 })</code></pre></div>
-	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>el</code> to start at the clicked item; the open and close animations then run from that link's image.</p>
+	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>current</code> to start at the clicked item; the open and close animations then run from that link's image.</p>
 	
 	</div>
 </section>
@@ -176,7 +176,7 @@ gallery.addEventListener('click', (event) =&gt; {
   event.preventDefault()
   bp.open({
     items: gallery.querySelectorAll('a'),
-    el: link,
+    current: link,
     thumbs: true,
   })
 })</code></pre></div>
@@ -229,7 +229,7 @@ article.addEventListener('click', (event) =&gt; {
   event.preventDefault()
   bp.open({
     items: article.querySelectorAll(selector),
-    el: link,
+    current: link,
     thumbs: true,
   })
 })</code></pre></div>
@@ -266,11 +266,11 @@ const items = photos.map((photo, index) =&gt; ({
 
 buttons.forEach((button) =&gt; {
   button.addEventListener('click', () =&gt; {
-    bp.open({ items, el: button, thumbs: true })
+    bp.open({ items, current: button, thumbs: true })
   })
 })</code></pre></div>
 	<ul>
-		<li><code>el</code> matches the clicked button against each item's <code>element</code>. Use <code>position</code> instead when there is no element.</li>
+		<li><code>current</code> matches the clicked button against each item's <code>element</code>. Use <code>position</code> instead when there is no element.</li>
 		<li><code>link</code> works as in <a href="#link-detection">link detection</a>: the URL decides the type, and <code>type</code> sets it when the URL can't.</li>
 		<li>Strings with numbers are fine for <code>width</code> and <code>height</code>, so values from <code>dataset</code> can be passed as they are.</li>
 	</ul>
@@ -327,7 +327,7 @@ buttons.forEach((button) =&gt; {
 	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">document.querySelectorAll('.media').forEach((link) =&gt; {
   link.addEventListener('click', (event) =&gt; {
     event.preventDefault()
-    bp.open({ items: link, el: link })
+    bp.open({ items: link, current: link })
   })
 })</code></pre></div>
 	<ul>
@@ -348,26 +348,26 @@ buttons.forEach((button) =&gt; {
 	<div class="content">
 	<div class="demo">
 	<div class="items items_4" id="embeds_grid">
-		<a class="item" href="https://www.youtube.com/watch?v=286jXjwdst0" data-title="Uebok on YouTube">
+		<a class="item" href="https://www.youtube.com/watch?v=286jXjwdst0" data-alt="Uebok on YouTube">
 			<img src="https://assets.henrygd.me/bp/images/uebok.jpg" alt="Uebok on YouTube" width="1920" height="1012" loading="lazy" />
 			<span class="label">YouTube</span>
 		</a>
-		<a class="item" href="https://vimeo.com/76979871" data-title="The New Vimeo Player">
+		<a class="item" href="https://vimeo.com/76979871" data-alt="The New Vimeo Player">
 			<img src="https://vumbnail.com/76979871.jpg" alt="The New Vimeo Player" width="640" height="360" loading="lazy" />
 			<span class="label">Vimeo</span>
 		</a>
-		<a class="item" href="https://soundcloud.com/yung-chomsky/neoliberalism" data-title="Neoliberalism on SoundCloud">
+		<a class="item" href="https://soundcloud.com/yung-chomsky/neoliberalism" data-alt="Neoliberalism on SoundCloud">
 			<img src="https://assets.henrygd.me/bp/images/neoliberalism.jpg" alt="Neoliberalism on SoundCloud" width="1200" height="1200" loading="lazy" />
 			<span class="label">SoundCloud</span>
 		</a>
 		<a class="item item_map" href="https://www.openstreetmap.org/#map=13/50.4501/30.5234"
 			data-link="https://www.openstreetmap.org/export/embed.html?bbox=30.43%2C50.40%2C30.63%2C50.50&amp;layer=mapnik" data-type="iframe"
-			data-title="Map of Kyiv" data-width="1600" data-height="1000">
+			data-alt="Map of Kyiv" data-width="1600" data-height="1000">
 			<span class="title">OpenStreetMap<small>data-type="iframe"</small></span>
 		</a>
 	</div></div>
 	<div class="code"><div class="heading"><span class="label">HTML</span><button class="button" type="button" data-copy aria-label="Copy HTML code">Copy</button></div><pre><code class="language-html">&lt;!-- detected from the link, the thumbnail comes from the image inside --&gt;
-&lt;a href="https://www.youtube.com/watch?v=286jXjwdst0" data-title="Uebok"&gt;
+&lt;a href="https://www.youtube.com/watch?v=286jXjwdst0" data-alt="Uebok"&gt;
   &lt;img src="uebok.jpg" alt="Uebok" /&gt;
 &lt;/a&gt;
 
@@ -376,12 +376,12 @@ buttons.forEach((button) =&gt; {
   href="https://www.openstreetmap.org/#map=13/50.4501/30.5234"
   data-link="https://www.openstreetmap.org/export/embed.html?bbox=30.43,50.40,30.63,50.50"
   data-type="iframe"
-  data-title="Map of Kyiv"
+  data-alt="Map of Kyiv"
   data-width="1600"
   data-height="1000"
 &gt;OpenStreetMap&lt;/a&gt;</code></pre></div>
 	<ul>
-		<li><code>data-title</code> sets the iframe's title for screen readers.</li>
+		<li><code>data-alt</code> sets the iframe's title for screen readers.</li>
 		<li>Without a thumbnail image, YouTube and Vimeo previews are loaded from <code>i.ytimg.com</code> and <code>vumbnail.com</code>.</li>
 		<li>Iframes default to 1920 × 1080, scaled to fit. Set <code>data-width</code> and <code>data-height</code> for another aspect ratio; PDF, Drive and Dropbox fill the screen.</li>
 		<li>Add attributes such as <code>referrerpolicy</code> or <code>allow</code> with <code>data-attr</code>.</li>
@@ -494,7 +494,7 @@ buttons.forEach((button) =&gt; {
 	</div></div>
 	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">// a string of HTML
 bp.open({
-  el: button,
+  current: button,
   items: [{ html: document.getElementById('dialog-template').innerHTML, element: button }],
   onOpen(container) {
     container.querySelectorAll('.message_box .button').forEach((btn) =&gt; {
@@ -508,7 +508,7 @@ bp.open({ items: slides.map((html) =&gt; ({ html, element: button })) })
 
 // an empty item, filled in onOpen
 bp.open({
-  el: button,
+  current: button,
   items: [{ html: '', element: button }],
   onOpen(container) {
     mountParallax(container.querySelector('.bp-html'))
@@ -516,7 +516,7 @@ bp.open({
 })</code></pre></div>
 	<ul>
 		<li>Elements without <code>sources</code> or <code>html</code> need a link the gallery recognizes, or a <code>type</code>; others are skipped.</li>
-		<li>Several items can share one <code>element</code>; open them with <code>position</code> instead of <code>el</code>.</li>
+		<li>Several items can share one <code>element</code>; open them with <code>position</code> instead of <code>current</code>.</li>
 		<li>HTML items zoom from their element too; the size is taken from the rendered content.</li>
 	</ul>
 	
@@ -536,8 +536,9 @@ const inline = BiggerPicture({ target: wrap })
 
 inline.open({
   items,
+  zoom: false,
   inline: true,
-  noClose: true,
+  persistent: true,
   thumbs: true,
   onImageClick(container, activeItem) {
     // open the same items full screen, zooming from the inline image
@@ -552,7 +553,7 @@ inline.open({
 })</code></pre></div>
 	<ul>
 		<li>The target needs <code>position: relative</code> and a height.</li>
-		<li><code>noClose</code> hides the close button. The <a href="#api"><code>close</code> method</a> still works.</li>
+		<li><code>persistent</code> hides the close button. The <a href="#api"><code>close</code> method</a> still works.</li>
 		<li>Open the gallery when it scrolls into view with an <code>IntersectionObserver</code> to avoid loading images early.</li>
 	</ul>
 	
@@ -617,10 +618,10 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 	<div class="items items_3" id="filter_grid"><a class="item" data-kind="image" href="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg" data-link="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash.jpg 1667w" data-thumb="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" data-alt="Antelope Canyon" data-width="1667" data-height="2500"><img src="https://assets.henrygd.me/bp/images/joshua-sukoff-sZ5zbZMAYJs-unsplash_thumb.jpg" alt="Antelope Canyon" width="1667" height="2500" loading="lazy" /></a><a class="item" data-kind="video" href="https://assets.henrygd.me/bp/videos/agent-327.webm" data-sources='[{&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327.webm&quot;, &quot;type&quot;: &quot;video/webm&quot;}, {&quot;src&quot;: &quot;https://assets.henrygd.me/bp/videos/agent-327-x265.mp4&quot;, &quot;type&quot;: &quot;video/mp4&quot;}]' data-width="1920" data-height="804"><img src="https://assets.henrygd.me/bp/images/agent-327.jpg" alt="Agent 327" width="1920" height="804" loading="lazy" /><span class="label">video</span></a><a class="item" data-kind="image" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-link="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-thumb="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" data-alt="Mountains clouded in purple fog" data-width="2400" data-height="2400"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="item" data-kind="iframe" href="https://www.youtube.com/watch?v=286jXjwdst0"><img src="https://assets.henrygd.me/bp/images/uebok.jpg" alt="Uebok on YouTube" width="1920" height="1012" loading="lazy" /><span class="label">iframe</span></a><a class="item" data-kind="image" href="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg" data-link="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_1800.jpg 1800w, https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash.jpg 3000w" data-thumb="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" data-alt="People standing under dragon trees on Socotra" data-width="3000" data-height="2000"><img src="https://assets.henrygd.me/bp/images/andrew-svk-REwZEYzw19g-unsplash_thumb.jpg" alt="People standing under dragon trees on Socotra" width="3000" height="2000" loading="lazy" /></a><a class="item" data-kind="iframe" href="https://vimeo.com/76979871"><img src="https://vumbnail.com/76979871.jpg" alt="Vimeo video" width="640" height="360" loading="lazy" /><span class="label">iframe</span></a></div></div><p class="note">Dimmed items are excluded by the current filter.</p>
 	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">bp.open({
   items: grid.querySelectorAll('a'),
-  el: link,
+  current: link,
   types: ['video', 'iframe'],
 })</code></pre></div>
-	<p>Positions refer to the filtered list, so <code>el</code>, the counter and the thumbnails always agree. An excluded <code>el</code> opens the first remaining item.</p>
+	<p>Positions refer to the filtered list, so <code>current</code>, the counter and the thumbnails always agree. An excluded <code>current</code> opens the first remaining item.</p>
 	
 	</div>
 </section>
@@ -656,7 +657,7 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 	<div class="demo"><div class="items items_4" id="theme_grid"><a class="item" href="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg" data-link="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_1500.jpg 1500w, https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash.jpg 2400w" data-alt="Brown and white mountain under a gray sky"><img src="https://assets.henrygd.me/bp/images/daniel-sessler-5El_7dJ0kKo-unsplash_thumb.jpg" alt="Brown and white mountain under a gray sky" width="2400" height="2400" loading="lazy" /></a><a class="item" href="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg" data-link="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash.jpg 1667w" data-alt="Close up of a yellow and blue macaw"><img src="https://assets.henrygd.me/bp/images/andrew-pons-lylCw4zcA7I-unsplash_thumb.jpg" alt="Close up of a yellow and blue macaw" width="1667" height="2500" loading="lazy" /></a><a class="item" href="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg" data-link="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_1500.jpg 1500w, https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU.jpg 2400w" data-alt="Mountains clouded in purple fog"><img src="https://assets.henrygd.me/bp/images/veeterzy-EYcvA56gSjU_thumb.jpg" alt="Mountains clouded in purple fog" width="2400" height="2400" loading="lazy" /></a><a class="item" href="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg" data-link="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_1133.jpg 1133w, https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash.jpg 1667w" data-alt="Two deer beside trees and a mountain"><img src="https://assets.henrygd.me/bp/images/johannes-andersson-UCd78vfC8vU-unsplash_thumb.jpg" alt="Two deer beside trees and a mountain" width="1667" height="2500" loading="lazy" /></a></div></div><p class="note">This gallery uses a light theme and larger square thumbnails.</p><div class="table"><table><thead><tr><th>Variable</th><th>Default</th><th>Controls</th></tr></thead><tbody><tr><td><code>--bp-duration</code></td><td><code>500ms</code></td><td>Length of the open and close animations. Switching items takes half of it.</td></tr><tr><td><code>--bp-easing</code></td><td><code>cubic-bezier(0.33, 1, 0.68, 1)</code></td><td>Timing function of the animations.</td></tr><tr><td><code>--bp-stage-gap</code></td><td><code>10px</code></td><td>Space around the item. Set to 0 while zoomed and in inline galleries.</td></tr><tr><td><code>--bp-thumb-height</code></td><td><code>70px</code></td><td>Height of the thumbnail strip.</td></tr><tr><td><code>--bp-thumb-gap</code></td><td><code>5px</code></td><td>Space between thumbnails.</td></tr><tr><td><code>--bp-thumb-ratio</code></td><td><code>1.25</code></td><td>Width to height ratio of each thumbnail.</td></tr></tbody></table></div>
 	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">bp.open({
   items: links,
-  el: link,
+  current: link,
   thumbs: true,
   onOpen: (container) =&gt; container.classList.add('is_light'),
 })</code></pre></div>
@@ -696,9 +697,9 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 	<h3>Initialization</h3>
 	<div class="table table_reference"><table><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>target</code></td><td>HTMLElement</td><td><code>document.body</code></td><td>Element the gallery is mounted in. Calling <code>BiggerPicture()</code> without options mounts it in <code>document.body</code>.</td></tr><tr><td><code>dialog</code></td><td>boolean</td><td><code>false</code></td><td>Render as a <code>&lt;dialog&gt;</code> in the top layer. See <a href="#dialog-mode">dialog mode</a>.</td></tr></tbody></table></div>
 	<h3>open(options)</h3>
-	<div class="table table_reference"><table><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code id="option-items">items</code></td><td>Element, NodeList, Array</td><td></td><td>The items to show: elements with <a href="#item-properties">data attributes</a> or links, or an array of objects. Required.</td></tr><tr><td><code id="option-el">el</code></td><td>Element</td><td></td><td>Start at the item whose element is <code>el</code>. The open and close animations run from that element.</td></tr><tr><td><code id="option-position">position</code></td><td>number</td><td><code>0</code></td><td>Start at this index of <code>items</code>. Ignored when <code>el</code> is set.</td></tr><tr><td><code id="option-types">types</code></td><td>string, string[]</td><td></td><td>Keep only these types: <code>image</code>, <code>video</code>, <code>audio</code>, <code>iframe</code>, <code>html</code>.</td></tr><tr><td><code id="option-thumbs">thumbs</code></td><td>boolean</td><td><code>false</code></td><td>Show a thumbnail strip when there is more than one item.</td></tr><tr><td><code id="option-scale">scale</code></td><td>number</td><td><code>1</code></td><td>Size of the item relative to the available space.</td></tr><tr><td><code id="option-maxZoom">maxZoom</code></td><td>number</td><td><code>10</code></td><td>Maximum zoom as a multiple of the starting size, never beyond the full resolution.</td></tr><tr><td><code id="option-sizes">sizes</code></td><td>string</td><td></td><td>Fixed <code>sizes</code> attribute for <code>srcset</code> images instead of the automatic one.</td></tr><tr><td><code id="option-intro">intro</code></td><td>string</td><td></td><td><code>fadeup</code> replaces the zoom from the thumbnail with a fade.</td></tr><tr><td><code id="option-inline">inline</code></td><td>boolean</td><td><code>false</code></td><td>Inline gallery: no scroll lock and no keyboard handling.</td></tr><tr><td><code id="option-noClose">noClose</code></td><td>boolean</td><td><code>false</code></td><td>Hide the close button and ignore Escape, backdrop clicks and swipes.</td></tr><tr><td><code id="option-noPinch">noPinch</code></td><td>function</td><td></td><td>Return a truthy value to disable pinch zoom. Receives <code>container</code>.</td></tr><tr><td><code id="option-focusWrap">focusWrap</code></td><td>Element</td><td>container</td><td>Element that keeps focus inside it on Tab.</td></tr></tbody></table></div>
+	<div class="table table_reference"><table><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code id="option-items">items</code></td><td>Element, NodeList, Array</td><td></td><td>The items to show: elements with <a href="#item-properties">data attributes</a> or links, or an array of objects. Required.</td></tr><tr><td><code id="option-current">current</code></td><td>Element</td><td></td><td>Start at the item whose element is <code>current</code>, unless <code>position</code> is set. The open and close animations run from that element. <code>el</code> is its deprecated name.</td></tr><tr><td><code id="option-position">position</code></td><td>number</td><td><code>0</code></td><td>Start at this index of <code>items</code>. Defaults to the item of <code>current</code>.</td></tr><tr><td><code id="option-types">types</code></td><td>string, string[]</td><td></td><td>Keep only these types: <code>image</code>, <code>video</code>, <code>audio</code>, <code>iframe</code>, <code>html</code>.</td></tr><tr><td><code id="option-thumbs">thumbs</code></td><td>boolean</td><td><code>false</code></td><td>Show a thumbnail strip when there is more than one item.</td></tr><tr><td><code id="option-scale">scale</code></td><td>number</td><td><code>1</code></td><td>Size of the item relative to the available space.</td></tr><tr><td><code id="option-maxZoom">maxZoom</code></td><td>number</td><td><code>10</code></td><td>Maximum zoom as a multiple of the starting size, never beyond the full resolution.</td></tr><tr><td><code id="option-sizes">sizes</code></td><td>string</td><td></td><td>Fixed <code>sizes</code> attribute for <code>srcset</code> images instead of the automatic one.</td></tr><tr><td><code id="option-zoom">zoom</code></td><td>boolean</td><td><code>true</code></td><td>Zoom from <code>current</code> and back into it. <code>false</code> fades instead.</td></tr><tr><td><code id="option-inline">inline</code></td><td>boolean</td><td><code>false</code></td><td>Inline gallery: no scroll lock and no keyboard handling.</td></tr><tr><td><code id="option-persistent">persistent</code></td><td>boolean</td><td><code>false</code></td><td>Hide the close button and ignore Escape, backdrop clicks and swipes.</td></tr><tr><td><code id="option-noPinch">noPinch</code></td><td>boolean or function</td><td><code>false</code></td><td>Disable pinch zoom, or a function that disables it by returning a truthy value. Receives <code>container</code>.</td></tr><tr><td><code id="option-focusWrap">focusWrap</code></td><td>Element</td><td>container</td><td>Element that keeps focus inside it on Tab.</td></tr></tbody></table></div>
 	<h3 id="callbacks">Callbacks</h3>
-	<div class="table table_reference"><table><thead><tr><th>Callback</th><th>Arguments</th><th>Called</th></tr></thead><tbody><tr><td><code>onOpen</code></td><td><code>container, activeItem</code></td><td>Before the intro animation.</td></tr><tr><td><code>onUpdate</code></td><td><code>container, activeItem</code></td><td>After the active item changes.</td></tr><tr><td><code>onResize</code></td><td><code>container, activeItem</code></td><td>When the gallery (not the window) changes size.</td></tr><tr><td><code>onImageClick</code></td><td><code>container, activeItem</code></td><td>When an image is clicked. Return a truthy value to prevent zooming.</td></tr><tr><td><code>onError</code></td><td><code>container, activeItem, event</code></td><td>When an image, video or audio source fails to load.</td></tr><tr><td><code>onClose</code></td><td><code>container, activeItem</code></td><td>Before the outro animation.</td></tr><tr><td><code>onClosed</code></td><td></td><td>After the gallery is removed from the page.</td></tr></tbody></table></div>
+	<div class="table table_reference"><table><thead><tr><th>Callback</th><th>Arguments</th><th>Called</th></tr></thead><tbody><tr><td><code>onOpen</code></td><td><code>container, activeItem</code></td><td>Before the intro animation.</td></tr><tr><td><code>onUpdate</code></td><td><code>container, activeItem</code></td><td>After the active item changes.</td></tr><tr><td><code>onResize</code></td><td><code>container, activeItem</code></td><td>When the gallery (not the window) changes size.</td></tr><tr><td><code>onImageClick</code></td><td><code>container, activeItem</code></td><td>When an image is clicked. Return a truthy value to prevent zooming.</td></tr><tr><td><code>onError</code></td><td><code>container, activeItem, event</code></td><td>When an image, video or audio source fails to load.</td></tr><tr><td><code>onClose</code></td><td><code>container, activeItem</code></td><td>Before the outro animation.</td></tr><tr><td><code>onClosed</code></td><td><code>container, activeItem</code></td><td>After the gallery is removed from the page.</td></tr></tbody></table></div>
 	
 	</div>
 </section>
@@ -709,7 +710,7 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 		<div class="content"><p>Set these as <code>data-*</code> attributes on elements or as properties on objects.</p></div>
 	</div>
 	<div class="content">
-	<div class="table table_reference"><table><thead><tr><th>Property</th><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><code>thumb</code></td><td><code>data-thumb</code></td><td>string, HTMLImageElement</td><td>Image shown while loading and in the thumbnail strip. Defaults to the <code>&lt;img&gt;</code> inside the element.</td></tr><tr><td><code>link</code></td><td><code>data-link</code></td><td>string</td><td>URL whose type is detected automatically, also an image <code>srcset</code>. Defaults to the element's <code>href</code>. Links of other types are skipped.</td></tr><tr><td><code>type</code></td><td><code>data-type</code></td><td>string</td><td><code>image</code>, <code>video</code>, <code>audio</code> or <code>iframe</code> to show the link as it is, without detection, such as a web page.</td></tr><tr><td><code>alt</code></td><td><code>data-alt</code></td><td>string</td><td>Alternative text of the image, also the iframe title and the player's label.</td></tr><tr><td><code>caption</code></td><td><code>data-caption</code></td><td>string</td><td>Caption, may contain HTML.</td></tr><tr><td><code>width</code></td><td><code>data-width</code></td><td>number, string</td><td>Full width in pixels. Default <code>1920</code>.</td></tr><tr><td><code>height</code></td><td><code>data-height</code></td><td>number, string</td><td>Full height in pixels. Default <code>1080</code>.</td></tr><tr><td><code>sources</code></td><td><code>data-sources</code></td><td>object[], JSON</td><td>Video or audio sources. Each object becomes a <code>&lt;source&gt;</code> with those attributes. The item is <code>audio</code> when the first <code>type</code> starts with <code>audio/</code>.</td></tr><tr><td><code>tracks</code></td><td><code>data-tracks</code></td><td>object[], JSON</td><td>Text tracks for video. Each object becomes a <code>&lt;track&gt;</code>.</td></tr><tr><td><code>title</code></td><td><code>data-title</code></td><td>string</td><td>Title of the iframe. Defaults to <code>alt</code>.</td></tr><tr><td><code>html</code></td><td><code>data-html</code></td><td>string</td><td>HTML to show. Size it with CSS.</td></tr><tr><td><code>attr</code></td><td><code>data-attr</code></td><td>object, JSON</td><td>Extra attributes for the <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code> or <code>&lt;iframe&gt;</code>.</td></tr><tr><td><code>sizes</code></td><td><code>data-sizes</code></td><td>string</td><td><code>sizes</code> of a <code>srcset</code> image, overriding the <code>sizes</code> option.</td></tr><tr><td><code>fit</code></td><td><code>data-fit</code></td><td>string</td><td><code>cover</code>, <code>contain</code> or <code>fill</code> for the open and close animation. Defaults to the thumbnail's <code>object-fit</code>.</td></tr><tr><td><code>maxZoom</code></td><td><code>data-max-zoom</code></td><td>number</td><td>Overrides the <code>maxZoom</code> option for this item.</td></tr><tr><td><code>element</code></td><td></td><td>Element</td><td>Element the item animates from and back to. Set automatically for elements.</td></tr></tbody></table></div>
+	<div class="table table_reference"><table><thead><tr><th>Property</th><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><code>thumb</code></td><td><code>data-thumb</code></td><td>string, HTMLImageElement</td><td>Image shown while loading and in the thumbnail strip. Defaults to the <code>&lt;img&gt;</code> inside the element.</td></tr><tr><td><code>link</code></td><td><code>data-link</code></td><td>string</td><td>URL whose type is detected automatically, also an image <code>srcset</code>. Defaults to the element's <code>href</code>. Links of other types are skipped.</td></tr><tr><td><code>type</code></td><td><code>data-type</code></td><td>string</td><td><code>image</code>, <code>video</code>, <code>audio</code> or <code>iframe</code> to show the link as it is, without detection, such as a web page.</td></tr><tr><td><code>alt</code></td><td><code>data-alt</code></td><td>string</td><td>Alternative text of the image, also the iframe title and the player's label.</td></tr><tr><td><code>caption</code></td><td><code>data-caption</code></td><td>string</td><td>Caption, may contain HTML.</td></tr><tr><td><code>width</code></td><td><code>data-width</code></td><td>number, string</td><td>Full width in pixels. Default <code>1920</code>.</td></tr><tr><td><code>height</code></td><td><code>data-height</code></td><td>number, string</td><td>Full height in pixels. Default <code>1080</code>.</td></tr><tr><td><code>sources</code></td><td><code>data-sources</code></td><td>object[], JSON</td><td>Video or audio sources. Each object becomes a <code>&lt;source&gt;</code> with those attributes. The item is <code>audio</code> when the first <code>type</code> starts with <code>audio/</code>.</td></tr><tr><td><code>tracks</code></td><td><code>data-tracks</code></td><td>object[], JSON</td><td>Text tracks for video. Each object becomes a <code>&lt;track&gt;</code>.</td></tr><tr><td><code>html</code></td><td><code>data-html</code></td><td>string</td><td>HTML to show. Size it with CSS.</td></tr><tr><td><code>attr</code></td><td><code>data-attr</code></td><td>object, JSON</td><td>Extra attributes for the <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code> or <code>&lt;iframe&gt;</code>.</td></tr><tr><td><code>sizes</code></td><td><code>data-sizes</code></td><td>string</td><td><code>sizes</code> of a <code>srcset</code> image, overriding the <code>sizes</code> option.</td></tr><tr><td><code>fit</code></td><td><code>data-fit</code></td><td>string</td><td><code>cover</code>, <code>contain</code> or <code>fill</code> for the open and close animation. Defaults to the thumbnail's <code>object-fit</code>.</td></tr><tr><td><code>maxZoom</code></td><td><code>data-max-zoom</code></td><td>number</td><td>Overrides the <code>maxZoom</code> option for this item.</td></tr><tr><td><code>element</code></td><td></td><td>Element</td><td>Element the item animates from and back to. Set automatically for elements.</td></tr></tbody></table></div>
 	</div>
 </section>
 
@@ -732,7 +733,7 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
 		<div class="content"><p>Full screen galleries handle these out of the box. Inline galleries handle the pointer and touch gestures but leave the keyboard to the page.</p></div>
 	</div>
 	<div class="content">
-	<div class="table table_reference"><table><thead><tr><th>Input</th><th>Action</th></tr></thead><tbody><tr><td><kbd>Esc</kbd></td><td>Close (unless <code>noClose</code>)</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous and next item</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom an image in and out</td></tr><tr><td>Arrow keys while zoomed</td><td>Move the zoomed image</td></tr><tr><td><kbd>Tab</kbd></td><td>Moves focus between the gallery controls only</td></tr><tr><td>Click or tap an image</td><td>Zoom in to full size, click again to zoom out</td></tr><tr><td>Mouse wheel, pinch</td><td>Zoom in and out around the pointer</td></tr><tr><td>Drag</td><td>Move a zoomed image; flicks keep their momentum</td></tr><tr><td>Swipe left or right</td><td>Previous and next item</td></tr><tr><td>Swipe up, click the backdrop</td><td>Close</td></tr></tbody></table></div>
+	<div class="table table_reference"><table><thead><tr><th>Input</th><th>Action</th></tr></thead><tbody><tr><td><kbd>Esc</kbd></td><td>Close (unless <code>persistent</code>)</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous and next item</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom an image in and out</td></tr><tr><td>Arrow keys while zoomed</td><td>Move the zoomed image</td></tr><tr><td><kbd>Tab</kbd></td><td>Moves focus between the gallery controls only</td></tr><tr><td>Click or tap an image</td><td>Zoom in to full size, click again to zoom out</td></tr><tr><td>Mouse wheel, pinch</td><td>Zoom in and out around the pointer</td></tr><tr><td>Drag</td><td>Move a zoomed image; flicks keep their momentum</td></tr><tr><td>Swipe left or right</td><td>Previous and next item</td></tr><tr><td>Swipe up, click the backdrop</td><td>Close</td></tr></tbody></table></div>
 	</div>
 </section>
 			</main>

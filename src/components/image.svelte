@@ -55,7 +55,7 @@
 
 	// If zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
-	$: if ($closing && $zoomed && !opts.intro) {
+	$: if ($closing && $zoomed && opts.zoom) {
 		scale = 1;
 		translate = [0, 0];
 		closingWhileZoomed = true;
@@ -202,7 +202,8 @@
 		if (pointerCache.size > 1) {
 			// If multiple pointer events, pass to handlePinch function
 			pointerDown = false;
-			return opts.noPinch?.(container) || handlePinch(e);
+			const { noPinch } = opts;
+			return (typeof noPinch == 'function' ? noPinch(container) : noPinch) || handlePinch(e);
 		}
 
 		if (!pointerDown) {
@@ -224,7 +225,7 @@
 		if (!$zoomed) {
 			// Close if swipe up
 			if (y < -90) {
-				pointerDown = !opts.noClose && props.close();
+				pointerDown = !opts.persistent && props.close();
 			}
 			// Only handle left / right if not swiping vertically
 			if (Math.abs(y) < 30) {
@@ -289,7 +290,7 @@
 		pointerDown = false;
 
 		// Close if overlay is clicked
-		if (e.target === this && !opts.noClose) {
+		if (e.target === this && !opts.persistent) {
 			return props.close();
 		}
 

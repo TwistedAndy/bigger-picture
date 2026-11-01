@@ -61,7 +61,7 @@ The bundled builds include Svelte 4 and work in any project. Svelte 4 and Svelte
 
 ## Quick start
 
-Create one instance and open it on click. Passing the clicked element as `el` starts the gallery at that item and zooms out of it.
+Create one instance and open it on click. Passing the clicked element as `current` starts the gallery at that item and zooms out of it.
 
 ```html
 <div class="gallery">
@@ -84,7 +84,7 @@ document.addEventListener('click', (event) => {
   }
   event.preventDefault()
   bp.open({
-    el: link,
+    current: link,
     items: link.closest('.gallery').querySelectorAll('a'),
     thumbs: true,
   })
@@ -143,16 +143,16 @@ Options passed to `open()`.
 | Option                         | Type                               | Default     | Description                                             |
 | ------------------------------ | ---------------------------------- | ----------- | ------------------------------------------------------- |
 | [`items`](#items)              | `NodeList`, `Node` or `Array`      |             | Items to show.                                          |
-| [`el`](#el)                    | `Node`                             |             | Item to start at, and to zoom from and back into.       |
+| [`current`](#current)          | `Node`                             |             | Item to start at, and to zoom from and back into.       |
 | [`position`](#position)        | `number`                           | `0`         | Item to start at, counted from zero.                    |
 | [`types`](#types)              | `string` or `string[]`             | all         | Item types to include.                                  |
 | [`scale`](#scale)              | `number`                           | `1`         | Size of the item relative to the gallery.               |
 | [`thumbs`](#thumbs)            | `boolean`                          | `false`     | Shows a strip of thumbnails.                            |
 | [`sizes`](#sizes)              | `string`                           |             | `sizes` attribute for every `srcset` image.             |
-| [`intro`](#intro)              | `string`                           |             | Alternative intro animation.                            |
+| [`zoom`](#zoom)                | `boolean`                          | `true`      | Zooms from `current` and back, or fades with `false`.   |
 | [`inline`](#inline)            | `boolean`                          | `false`     | Inline gallery that leaves scroll and Tab to the page.  |
-| [`noClose`](#noclose)          | `boolean`                          | `false`     | Hides the close button and ignores Esc.                 |
-| [`noPinch`](#nopinch)          | `function`                         |             | Disables pinch zoom when it returns a truthy value.     |
+| [`persistent`](#persistent)    | `boolean`                          | `false`     | Hides the close button and ignores Esc.                 |
+| [`noPinch`](#nopinch)          | `boolean` or `function`            | `false`     | Disables pinch zoom.                                    |
 | [`focusWrap`](#focuswrap)      | `Node`                             |             | Element to trap focus in.                               |
 | [`maxZoom`](#maxzoom)          | `number`                           | `10`        | Maximum zoom relative to the starting size.             |
 | [`onOpen`](#onopen)            | `function`                         |             | Runs before the intro animation.                        |
@@ -169,17 +169,19 @@ Options passed to `open()`.
 
 The items to show. Elements pass their data through `href` and data attributes, objects pass it as properties. See [Item properties](#item-properties).
 
-### el
+### current
 
 `Node`
 
-If the node matches one of the `items` (or the `element` of an item object), the gallery starts at that item and zooms out of it. Use it in a click handler with the clicked link.
+If the node matches one of the `items` (or the `element` of an item object), the gallery starts at that item and zooms out of it. Use it in a click handler with the clicked link. A set [`position`](#position) wins over it.
+
+`el` is the deprecated name of this option and still works.
 
 ### position
 
 `number` · default `0`
 
-The item to start at, counted from zero: the third item is `2`. Ignored when `el` matches an item.
+The item to start at, counted from zero: the third item is `2`. Without it, the gallery starts at the item of [`current`](#current), or the first one.
 
 ### types
 
@@ -209,11 +211,13 @@ Shows a strip of thumbnails at the bottom of the gallery when it has more than o
 
 Sets the `sizes` attribute of every image with a `srcset`. By default it updates automatically as an image is zoomed.
 
-### intro
+### zoom
 
-`string`
+`boolean` · default `true`
 
-Replaces the default zoom intro. `fadeup` is the only alternative.
+Zooms the item out of its element on open and back into it on close. With `false` it fades up and down instead, which suits inline galleries.
+
+`intro: 'fadeup'` is the deprecated name of `zoom: false` and still works.
 
 ### inline
 
@@ -224,17 +228,19 @@ Mounts the gallery inline. It doesn't lock the page scroll or trap Tab, and leav
 > [!TIP]
 > Give the container of an inline gallery `position: relative`.
 
-### noClose
+### persistent
 
 `boolean` · default `false`
 
 Hides the close button and keeps the gallery open until [`close`](#close) is called. Useful for inline galleries.
 
+`noClose` is the deprecated name of this option and still works.
+
 ### noPinch
 
-`function`
+`boolean` or `function` · default `false`
 
-Return a truthy value to disable pinch zoom. It runs when the pinch starts and receives `container`, the gallery element.
+Disables pinch zoom. A function runs when the pinch starts, receives `container`, the gallery element, and disables it by returning a truthy value.
 
 ```js
 bp.open({
@@ -288,7 +294,7 @@ Runs just before the outro animation.
 
 ### onClosed
 
-`function()`
+`function(container, activeItem)`
 
 Runs after the gallery is closed and removed from the page.
 
@@ -326,7 +332,6 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 | [`height`](#height)      | `number`                               | Full height in pixels, `1080` by default.                  |
 | [`alt`](#alt)            | `string`                               | Alternative text, also names iframes and players.          |
 | [`caption`](#caption)    | `string`                               | Caption below the item.                                    |
-| [`title`](#title)        | `string`                               | Iframe title, `alt` by default.                            |
 | [`tracks`](#tracks)      | `Array` or `string`                    | Video text tracks.                                         |
 | [`attr`](#attr)          | `object` or `string`                   | Extra attributes for the media element.                    |
 | [`sizes`](#sizes-1)      | `string`                               | `sizes` attribute for a `srcset` image.                    |
@@ -418,17 +423,13 @@ The largest height of the item in pixels. Not needed for HTML.
 
 Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`.
 
+`title` is the deprecated name of this property and still works.
+
 ### caption
 
 `string`
 
 Text shown in the built-in caption. It may contain HTML, and can be styled with CSS.
-
-### title
-
-`string`
-
-The title attribute of an iframe. Defaults to [`alt`](#alt).
 
 ### tracks
 
@@ -489,7 +490,7 @@ bp.open({
 
 | Input                         | Action                                           |
 | ----------------------------- | ------------------------------------------------ |
-| <kbd>Esc</kbd>                | Close, unless `noClose` is set                   |
+| <kbd>Esc</kbd>                | Close, unless `persistent` is set                |
 | <kbd>←</kbd> <kbd>→</kbd>     | Previous and next item                           |
 | <kbd>+</kbd> <kbd>-</kbd>     | Zoom an image in and out                         |
 | Arrow keys while zoomed       | Move the zoomed image                            |
