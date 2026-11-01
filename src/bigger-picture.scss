@@ -106,11 +106,10 @@
 
 }
 
-// keeps the space of the hidden scrollbar, so the page doesn't shift,
+// the script pads the root for the hidden scrollbar, so the page doesn't shift,
 // an overflow on the body would break the sticky elements of the page
 .bp-lock {
 	overflow-y: hidden;
-	scrollbar-gutter: stable;
 }
 
 .bp-overlay {

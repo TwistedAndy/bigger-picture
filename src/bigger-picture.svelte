@@ -138,6 +138,12 @@
 		 * Lock the scroll unless gallery is inline
 		 */
 		if (!inline && html.scrollHeight > html.clientHeight) {
+			const style = getComputedStyle(html);
+			const scrollbar = innerWidth - html.clientWidth;
+			// padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
+			if (scrollbar && style.scrollbarGutter === 'auto') {
+				html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
+			}
 			html.classList.add('bp-lock');
 		}
 
@@ -814,6 +820,7 @@
 				isClosing = false;
 				// remove class hiding scroll
 				html.classList.remove('bp-lock');
+				html.style.paddingRight = '';
 				opts.onClosed?.();
 				if (pendingOptions) {
 					open(pendingOptions);

@@ -511,6 +511,16 @@ bp.open({
 
 Inline galleries handle the mouse and touch, but leave the keyboard to the page.
 
+## Page scroll
+
+While open, the gallery adds `.bp-lock` to `<html>` to stop the page scroll and pads it for the hidden scrollbar. Full-width `position: fixed` elements still move by the scrollbar width. To keep them in place, reserve the scrollbar space in your CSS, and the gallery skips the padding:
+
+```css
+html {
+	scrollbar-gutter: stable;
+}
+```
+
 ## Development
 
 ```sh

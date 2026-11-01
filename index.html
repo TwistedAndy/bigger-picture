@@ -680,6 +680,7 @@ closeButton.onclick = () =&gt; bp.close()</code></pre></div>
   color: #1d2330;
 }</code></pre></div>
 	<p>Useful classes: <code>.bp-wrap</code> (container), <code>.bp-overlay</code>, <code>.bp-caption</code>, <code>.bp-controls</code>, <code>.bp-thumbs</code>. State classes on the container: <code>.bp-zoomed</code>, <code>.bp-inline</code>, <code>.bp-small</code>, <code>.bp-closing</code>. Animations are disabled when the visitor prefers reduced motion.</p>
+	<p>While open, the gallery adds <code>.bp-lock</code> to <code>&lt;html&gt;</code> to stop the page scroll, and pads it for the hidden scrollbar. Full-width <code>position: fixed</code> elements still move by the scrollbar width; <code>html { scrollbar-gutter: stable; }</code> in your CSS keeps them in place, and the gallery then skips the padding.</p>
 	
 	</div>
 </section>
