@@ -5,7 +5,7 @@
 <p>A small, fast JavaScript lightbox for images, video, audio, embeds and HTML.<br />Smooth zoom from the thumbnail and back, deep zoom with responsive images, and no dependencies.</p>
 
 [![Release](https://flat.badgen.net/github/release/TwistedAndy/bigger-picture?color=blue)](https://github.com/TwistedAndy/bigger-picture/releases)
-[![Gzip size](https://flat.badgen.net/static/gzip/12.9%20kB/green)](dist/bigger-picture.min.js)
+[![Gzip size](https://flat.badgen.net/static/gzip/12%20kB/green)](dist/bigger-picture.min.js)
 [![MIT license](https://flat.badgen.net/github/license/TwistedAndy/bigger-picture?color=purple)](license)
 
 **[Documentation and live examples](https://twistedandy.github.io/bigger-picture/)** · [Releases](https://github.com/TwistedAndy/bigger-picture/releases) · [Issues](https://github.com/TwistedAndy/bigger-picture/issues)
@@ -21,13 +21,13 @@
 - **Automatic link detection** - Pass plain links and the type is read from the URL.
 - **Zoomable** - Click, wheel or pinch to zoom photos up to native resolution.
 - **Responsive images** - Pass a `srcset` and the right file loads as you zoom.
-- **Lightweight and fast** - 12.9 kB gzipped, smooth even with huge images.
+- **Lightweight and fast** - 12 kB gzipped, smooth even with huge images.
 - **Flexible** - Full screen, inline or in the browser's top layer, with built-in thumbnails, captions and an easy API.
 - **Accessible** - Alt text, captions, subtitles, keyboard navigation, focus management and `prefers-reduced-motion`.
 
 ## Install
 
-Load the UMD build and the stylesheet from jsDelivr. The script exposes a global `BiggerPicture` function.
+Load the minified build and the stylesheet from jsDelivr. The script exposes a global `BiggerPicture` function.
 
 ```html
 <link
@@ -37,8 +37,8 @@ Load the UMD build and the stylesheet from jsDelivr. The script exposes a global
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.4/dist/bigger-picture.umd.js"
-  integrity="sha384-rjOvWQd85rKO0H/cHCHLq7sQj1mWjadJQJ4nQNpWpkdAdAp7xWkT6xgxS0aWYwB9"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.4/dist/bigger-picture.min.js"
+  integrity="sha384-zUPRF/rxu+0fkTK3aR//CoHvy+OYJa+L5nBXwCgRlV+CK5+dBiPbmVYW9ZvUzOPV"
   crossorigin="anonymous"
 ></script>
 ```
