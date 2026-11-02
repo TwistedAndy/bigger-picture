@@ -94,24 +94,27 @@ The image inside each link is used as the thumbnail. See the [documentation](htt
 
 ## Styling the thumbnails
 
-The library styles only the gallery. The thumbnails on the page are your own markup and CSS, so any layout works: a grid, a carousel or a masonry grid. The gallery reads three things from the page:
+The library styles only the gallery. The thumbnails on the page are your own markup and CSS, so any layout works. The gallery reads three things from the page:
 
 - **The link:** `href` or [`data-link`](#link) is what opens, and [`data-width`](#width) and [`data-height`](#height) give its full size.
 - **The image inside it:** the thumbnail the item zooms out of and back into, inside its padding and border.
 - **Its `object-fit`:** `cover` keeps the crop and `contain` the letterboxing while zooming, see [`fit`](#fit).
 
-A masonry grid needs only CSS columns:
+### The link and the image
+
+The link is the clickable tile, and the image fills it:
 
 ```css
-.gallery {
-  columns: 3 200px;
-  column-gap: 12px;
-}
-
 .gallery a {
   display: block;
-  margin-bottom: 12px;
-  break-inside: avoid;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: zoom-in;
+}
+
+.gallery a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .gallery img {
@@ -121,7 +124,80 @@ A masonry grid needs only CSS columns:
 }
 ```
 
-Give the images `width` and `height` attributes to keep their space while they load. Columns fill from top to bottom, so the gallery order runs down each column. For an order across the rows, use a JavaScript masonry library, the gallery works with any layout.
+- `display: block` on both removes the gap under an inline image and makes the link as big as the image.
+- Give the images `width` and `height` attributes, so they keep their space while they load.
+- The zoom starts from the image's box inside its padding and border, so a padded or bordered image works too.
+- For a hover effect, change `opacity` or `filter`. A `transform` on hover changes the box the zoom starts from.
+- The gallery gives the focus back to the link on close, so keep a visible focus style for keyboard users.
+
+### Layouts
+
+The examples below use the markup from the [quick start](#quick-start) with the styles above.
+
+**Cropped grid.** Equal tiles that crop the images. The zoom unfolds the full image from the crop and folds it back on close.
+
+```css
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.gallery img {
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+```
+
+**Letterboxed grid.** The same tiles with `object-fit: contain` and a background show each image whole, and the zoom keeps the bars.
+
+**Rows.** Images of the same height keep their own ratios, so the zoom needs no crop.
+
+```css
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gallery img {
+  width: auto;
+  height: 180px;
+}
+```
+
+**Masonry.** CSS columns stack the images at their own ratios, see the [image gallery](https://twistedandy.github.io/bigger-picture/#image-gallery) example.
+
+**Carousel.** A strip that scrolls sideways, here with cropped slides.
+
+```css
+.gallery {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.gallery a {
+  flex: 0 0 min(80%, 320px);
+  scroll-snap-align: start;
+}
+
+.gallery img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+```
+
+The gallery closes into the thumbnail of the item it shows. When some thumbnails are hidden in a carousel or below the fold, scroll the current one into view in [`onUpdate`](#onupdate):
+
+```js
+bp.open({
+  items,
+  current: link,
+  onUpdate: (container, item) => item.element?.scrollIntoView({ block: 'nearest', inline: 'nearest' }),
+})
+```
 
 ## Frameworks
 

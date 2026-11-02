@@ -325,11 +325,72 @@ gallery.addEventListener('click', (event) =&gt; {
     download: true,
   })
 })</code></pre></div>
+	<div class="code"><div class="heading"><span class="label">Svelte</span><button class="button" type="button" data-copy aria-label="Copy Svelte code">Copy</button></div><pre><code class="language-html">&lt;script&gt;
+  import { onMount } from 'svelte'
+  import BiggerPicture from '@twistedandy/bigger-picture/svelte'
+  import '@twistedandy/bigger-picture/css'
+
+  // [{ src, srcset, thumb, alt, width, height }]
+  let { images } = $props()
+  let gallery
+  let bp
+
+  onMount(() =&gt; {
+    bp = BiggerPicture()
+    return () =&gt; bp.close()
+  })
+
+  const open = (event) =&gt; {
+    event.preventDefault()
+    bp.open({
+      items: gallery.querySelectorAll('a'),
+      current: event.currentTarget,
+      thumbs: true,
+      download: true,
+    })
+  }
+&lt;/script&gt;
+
+&lt;div class="gallery" bind:this={gallery}&gt;
+  {#each images as image (image.src)}
+    &lt;a
+      href={image.src}
+      data-link={image.srcset}
+      data-thumb={image.thumb}
+      data-alt={image.alt}
+      data-width={image.width}
+      data-height={image.height}
+      onclick={open}
+    &gt;
+      &lt;img src={image.thumb} alt={image.alt} width={image.width} height={image.height} loading="lazy" /&gt;
+    &lt;/a&gt;
+  {/each}
+&lt;/div&gt;
+
+&lt;style&gt;
+  .gallery {
+    columns: 3 200px;
+    column-gap: 12px;
+  }
+
+  a {
+    display: block;
+    margin-bottom: 12px;
+    break-inside: avoid;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+&lt;/style&gt;</code></pre></div>
 	<ul>
 		<li><code>data-width</code> and <code>data-height</code> are the full resolution. Without them, the size is read from the thumbnail and updated once the image loads.</li>
 		<li>The <code>sizes</code> attribute is updated as you zoom, so the browser picks a larger file from <code>srcset</code> only when it is needed.</li>
 		<li>The download button saves the largest image of the <code>srcset</code>. These images are on another domain, so it opens them in a new tab instead, as browsers download only same-origin files.</li>
 		<li>One delegated listener on the container also works for links added later.</li>
+		<li>The Svelte block is the same gallery as a Svelte 5 component, with the masonry styles scoped to it. See <a href="#frameworks">frameworks</a> for React and Vue.</li>
 		<li>The masonry grid is plain CSS columns: up to 3 columns of at least 200px. The <code>width</code> and <code>height</code> of the thumbnail keep its space while it loads. Columns fill from top to bottom, so the gallery order runs down each column. For an order across the rows, use a JavaScript masonry library, the gallery works with any layout.</li>
 	</ul>
 	
