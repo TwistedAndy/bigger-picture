@@ -143,6 +143,29 @@
 	animation-fill-mode: forwards;
 }
 
+// The slide and the crop clip the edges the thumbnail crops, while the crop and its content shift them in and out
+.bp-clip {
+	overflow: hidden;
+
+	.bp-crop {
+		overflow: hidden;
+	}
+
+	.bp-crop,
+	.bp-crop > div {
+		animation: bp-crop-in var(--bp-duration) var(--bp-easing);
+	}
+
+	&.bp-out {
+
+		.bp-crop,
+		.bp-crop > div {
+			animation-name: bp-crop-out;
+			animation-fill-mode: forwards;
+		}
+	}
+}
+
 .bp-stage {
 	display: flex;
 	position: relative;
@@ -152,13 +175,37 @@
 	min-height: 0;
 }
 
-.bp-slide {
+.bp-slide,
+.bp-crop,
+.bp-crop > div {
 	display: flex;
 	position: absolute;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+}
+
+// The layer is kept between the open and close animations, so the close doesn't wait to raster it again
+.bp-slide {
 	inset: var(--bp-stage-gap);
+	will-change: transform;
+}
+
+// Clicks on the empty space reach the slide, which closes the gallery,
+// --bp-k shifts the crop twice the slide shift back and its content in place
+.bp-crop {
+	--bp-k: -2;
+	inset: 0;
+	pointer-events: none;
+
+	> div {
+		--bp-k: 1;
+		inset: 0;
+
+		> * {
+			pointer-events: auto;
+		}
+	}
 }
 
 .bp-inner {
@@ -569,26 +616,30 @@
 	}
 }
 
-// The script sets --bp-clip to crop the slide like a cover thumbnail, the other slides aren't clipped
 @keyframes bp-in {
 	from {
 		opacity: var(--bp-opacity);
 		transform: var(--bp-transform);
-		clip-path: var(--bp-clip, none);
-	}
-	to {
-		clip-path: var(--bp-clip-full, none);
 	}
 }
 
 @keyframes bp-out {
-	from {
-		clip-path: var(--bp-clip-full, none);
-	}
 	to {
 		opacity: var(--bp-opacity);
 		transform: var(--bp-transform);
-		clip-path: var(--bp-clip, none);
+	}
+}
+
+// The script sets --bp-crop-x and --bp-crop-y, the shift of the slide to crop the item like the thumbnail
+@keyframes bp-crop-in {
+	from {
+		translate: calc(var(--bp-crop-x) * var(--bp-k)) calc(var(--bp-crop-y) * var(--bp-k));
+	}
+}
+
+@keyframes bp-crop-out {
+	to {
+		translate: calc(var(--bp-crop-x) * var(--bp-k)) calc(var(--bp-crop-y) * var(--bp-k));
 	}
 }
 

@@ -2320,7 +2320,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (782:2) {#if !dialog}
+// (786:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2340,7 +2340,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (793:6) {#if containerWidth > 0 && containerHeight > 0}
+// (797:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2415,7 +2415,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (793:364) {:else}
+// (797:483) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2441,7 +2441,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (793:311) 
+// (797:430) 
 function create_if_block_8(ctx) {
 	let iframe;
 	let current;
@@ -2481,7 +2481,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (793:220) 
+// (797:339) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2521,7 +2521,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (793:53) {#if activeItem.type === 'image'}
+// (797:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2567,9 +2567,11 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (782:94) {#key activeItem.i}
+// (786:94) {#key activeItem.i}
 function create_key_block(ctx) {
-	let div;
+	let div2;
+	let div1;
+	let div0;
 	let current;
 	let mounted;
 	let dispose;
@@ -2577,21 +2579,26 @@ function create_key_block(ctx) {
 
 	return {
 		c() {
-			div = element("div");
+			div2 = element("div");
+			div1 = element("div");
+			div0 = element("div");
 			if (if_block) if_block.c();
-			attr(div, "class", "bp-slide");
-			attr(div, "role", "none");
+			attr(div1, "class", "bp-crop");
+			attr(div2, "class", "bp-slide");
+			attr(div2, "role", "none");
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			if (if_block) if_block.m(div, null);
+			insert(target, div2, anchor);
+			append(div2, div1);
+			append(div1, div0);
+			if (if_block) if_block.m(div0, null);
 			current = true;
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*slideActions*/ ctx[20].call(null, div)),
-					listen(div, "pointerdown", /*pointerdown_handler*/ ctx[27]),
-					listen(div, "pointerup", /*pointerup_handler*/ ctx[28])
+					action_destroyer(/*slideActions*/ ctx[20].call(null, div2)),
+					listen(div2, "pointerdown", /*pointerdown_handler*/ ctx[27]),
+					listen(div2, "pointerup", /*pointerup_handler*/ ctx[28])
 				];
 
 				mounted = true;
@@ -2609,7 +2616,7 @@ function create_key_block(ctx) {
 					if_block = create_if_block_5(ctx);
 					if_block.c();
 					transition_in(if_block, 1);
-					if_block.m(div, null);
+					if_block.m(div0, null);
 				}
 			} else if (if_block) {
 				group_outros();
@@ -2632,7 +2639,7 @@ function create_key_block(ctx) {
 		},
 		d(detaching) {
 			if (detaching) {
-				detach(div);
+				detach(div2);
 			}
 
 			if (if_block) if_block.d();
@@ -2642,7 +2649,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (793:494) {#if activeItem.caption}
+// (797:625) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2666,7 +2673,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (793:634) {#if activeItem.download}
+// (797:765) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2705,7 +2712,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (793:992) {#if items.length > 1}
+// (797:1123) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2766,7 +2773,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (801:25) {#if opts.thumbs && items.length > 1}
+// (805:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2810,7 +2817,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (773:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (777:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3671,7 +3678,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		if (activeItem.type === 'html') {
-			const bpItem = node.firstElementChild.firstElementChild;
+			const bpItem = node.querySelector('.bp-html').firstElementChild;
 			dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 		} else {
 			dimensions = activeDimensions;
@@ -3696,18 +3703,23 @@ function instance($$self, $$props, $$invalidate) {
 		let scaleWidth = rect.width / dimensions[0];
 		let scaleHeight = rect.height / dimensions[1];
 		let css = '--bp-opacity:1';
+		let crop = '';
 
 		if (activeItem.fit === 'cover') {
 			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
 
-			// Crop the slide like the thumbnail around the item centered in it, a zoomed image scales inside the crop,
-			// and the percents follow the slide when the stage gap comes back after the zoom
-			css += `;--bp-clip:inset(calc(50% - ${rect.height / scaleHeight / 2}px) calc(50% - ${rect.width / scaleWidth / 2}px));--bp-clip-full:inset(0)`;
+			// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back twice
+			// as far and clips, and its content returns in place. Translates stay on the compositor, an animated clip-path
+			// repaints every frame. The percents follow the slide when the stage gap comes back after the zoom
+			css += `;--bp-crop-x:calc(50% - ${rect.width / scaleWidth / 2}px);--bp-crop-y:calc(50% - ${rect.height / scaleHeight / 2}px)`;
+
+			crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
+			className += ' bp-clip';
 		} else if (activeItem.fit === 'contain') {
 			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 		}
 
-		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})`, css);
+		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
 	};
 
 	// Animate the slides, the first one zooms in, the next ones slide in and out

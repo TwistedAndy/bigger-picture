@@ -600,7 +600,7 @@
 		}
 
 		if (activeItem.type === 'html') {
-			const bpItem = node.firstElementChild.firstElementChild;
+			const bpItem = node.querySelector('.bp-html').firstElementChild;
 			dimensions = [bpItem.clientWidth, bpItem.clientHeight];
 		} else {
 			dimensions = activeDimensions;
@@ -622,17 +622,21 @@
 		let scaleWidth = rect.width / dimensions[0];
 		let scaleHeight = rect.height / dimensions[1];
 		let css = '--bp-opacity:1';
+		let crop = '';
 
 		if (activeItem.fit === 'cover') {
 			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
-			// Crop the slide like the thumbnail around the item centered in it, a zoomed image scales inside the crop,
-			// and the percents follow the slide when the stage gap comes back after the zoom
-			css += `;--bp-clip:inset(calc(50% - ${rect.height / scaleHeight / 2}px) calc(50% - ${rect.width / scaleWidth / 2}px));--bp-clip-full:inset(0)`;
+			// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back twice
+			// as far and clips, and its content returns in place. Translates stay on the compositor, an animated clip-path
+			// repaints every frame. The percents follow the slide when the stage gap comes back after the zoom
+			css += `;--bp-crop-x:calc(50% - ${rect.width / scaleWidth / 2}px);--bp-crop-y:calc(50% - ${rect.height / scaleHeight / 2}px)`;
+			crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
+			className += ' bp-clip';
 		} else if (activeItem.fit === 'contain') {
 			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 		}
 
-		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})`, css);
+		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
 	};
 
 	// Animate the slides, the first one zooms in, the next ones slide in and out
@@ -803,19 +807,22 @@
 						}
 					}}
 					>
-						{#if containerWidth > 0 && containerHeight > 0}
-							{#if activeItem.type === 'image'}
-								<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} {activeDimensions} />
-							{:else if activeItem.sources}
-								<Video props={getChildProps()} {activeDimensions} />
-							{:else if activeItem.type === 'iframe'}
-								<Iframe props={getChildProps()} {activeDimensions} />
-							{:else}
-								<div class="bp-html">
-									{@html activeItem.html}
-								</div>
+						<!-- The crop and its content shift against the slide to crop the item like the thumbnail -->
+						<div class="bp-crop"><div>
+							{#if containerWidth > 0 && containerHeight > 0}
+								{#if activeItem.type === 'image'}
+									<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} {activeDimensions} />
+								{:else if activeItem.sources}
+									<Video props={getChildProps()} {activeDimensions} />
+								{:else if activeItem.type === 'iframe'}
+									<Iframe props={getChildProps()} {activeDimensions} />
+								{:else}
+									<div class="bp-html">
+										{@html activeItem.html}
+									</div>
+								{/if}
 							{/if}
-						{/if}
+						</div></div>
 					</div>
 				{/key}
 				<div class="bp-ruler" use:rulerActions></div>
