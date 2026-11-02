@@ -3700,10 +3700,9 @@ function instance($$self, $$props, $$invalidate) {
 		if (activeItem.fit === 'cover') {
 			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
 
-			// Crop the item like the thumbnail
-			css += `;--bp-clip-y:${Math.max((dimensions[1] - rect.height / scaleHeight) / 2, 0)}px;--bp-clip-x:${Math.max((dimensions[0] - rect.width / scaleWidth) / 2, 0)}px`;
-
-			className += ' bp-clip';
+			// Crop the slide like the thumbnail around the item centered in it, a zoomed image scales inside the crop,
+			// and the percents follow the slide when the stage gap comes back after the zoom
+			css += `;--bp-clip:inset(calc(50% - ${rect.height / scaleHeight / 2}px) calc(50% - ${rect.width / scaleWidth / 2}px));--bp-clip-full:inset(0)`;
 		} else if (activeItem.fit === 'contain') {
 			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 		}

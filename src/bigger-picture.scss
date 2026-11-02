@@ -143,26 +143,6 @@
 	animation-fill-mode: forwards;
 }
 
-// Crop the item like the thumbnail during the zoom
-.bp-clip {
-
-	.bp-img,
-	.bp-iframe,
-	.bp-video {
-		animation: bp-clip-in var(--bp-duration) var(--bp-easing);
-	}
-
-	&.bp-out {
-
-		.bp-img,
-		.bp-iframe,
-		.bp-video {
-			animation-name: bp-clip-out;
-			animation-fill-mode: forwards;
-		}
-	}
-}
-
 .bp-stage {
 	display: flex;
 	position: relative;
@@ -589,35 +569,26 @@
 	}
 }
 
+// The script sets --bp-clip to crop the slide like a cover thumbnail, the other slides aren't clipped
 @keyframes bp-in {
 	from {
 		opacity: var(--bp-opacity);
 		transform: var(--bp-transform);
+		clip-path: var(--bp-clip, none);
+	}
+	to {
+		clip-path: var(--bp-clip-full, none);
 	}
 }
 
 @keyframes bp-out {
+	from {
+		clip-path: var(--bp-clip-full, none);
+	}
 	to {
 		opacity: var(--bp-opacity);
 		transform: var(--bp-transform);
-	}
-}
-
-@keyframes bp-clip-in {
-	from {
-		clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
-	}
-	to {
-		clip-path: inset(0);
-	}
-}
-
-@keyframes bp-clip-out {
-	from {
-		clip-path: inset(0);
-	}
-	to {
-		clip-path: inset(var(--bp-clip-y) var(--bp-clip-x));
+		clip-path: var(--bp-clip, none);
 	}
 }
 
