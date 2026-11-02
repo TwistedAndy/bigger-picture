@@ -2320,7 +2320,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (778:2) {#if !dialog}
+// (782:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2340,7 +2340,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (789:6) {#if containerWidth > 0 && containerHeight > 0}
+// (793:6) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2415,7 +2415,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (789:364) {:else}
+// (793:364) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2441,7 +2441,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (789:311) 
+// (793:311) 
 function create_if_block_8(ctx) {
 	let iframe;
 	let current;
@@ -2481,7 +2481,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (789:220) 
+// (793:220) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2521,7 +2521,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (789:53) {#if activeItem.type === 'image'}
+// (793:53) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2567,7 +2567,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (778:94) {#key activeItem.i}
+// (782:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div;
 	let current;
@@ -2642,7 +2642,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (789:494) {#if activeItem.caption}
+// (793:494) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2666,7 +2666,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (789:634) {#if activeItem.download}
+// (793:634) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2705,7 +2705,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (789:992) {#if items.length > 1}
+// (793:992) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2766,7 +2766,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (797:25) {#if opts.thumbs && items.length > 1}
+// (801:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2810,7 +2810,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (769:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (773:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3217,15 +3217,19 @@ function instance($$self, $$props, $$invalidate) {
 
 		// Lock the scroll unless gallery is inline
 		if (!inline && html.scrollHeight > html.clientHeight) {
+			// The width the lock frees is the real scrollbar, innerWidth isn't, it follows the zoom
+			// and the overflow on mobile, where overlay scrollbars free nothing
 			const style = getComputedStyle(html);
-			const scrollbar = innerWidth - html.clientWidth;
 
-			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
+			const width = html.clientWidth;
+			html.classList.add('bp-lock');
+			const scrollbar = html.clientWidth - width;
+
+			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page,
+			// a stable gutter keeps the space, though clientWidth changes with it
 			if (scrollbar && style.scrollbarGutter === 'auto') {
 				html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
 			}
-
-			html.classList.add('bp-lock');
 		}
 
 		$$invalidate(0, items = list);

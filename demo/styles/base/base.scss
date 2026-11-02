@@ -33,6 +33,13 @@ code, kbd {
 	background: var(--color-light);
 	color: var(--color-heading);
 	white-space: nowrap;
+
+	// Long snippets in the text would widen the page on phones, break-word leaves the table columns as they are
+	@include tablet_small {
+		white-space: normal;
+		overflow-wrap: break-word;
+	}
+
 }
 
 kbd {

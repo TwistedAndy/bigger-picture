@@ -133,13 +133,17 @@
 
 		// Lock the scroll unless gallery is inline
 		if (!inline && html.scrollHeight > html.clientHeight) {
+			// The width the lock frees is the real scrollbar, innerWidth isn't, it follows the zoom
+			// and the overflow on mobile, where overlay scrollbars free nothing
 			const style = getComputedStyle(html);
-			const scrollbar = innerWidth - html.clientWidth;
-			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page
+			const width = html.clientWidth;
+			html.classList.add('bp-lock');
+			const scrollbar = html.clientWidth - width;
+			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page,
+			// a stable gutter keeps the space, though clientWidth changes with it
 			if (scrollbar && style.scrollbarGutter === 'auto') {
 				html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
 			}
-			html.classList.add('bp-lock');
 		}
 
 		items = list;
