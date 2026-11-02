@@ -32,13 +32,13 @@ Load the minified build and the stylesheet from jsDelivr. The script exposes a g
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.4/dist/bigger-picture.css"
-  integrity="sha384-tEI3UHzAQ0rIC5S48cnLZacTs0uVGj5eRQgiqxCk65LatYhug69UZBoQtzuokT/O"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.5/dist/bigger-picture.css"
+  integrity="sha384-03KQn7HB07yQ9bBxlc9xK43GLdeO55S0gVv8hqqSpffH+50mPzh0s3hwTf/4iTjo"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.4/dist/bigger-picture.min.js"
-  integrity="sha384-zUPRF/rxu+0fkTK3aR//CoHvy+OYJa+L5nBXwCgRlV+CK5+dBiPbmVYW9ZvUzOPV"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.5/dist/bigger-picture.min.js"
+  integrity="sha384-NrNPwOk1rOmROijVYT+iN0xInMQhQ5IvwJIjwX9xT7W+Y61ktveXu/D+o06+IB36"
   crossorigin="anonymous"
 ></script>
 ```
@@ -820,9 +820,9 @@ The docs page is [`index.html`](index.html), with its scripts and styles in [`de
 
 | File                    | Minified | Gzipped |  Brotli |
 | ----------------------- | -------: | ------: | ------: |
-| `bigger-picture.min.js` |  30.6 KB | 12.0 KB | 10.8 KB |
-| `bigger-picture.css`    |   8.4 KB |  2.3 KB |  2.0 KB |
-| **Total**               |  39.0 KB | 14.3 KB | 12.8 KB |
+| `bigger-picture.min.js` |  30.7 KB | 12.1 KB | 10.8 KB |
+| `bigger-picture.css`    |   9.7 KB |  2.5 KB |  2.2 KB |
+| **Total**               |  40.4 KB | 14.6 KB | 13.0 KB |
 
 Compared with [Fancybox](https://fancyapps.com/fancybox/) 6.1.15 on the same page: 9 thumbnails with their natural aspect ratio that open a gallery with thumbnails, a zoom from the thumbnail and back, default options. Measured in headless Chrome with phone emulation (390×844 at 3×) and the CPU slowed 4×, over 10 runs.
 

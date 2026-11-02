@@ -133,6 +133,7 @@
 					title={item.caption}
 					aria-label={item.alt || item.caption || `${label} ${item.i + 1}`}
 					style:background-image={getThumbBackground(item)}
+					data-type={item.thumb ? null : item.type}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}
 					on:click={() => !hasDragged && setPosition(item.i)}

@@ -863,6 +863,7 @@ function create_each_block(key_1, ctx) {
 	let button;
 	let button_title_value;
 	let button_aria_label_value;
+	let button_data_type_value;
 	let mounted;
 	let dispose;
 
@@ -877,6 +878,7 @@ function create_each_block(key_1, ctx) {
 			button = element("button");
 			attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
 			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`);
+			attr(button, "data-type", button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type);
 			toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
 			set_style(button, "background-image", getThumbBackground(/*item*/ ctx[21]));
 			this.first = button;
@@ -902,6 +904,10 @@ function create_each_block(key_1, ctx) {
 
 			if (dirty & /*items, label*/ 9 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`)) {
 				attr(button, "aria-label", button_aria_label_value);
+			}
+
+			if (dirty & /*items*/ 1 && button_data_type_value !== (button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type)) {
+				attr(button, "data-type", button_data_type_value);
 			}
 
 			if (dirty & /*items, position*/ 3) {
