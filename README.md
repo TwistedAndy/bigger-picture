@@ -815,6 +815,35 @@ npm run build   # build dist/ and demo/demo.css
 
 The docs page is [`index.html`](index.html), with its scripts and styles in [`demo/`](demo). It is published to GitHub Pages on every push to `main`.
 
+## Performance
+
+| File                    | Minified | Gzipped |  Brotli |
+| ----------------------- | -------: | ------: | ------: |
+| `bigger-picture.min.js` |  30.6 KB | 12.0 KB | 10.8 KB |
+| `bigger-picture.css`    |   8.4 KB |  2.3 KB |  2.0 KB |
+| **Total**               |  39.0 KB | 14.3 KB | 12.8 KB |
+
+Compared with [Fancybox](https://fancyapps.com/fancybox/) 6.1.15 on the same page: 9 thumbnails with their natural aspect ratio that open a gallery with thumbnails, a zoom from the thumbnail and back, default options. Measured in headless Chrome with phone emulation (390×844 at 3×) and the CPU slowed 4×, over 10 runs.
+
+| On a phone                          | Bigger Picture 1.3.4 | Fancybox 6.1.15 |
+| ----------------------------------- | -------------------: | --------------: |
+| JS + CSS, gzipped                   |              14.3 KB |         43.1 KB |
+| Memory while open                   |               184 KB |          722 KB |
+| Repaints, open / close              |                9 / 6 |         32 / 14 |
+| Style changes from JS, open / close |                1 / 1 |         72 / 43 |
+| Zoom animation                      |      CSS, on the GPU | JS, every frame |
+
+The times vary with the machine's load, so each Fancybox run is compared with the Bigger Picture run right before it. Medians:
+
+| Time, Fancybox vs Bigger Picture | Open | Close |
+| -------------------------------- | ---: | ----: |
+| Main thread                      | 1.7× | 1.45× |
+| JavaScript                       | 6.3× |  3.9× |
+| Paint                            | 2.1× |  2.1× |
+| Longest frame                    | 3.6× |  1.5× |
+
+The script runs 3.5× longer on page load. Fancybox doesn't zoom from cropped thumbnails (`object-fit: cover`). It pops the image in on open, which still costs about 1.2× the main thread time of Bigger Picture's zoom, and fades it out on close, about 0.8× of Bigger Picture's zoom back into the crop.
+
 ## License
 
 [MIT](license)
