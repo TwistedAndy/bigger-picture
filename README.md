@@ -92,6 +92,37 @@ document.addEventListener('click', (event) => {
 
 The image inside each link is used as the thumbnail. See the [documentation](https://twistedandy.github.io/bigger-picture/) for more examples: video with subtitles, embeds, captions, inline galleries, HTML content, filtering, dialog mode and theming.
 
+## Styling the thumbnails
+
+The library styles only the gallery. The thumbnails on the page are your own markup and CSS, so any layout works: a grid, a carousel or a masonry grid. The gallery reads three things from the page:
+
+- **The link:** `href` or [`data-link`](#link) is what opens, and [`data-width`](#width) and [`data-height`](#height) give its full size.
+- **The image inside it:** the thumbnail the item zooms out of and back into, inside its padding and border.
+- **Its `object-fit`:** `cover` keeps the crop and `contain` the letterboxing while zooming, see [`fit`](#fit).
+
+A masonry grid needs only CSS columns:
+
+```css
+.gallery {
+  columns: 3 200px;
+  column-gap: 12px;
+}
+
+.gallery a {
+  display: block;
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+```
+
+Give the images `width` and `height` attributes to keep their space while they load. Columns fill from top to bottom, so the gallery order runs down each column. For an order across the rows, use a JavaScript masonry library, the gallery works with any layout.
+
 ## Frameworks
 
 The gallery works the same way in any framework: create one instance once the component is mounted, and call `open` from a click handler. It mounts in `document.body`, outside the component tree, so the framework doesn't render or update it.

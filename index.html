@@ -67,7 +67,7 @@
 	<div class="wrapper_box">
 		<div class="fixed">
 			<aside class="sidebar" aria-label="Table of contents">
-				<nav class="navigation"><ul class="menu"><li class="submenu"><span class="label">Getting started</span><ul class="sub-menu"><li><a href="#installation">Installation</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#frameworks">Frameworks</a></li><li><a href="#providing-items">Providing items</a></li></ul></li><li class="submenu"><span class="label">Examples</span><ul class="sub-menu"><li><a href="#image-gallery">Image gallery</a></li><li><a href="#link-detection">Link detection</a></li><li><a href="#javascript-items">Items from JavaScript</a></li><li><a href="#video-audio">Video and audio</a></li><li><a href="#embeds">Embeds and iframes</a></li><li><a href="#thumbnail-fit">Cropped thumbnails</a></li><li><a href="#responsive-images">Responsive images</a></li><li><a href="#captions">Captions</a></li><li><a href="#html-content">HTML content</a></li><li><a href="#inline-gallery">Inline gallery</a></li><li><a href="#api">Controlling the gallery</a></li><li><a href="#filtering">Filtering by type</a></li><li><a href="#dialog-mode">Dialog mode</a></li><li><a href="#theming">Styling and theming</a></li></ul></li><li class="submenu"><span class="label">Reference</span><ul class="sub-menu"><li><a href="#options">Options</a></li><li><a href="#item-properties">Item properties</a></li><li><a href="#methods">Methods</a></li><li><a href="#interaction">Keyboard and touch</a></li></ul></li></ul></nav>
+				<nav class="navigation"><ul class="menu"><li class="submenu"><span class="label">Getting started</span><ul class="sub-menu"><li><a href="#installation">Installation</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#frameworks">Frameworks</a></li><li><a href="#providing-items">Providing items</a></li><li><a href="#styling-thumbnails">Styling the thumbnails</a></li></ul></li><li class="submenu"><span class="label">Examples</span><ul class="sub-menu"><li><a href="#image-gallery">Image gallery</a></li><li><a href="#link-detection">Link detection</a></li><li><a href="#javascript-items">Items from JavaScript</a></li><li><a href="#video-audio">Video and audio</a></li><li><a href="#embeds">Embeds and iframes</a></li><li><a href="#thumbnail-fit">Cropped thumbnails</a></li><li><a href="#responsive-images">Responsive images</a></li><li><a href="#captions">Captions</a></li><li><a href="#html-content">HTML content</a></li><li><a href="#inline-gallery">Inline gallery</a></li><li><a href="#api">Controlling the gallery</a></li><li><a href="#filtering">Filtering by type</a></li><li><a href="#dialog-mode">Dialog mode</a></li><li><a href="#theming">Styling and theming</a></li></ul></li><li class="submenu"><span class="label">Reference</span><ul class="sub-menu"><li><a href="#options">Options</a></li><li><a href="#item-properties">Item properties</a></li><li><a href="#methods">Methods</a></li><li><a href="#interaction">Keyboard and touch</a></li></ul></li></ul></nav>
 			</aside>
 			<main class="container">
 
@@ -255,7 +255,23 @@ const open = (event) =&gt; {
 	<p><code>sources</code> and <code>html</code> win. Otherwise <code>link</code>, or the element's <code>href</code>, is shown as <code>type</code> when it's set, and parsed when it isn't:</p>
 	<div class="table"><table><thead><tr><th>URL</th><th>Opens as</th></tr></thead><tbody><tr><td><code>.jpg .jpeg .png .gif .webp .avif .svg .bmp .tiff .ico</code></td><td>Image</td></tr><tr><td><code>.mp4 .webm .mov .ogv .mpeg .avi .h264</code></td><td>HTML5 video</td></tr><tr><td><code>.mp3 .wav .ogg .oga .m4a .aac .flac .opus .weba .wma .mid</code></td><td>HTML5 audio</td></tr><tr><td>YouTube: <code>watch?v=</code>, <code>youtu.be</code>, <code>shorts/</code>, <code>embed/</code>, playlists</td><td>Embed with autoplay. <code>t=1m30s</code> becomes the start time.</td></tr><tr><td>Vimeo, including private links with a hash</td><td>Embed with autoplay</td></tr><tr><td>SoundCloud tracks</td><td>SoundCloud player</td></tr><tr><td>Google Drive files, Dropbox links, <code>.pdf</code></td><td>Full size iframe</td></tr><tr><td>Anything else</td><td>Skipped, unless <code>type</code> is set</td></tr></tbody></table></div>
 	<p>Use the <a href="#filtering"><code>types</code></a> option to keep only some of them.</p>
-	
+
+	</div>
+</section>
+
+<section class="section" id="styling-thumbnails">
+	<div class="contents">
+		<h2><a href="#styling-thumbnails">Styling the thumbnails</a></h2>
+		<div class="content"><p>The library styles only the gallery. The thumbnails on the page are your own markup and CSS, so any layout works: a grid, a carousel, or a masonry grid like the one in the <a href="#image-gallery">image gallery</a>.</p></div>
+	</div>
+	<div class="content">
+	<p>The gallery reads three things from the page:</p>
+	<ul>
+		<li><strong>The link:</strong> <code>href</code> or <code>data-link</code> is what opens, and <code>data-width</code> and <code>data-height</code> give its full size.</li>
+		<li><strong>The image inside it:</strong> the thumbnail the item zooms out of and back into, inside its padding and border.</li>
+		<li><strong>Its <code>object-fit</code>:</strong> <code>cover</code> keeps the crop and <code>contain</code> the letterboxing while zooming, see <a href="#thumbnail-fit">cropped thumbnails</a>.</li>
+	</ul>
+
 	</div>
 </section>
 
@@ -275,10 +291,26 @@ const open = (event) =&gt; {
     data-width="3000"
     data-height="2000"
   &gt;
-    &lt;img src="bear-thumb.jpg" alt="Brown bear cub in the grass" /&gt;
+    &lt;img src="bear-thumb.jpg" alt="Brown bear cub in the grass" width="3000" height="2000" /&gt;
   &lt;/a&gt;
   &lt;!-- more links --&gt;
 &lt;/div&gt;</code></pre></div>
+	<div class="code"><div class="heading"><span class="label">CSS</span><button class="button" type="button" data-copy aria-label="Copy CSS code">Copy</button></div><pre><code class="language-css">#gallery {
+  columns: 3 200px;
+  column-gap: 12px;
+}
+
+#gallery a {
+  display: block;
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+#gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+}</code></pre></div>
 	<div class="code"><div class="heading"><span class="label">JavaScript</span><button class="button" type="button" data-copy aria-label="Copy JavaScript code">Copy</button></div><pre><code class="language-javascript">const bp = BiggerPicture()
 const gallery = document.getElementById('gallery')
 
@@ -298,6 +330,7 @@ gallery.addEventListener('click', (event) =&gt; {
 		<li>The <code>sizes</code> attribute is updated as you zoom, so the browser picks a larger file from <code>srcset</code> only when it is needed.</li>
 		<li>The download button saves the largest image of the <code>srcset</code>. These images are on another domain, so it opens them in a new tab instead, as browsers download only same-origin files.</li>
 		<li>One delegated listener on the container also works for links added later.</li>
+		<li>The masonry grid is plain CSS columns: up to 3 columns of at least 200px. The <code>width</code> and <code>height</code> of the thumbnail keep its space while it loads. Columns fill from top to bottom, so the gallery order runs down each column. For an order across the rows, use a JavaScript masonry library, the gallery works with any layout.</li>
 	</ul>
 	
 	</div>
