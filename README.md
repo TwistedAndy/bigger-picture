@@ -86,11 +86,12 @@ document.addEventListener('click', (event) => {
     current: link,
     items: link.closest('.gallery').querySelectorAll('a'),
     thumbs: true,
+    history: true,
   })
 })
 ```
 
-The image inside each link is used as the thumbnail. See the [documentation](https://twistedandy.github.io/bigger-picture/) for more examples: video with subtitles, embeds, captions, inline galleries, HTML content, filtering, dialog mode and theming.
+The image inside each link is used as the thumbnail. [`history`](#history) makes the back button, or the back swipe on phones, close the gallery instead of leaving the page. See the [documentation](https://twistedandy.github.io/bigger-picture/) for more examples: video with subtitles, embeds, captions, inline galleries, HTML content, filtering, dialog mode and theming.
 
 ## Styling the thumbnails
 

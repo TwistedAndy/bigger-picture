@@ -9,7 +9,8 @@
 	const bp = BiggerPicture()
 
 	// Open a gallery when a matching element inside the container is clicked,
-	// passing the clicked element as `current` makes the gallery zoom out of it and back
+	// passing the clicked element as `current` makes the gallery zoom out of it and back,
+	// and history makes the back button close it
 	const delegate = (container, selector, getOptions, instance = bp) => {
 		container?.addEventListener('click', (event) => {
 			const element = event.target.closest(selector)
@@ -19,7 +20,7 @@
 			event.preventDefault()
 			const options = getOptions(element)
 			if (options) {
-				instance.open({ current: element, ...options })
+				instance.open({ current: element, history: true, ...options })
 			}
 		})
 	}
@@ -187,6 +188,7 @@
 				bp.open({
 					items: items.map((item) => ({ ...item, element: lastImage(container) })),
 					position: activeItem.i,
+					history: true,
 					onUpdate(_, item) {
 						inline.setPosition(item.i)
 						// Close back into the image the inline gallery shows now
@@ -320,7 +322,7 @@
 			event.preventDefault()
 			// A regular gallery is drawn under the modal, because the modal is in the top layer
 			const instance = useDialog.checked ? dialogBp : bp
-			instance.open({ items: $$('#modal_grid a'), current: link })
+			instance.open({ items: $$('#modal_grid a'), current: link, history: true })
 		}
 	})
 

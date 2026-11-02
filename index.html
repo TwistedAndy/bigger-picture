@@ -124,10 +124,11 @@ links.forEach((link) =&gt; {
     bp.open({
       items: links,
       current: link,
+      history: true,
     })
   })
 })</code></pre></div>
-	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>current</code> to start at the clicked item; the open and close animations then run from that link's image.</p>
+	<p>One instance can open any number of galleries, so you rarely need more than one. Pass <code>current</code> to start at the clicked item; the open and close animations then run from that link's image. <a href="#option-history"><code>history</code></a> makes the back button, or the back swipe on phones, close the gallery instead of leaving the page.</p>
 	
 	</div>
 </section>
