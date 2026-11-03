@@ -55,7 +55,7 @@
 
 	// If zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
-	$: if ($closing && $zoomed && opts.zoom) {
+	$: if ($closing && scale !== 1 && opts.zoom) {
 		scale = 1;
 		translate = [0, 0];
 		closingWhileZoomed = true;
@@ -114,8 +114,9 @@
 		let newScale = scale + scale * amt;
 
 		if (amt > 0) {
-			// Not larger than the max zoom and the natural size
-			newScale = Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]);
+			// Not larger than the max zoom and the natural size, and never smaller, an image that fills
+			// the screen past its natural size stays at its scale
+			newScale = Math.max(scale, Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]));
 		} else if (newScale < 1) {
 			// If requesting image smaller than starting size
 			scale = 1;

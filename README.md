@@ -32,13 +32,13 @@ Load the minified build and the stylesheet from jsDelivr. The script exposes a g
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.5/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.6/dist/bigger-picture.css"
   integrity="sha384-03KQn7HB07yQ9bBxlc9xK43GLdeO55S0gVv8hqqSpffH+50mPzh0s3hwTf/4iTjo"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.5/dist/bigger-picture.min.js"
-  integrity="sha384-NrNPwOk1rOmROijVYT+iN0xInMQhQ5IvwJIjwX9xT7W+Y61ktveXu/D+o06+IB36"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.3.6/dist/bigger-picture.min.js"
+  integrity="sha384-yYtZGDF5fqvaZqDG09OjQrVmjtXecmDybVKZuLLtJvWHJ0SvTPD+RUzUkmGLJnbp"
   crossorigin="anonymous"
 ></script>
 ```

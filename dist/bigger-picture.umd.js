@@ -1358,7 +1358,7 @@
 				if (!mounted) {
 					dispose = [
 						action_destroyer(/*addSrc*/ ctx[22].call(null, img)),
-						listen(img, "error", /*error_handler*/ ctx[29])
+						listen(img, "error", /*error_handler*/ ctx[28])
 					];
 
 					mounted = true;
@@ -1380,7 +1380,7 @@
 		};
 	}
 
-	// (361:10) {#if showLoader}
+	// (362:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -1570,8 +1570,8 @@
 		let { containerHeight } = $$props;
 		let { activeDimensions } = $$props;
 		let { activeItem, opts, prev, next, zoomed, closing, container } = props;
-		component_subscribe($$self, zoomed, value => $$invalidate(27, $zoomed = value));
-		component_subscribe($$self, closing, value => $$invalidate(28, $closing = value));
+		component_subscribe($$self, zoomed, value => $$invalidate(38, $zoomed = value));
+		component_subscribe($$self, closing, value => $$invalidate(27, $closing = value));
 		let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 		// Value of sizes attribute
@@ -1674,8 +1674,9 @@
 			let newScale = scale + scale * amt;
 
 			if (amt > 0) {
-				// Not larger than the max zoom and the natural size
-				newScale = Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]);
+				// Not larger than the max zoom and the natural size, and never smaller, an image that fills
+				// the screen past its natural size stays at its scale
+				newScale = Math.max(scale, Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]));
 			} else if (newScale < 1) {
 				// If requesting image smaller than starting size
 				$$invalidate(1, scale = 1);
@@ -1941,10 +1942,10 @@
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*$closing, $zoomed*/ 402653184) {
+			if ($$self.$$.dirty[0] & /*$closing, scale*/ 134217730) {
 				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
-				if ($closing && $zoomed && opts.zoom) {
+				if ($closing && scale !== 1 && opts.zoom) {
 					$$invalidate(1, scale = 1);
 					$$invalidate(8, translate = [0, 0]);
 					$$invalidate(6, closingWhileZoomed = true);
@@ -1991,7 +1992,6 @@
 			smallScreen,
 			containerWidth,
 			containerHeight,
-			$zoomed,
 			$closing,
 			error_handler
 		];
