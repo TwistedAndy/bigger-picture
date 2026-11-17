@@ -30,9 +30,13 @@
 	touch-action: none;
 	-webkit-tap-highlight-color: transparent;
 	background: transparent;
+	// Set here, not on :root, so the gallery gets the offsets of its parent, such as the ones a page sets on the body
+	--bp-offset-top: var(--offset-top, 0px);
+	--bp-offset-bottom: var(--offset-bottom, 0px);
+	box-sizing: border-box;
 	// The gallery takes the focus on open, a ring around the whole screen adds nothing
 	outline: 0;
-	padding: 0;
+	padding: var(--bp-offset-top) 0 var(--bp-offset-bottom);
 	margin: 0;
 	max-width: 100%;
 	max-height: 100%;
@@ -73,6 +77,8 @@
 	&.bp-inline {
 		position: absolute;
 		--bp-stage-gap: 0px;
+		--bp-offset-top: 0px;
+		--bp-offset-bottom: 0px;
 	}
 
 	&.bp-zoomed {
@@ -299,6 +305,9 @@
 
 .bp-controls {
 	@extend %fill;
+	top: var(--bp-offset-top);
+	bottom: var(--bp-offset-bottom);
+	height: auto;
 	text-align: left;
 	pointer-events: none;
 
@@ -539,6 +548,16 @@
 		&.active {
 			opacity: 1;
 			filter: grayscale(0%);
+		}
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			border-radius: inherit;
+			object-fit: cover;
+			// The strip takes the drag, not the image
+			pointer-events: none;
 		}
 
 		// An icon of the type in place of a missing thumbnail

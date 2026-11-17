@@ -435,23 +435,9 @@
 	// Parse a thumbnail, update dimensions, and the fit option
 	const parseThumbnail = (item) => {
 
-		let thumbLink = '',
-			thumbElement = false;
-
-		if (item.element) {
-			thumbElement = item.element.querySelector('img');
-		}
-
-		// A link without a thumbnail shows the full image in the strip, otherwise the gallery loads it when shown
-		if (item.type === 'image' && opts.thumbs) {
-			thumbLink = item.element?.href || '';
-		}
-
-		if (item.thumb instanceof HTMLImageElement) {
-			thumbElement = item.thumb;
-		} else if (item.thumb) {
-			thumbLink = item.thumb;
-		}
+		// An image element wins over the image inside the element, which wins over a thumbnail URL
+		let thumbLink = item.thumb,
+			thumbElement = thumbLink instanceof HTMLImageElement ? thumbLink : item.element?.querySelector('img');
 
 		item.source = item.element;
 		item.thumb = false;
@@ -471,6 +457,9 @@
 				setDimensions(item, thumbElement);
 			};
 			item.thumb = thumbElement;
+		} else if (item.type === 'image' && opts.thumbs && item.element?.href) {
+			// A link without a thumbnail shows the full image in the strip, loaded lazily
+			item.thumb = { src: item.element.href };
 		}
 
 		return item;
@@ -480,7 +469,8 @@
 	// Set item dimensions based on a thumbnail image if not already specified
 	const setDimensions = (item, thumb) => {
 
-		if (!item.width || !item.height) {
+		// A thumbnail that is not loaded yet, such as a lazy one, has no size
+		if ((!item.width || !item.height) && thumb.naturalWidth) {
 
 			let dimensions = calculateDimensions({
 				width: thumb.naturalWidth,
@@ -491,13 +481,26 @@
 			item.height = dimensions[1];
 			item.scaled = 1;
 
-			activeDimensions = dimensions;
+			// The thumbnails of the other items load too, only the shown item changes the size on the screen
+			if (item === activeItem) {
+				activeDimensions = dimensions;
+			}
 
 		}
 
 	};
 
 	const readGap = () => (gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0);
+
+	// Fit the active item to a new stage size
+	const resize = (width, height) => {
+		if (width !== containerWidth || height !== containerHeight) {
+			containerWidth = width;
+			containerHeight = height;
+			readGap();
+			activeDimensions = calculateDimensions(activeItem);
+		}
+	};
 
 	// Calculate width and height to fit inside a container
 	const calculateDimensions = ({
@@ -513,70 +516,70 @@
 	// Preloads images for previous and next items in gallery
 	const preloadNext = () => {
 		if (items) {
-			const nextItem = items[getNextPosition(position + 1)];
-			const prevItem = items[getNextPosition(position - 1)];
-			!nextItem.preload && loadImage(nextItem);
-			!prevItem.preload && loadImage(prevItem);
+			loadImage(items[getNextPosition(position + 1)]);
+			loadImage(items[getNextPosition(position - 1)]);
 		}
 	};
 
-	// Load and decode the image for an item
+	// Load and decode the image of an item once, the slide that shows a preloaded item gets the same promise
 	const loadImage = (item) => {
 
-		if (item.type === 'image') {
+		if (item.type !== 'image' || item.preload) {
+			return item.preload;
+		}
 
-			let image = document.createElement('img'),
-				src = decodeURIComponent(item.link),
-				srcset = '';
+		let image = document.createElement('img'),
+			src = item.link,
+			factor = 1;
 
-			if (/\s+\d+[wx]/.test(src)) {
+		// A link with a bare % can't be decoded, it is used as it is
+		try {
+			src = decodeURIComponent(src);
+		} catch {
+		}
 
-				const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
-					url: match[1],
-					value: parseInt(match[2]),
-					type: match[3]
-				}));
+		if (/\s+\d+[wx]/.test(src)) {
 
-				srcset = src;
+			const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
+				url: match[1],
+				value: parseInt(match[2]),
+				type: match[3]
+			}));
 
-				// The first candidate wide enough for the container or the screen density, the largest otherwise
-				parts.sort((a, b) => a.value - b.value);
-				const match = parts.find(c => c.value >= (c.type === 'w' ? containerWidth : window.devicePixelRatio || 1)) || parts[parts.length - 1];
+			const width = calculateDimensions(item)[0];
 
-				image.src = match.url;
-				item.attr.src = match.url;
+			parts.sort((a, b) => a.value - b.value);
 
-				image.sizes = item.sizes || opts.sizes || `${calculateDimensions(item)[0]}px`;
-				item.attr.sizes = image.sizes;
-				item.attr.srcset = srcset;
+			// The first candidate sharp enough for the shown size and the screen density, the same one the browser
+			// picks from the srcset and sizes of the shown image, so the file is loaded once
+			const largest = parts[parts.length - 1];
+			const match = parts.find(c => c.value >= (c.type === 'w' ? width : 1) * (window.devicePixelRatio || 1)) || largest;
 
-			} else {
-				image.src = src;
-				item.attr.src = src;
-			}
+			// The full size is the one of the largest candidate, so the zoom can reach it
+			factor = largest.value / match.value;
 
-			item.preload = true;
-
-			return image.decode().then(() => {
-
-				// The size from a thumbnail is only a ratio, and an item without one takes it from the image
-				if ((item.scaled || !item.width || !item.height) && image.naturalWidth) {
-					item.width = image.naturalWidth;
-					item.height = image.naturalHeight;
-					if (item === activeItem) {
-						activeDimensions = calculateDimensions(item);
-					}
-				}
-
-				// It's important to set srcset after we read the image dimensions
-				if (srcset) {
-					image.srcset = srcset;
-				}
-
-			}).catch((error) => {
-			});
+			item.attr.srcset = src;
+			item.attr.sizes = item.sizes || opts.sizes || width + 'px';
+			src = match.url;
 
 		}
+
+		image.src = item.attr.src = src;
+
+		return (item.preload = image.decode().then(() => {
+
+			// The size from a thumbnail is only a ratio, and an item without one takes it from the image
+			if ((item.scaled || !item.width || !item.height) && image.naturalWidth) {
+				item.width = Math.round(image.naturalWidth * factor);
+				item.height = Math.round(image.naturalHeight * factor);
+				if (item === activeItem) {
+					activeDimensions = calculateDimensions(item);
+				}
+			}
+
+		}).catch(() => {
+		}));
+
 	};
 
 	// Set the state a slide animates from or to, the CSS animations of the classes do the rest
@@ -593,11 +596,10 @@
 
 		let dimensions;
 
-		// Update the container dimensions before triggering an animation
-		if (ruler) {
-			containerWidth = ruler.clientWidth;
-			containerHeight = ruler.clientHeight;
-		}
+		// Measure the stage before the animation. On open, the thumbnails and the offsets make it smaller than the first guess,
+		// and the slide is centered in the stage, not in the screen
+		const stage = ruler.getBoundingClientRect();
+		resize(stage.width, stage.height);
 
 		if (activeItem.type === 'html') {
 			const bpItem = node.querySelector('.bp-html').firstElementChild;
@@ -617,8 +619,8 @@
 			width: bounds.width - edge('Left') - edge('Right'),
 			height: bounds.height - edge('Top') - edge('Bottom')
 		};
-		const leftOffset = rect.left - (containerWidth - rect.width) / 2;
-		const centerTop = rect.top - (containerHeight - rect.height) / 2;
+		const leftOffset = rect.left - stage.left - (containerWidth - rect.width) / 2;
+		const centerTop = rect.top - stage.top - (containerHeight - rect.height) / 2;
 		let scaleWidth = rect.width / dimensions[0];
 		let scaleHeight = rect.height / dimensions[1];
 		let css = '--bp-opacity:1';
@@ -754,12 +756,7 @@
 
 			const rect = entries[0].contentRect;
 
-			if (rect.width !== containerWidth || rect.height !== containerHeight) {
-				containerWidth = rect.width;
-				containerHeight = rect.height;
-				readGap();
-				activeDimensions = calculateDimensions(activeItem);
-			}
+			resize(rect.width, rect.height);
 
 			// Run the user-defined resize function
 			opts.onResize?.(container, activeItem);
