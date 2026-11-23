@@ -76,7 +76,9 @@
 			}
 		}
 		dragPositions = [];
-		isPointerDown = hasDragged = false;
+		isPointerDown = false;
+		// The click of a drag that ends on the thumbnail it started on comes after the pointerup, so it still sees the drag
+		setTimeout(() => (hasDragged = false));
 		initialTranslate = thumbsTranslate;
 	};
 
@@ -133,6 +135,7 @@
 		>
 			{#each items as item (item.i)}
 				<button
+					type="button"
 					title={item.caption}
 					aria-label={item.alt || item.caption || `${label} ${item.i + 1}`}
 					data-type={item.thumb ? null : item.type}

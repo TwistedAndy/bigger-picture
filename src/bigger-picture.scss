@@ -72,6 +72,11 @@
 
 	&:has(.bp-thumbs) {
 		contain: layout size;
+
+		// The arrows stay on the middle of the stage, which ends above the thumbnails
+		.bp-controls {
+			bottom: calc(var(--bp-offset-bottom) + var(--bp-thumb-height));
+		}
 	}
 
 	&.bp-inline {
@@ -474,8 +479,12 @@
 .bp-caption {
 	position: absolute;
 	bottom: calc(10px + var(--bp-stage-gap));
-	left: 50%;
+	// Centered with auto margins, left: 50% would give a long caption only half of the stage to wrap in
+	right: 0;
+	left: 0;
+	width: fit-content;
 	max-width: 100%;
+	margin: 0 auto;
 	max-height: 200px;
 	padding: 10px 20px;
 	border-radius: 5px;
@@ -486,7 +495,6 @@
 	line-height: 1.25rem;
 	text-align: center;
 	transition: opacity 0.25s;
-	translate: -50%;
 
 	a {
 		color: inherit;

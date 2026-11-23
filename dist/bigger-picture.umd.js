@@ -865,7 +865,7 @@
 		return child_ctx;
 	}
 
-	// (129:3) {#each items as item (item.i)}
+	// (131:3) {#each items as item (item.i)}
 	function create_each_block(key_1, ctx) {
 		let button;
 		let img;
@@ -889,6 +889,7 @@
 				if (!src_url_equal(img.src, img_src_value = /*item*/ ctx[21].thumb?.src)) attr(img, "src", img_src_value);
 				attr(img, "alt", "");
 				attr(img, "loading", "lazy");
+				attr(button, "type", "button");
 				attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
 				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`);
 				attr(button, "data-type", button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type);
@@ -1114,7 +1115,11 @@
 			}
 
 			dragPositions = [];
-			$$invalidate(5, isPointerDown = $$invalidate(6, hasDragged = false));
+			$$invalidate(5, isPointerDown = false);
+
+			// The click of a drag that ends on the thumbnail it started on comes after the pointerup, so it still sees the drag
+			setTimeout(() => $$invalidate(6, hasDragged = false));
+
 			initialTranslate = thumbsTranslate;
 		};
 
@@ -2404,7 +2409,7 @@
 		};
 	}
 
-	// (790:2) {#if !dialog}
+	// (793:2) {#if !dialog}
 	function create_if_block_9(ctx) {
 		let div;
 
@@ -2424,7 +2429,7 @@
 		};
 	}
 
-	// (801:125) {#if containerWidth > 0 && containerHeight > 0}
+	// (804:125) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2499,7 +2504,7 @@
 		};
 	}
 
-	// (801:483) {:else}
+	// (804:483) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2525,7 +2530,7 @@
 		};
 	}
 
-	// (801:430) 
+	// (804:430) 
 	function create_if_block_8(ctx) {
 		let iframe;
 		let current;
@@ -2565,7 +2570,7 @@
 		};
 	}
 
-	// (801:339) 
+	// (804:339) 
 	function create_if_block_7(ctx) {
 		let video;
 		let current;
@@ -2605,7 +2610,7 @@
 		};
 	}
 
-	// (801:172) {#if activeItem.type === 'image'}
+	// (804:172) {#if activeItem.type === 'image'}
 	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
@@ -2651,7 +2656,7 @@
 		};
 	}
 
-	// (790:94) {#key activeItem.i}
+	// (793:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -2733,7 +2738,7 @@
 		};
 	}
 
-	// (801:625) {#if activeItem.caption}
+	// (804:625) {#if activeItem.caption}
 	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2757,7 +2762,7 @@
 		};
 	}
 
-	// (801:765) {#if activeItem.download}
+	// (804:765) {#if activeItem.download}
 	function create_if_block_3(ctx) {
 		let a;
 		let a_href_value;
@@ -2796,7 +2801,7 @@
 		};
 	}
 
-	// (801:1123) {#if items.length > 1}
+	// (804:1214) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2818,7 +2823,9 @@
 				button0 = element("button");
 				button1 = element("button");
 				attr(div, "class", "bp-count");
+				attr(button0, "type", "button");
 				attr(button0, "class", "bp-prev");
+				attr(button1, "type", "button");
 				attr(button1, "class", "bp-next");
 			},
 			m(target, anchor) {
@@ -2857,7 +2864,7 @@
 		};
 	}
 
-	// (809:25) {#if opts.thumbs && items.length > 1}
+	// (814:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2901,7 +2908,7 @@
 		};
 	}
 
-	// (781:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+	// (784:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -2939,6 +2946,7 @@
 				attr(div0, "class", "bp-ruler");
 				attr(div1, "class", "bp-inner");
 				attr(div2, "class", "bp-stage");
+				attr(button, "type", "button");
 				attr(button, "class", "bp-x");
 				attr(div3, "class", "bp-actions");
 				attr(div4, "class", "bp-controls");
@@ -3400,9 +3408,12 @@
 					let index = tabbable.indexOf(activeElement);
 
 					// From the container itself, Tab goes to the first control and Shift+Tab to the last
-					index = (index < 0 && shiftKey ? 0 : index) + tabbable.length + (shiftKey ? -1 : 1);
+					index = (index < 0 && shiftKey ? 0 : index) + tabbable.length;
 
-					tabbable[index % tabbable.length].focus();
+					// Hidden and disabled nodes have a tabIndex too, but can't take the focus, so the next one is tried
+					for (let step = 1; step <= tabbable.length && document.activeElement === activeElement; step++) {
+						tabbable[(index + (shiftKey ? -step : step)) % tabbable.length].focus();
+					}
 				}
 			}
 		};
@@ -3528,13 +3539,12 @@
 				sourceURL.searchParams.delete('v');
 
 				for (let [key, value] of sourceURL.searchParams) {
-					if (key === 't') {
-						let timeMatch = value.match(/((\d*)m)?(\d*)s?/);
+					// The start time, such as 90, 90s, 1m30s or 1h2m3s
+					const time = key === 't' && value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/);
 
-						if (timeMatch) {
-							key = 'start';
-							value = 60 * parseInt(timeMatch[2] || '0') + parseInt(timeMatch[3] || '0');
-						}
+					if (time) {
+						key = 'start';
+						value = 3600 * (time[1] | 0) + 60 * (time[2] | 0) + (time[3] | 0);
 					}
 
 					targetURL.searchParams.set(key, value);
@@ -3902,7 +3912,8 @@
 				node.focus({ preventScroll: true });
 
 				// The back button closes the gallery instead of leaving the page
-				if (opts.history) {
+				// Not when closed in the same tick as opened, the close has already passed its history.back()
+				if (opts.history && !isClosing) {
 					history.pushState({ bp: 1 }, '');
 					window.addEventListener('popstate', close);
 				}

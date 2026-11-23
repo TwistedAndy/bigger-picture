@@ -703,7 +703,7 @@ Alternative text of the image. Iframes use it as their `title`, and video and au
 
 `string`
 
-Text shown in the built-in caption. It may contain HTML, and can be styled with CSS.
+Text shown in the built-in caption. It may contain HTML, and can be styled with CSS. The HTML is not escaped, so escape the text that visitors write, such as comments, before you put it in `caption` or `data-caption`.
 
 ### tracks
 
@@ -788,7 +788,7 @@ bp.open({
 
 The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page. A vertical swipe on an inline gallery scrolls the page.
 
-Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret.
+Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret. After a click in an iframe item, the keys go to the page in the iframe until the focus leaves it.
 
 ## Page scroll
 

@@ -225,8 +225,11 @@
 				const tabbable = [...focusWrap.querySelectorAll('*')].filter((node) => node.tabIndex >= 0);
 				let index = tabbable.indexOf(activeElement);
 				// From the container itself, Tab goes to the first control and Shift+Tab to the last
-				index = (index < 0 && shiftKey ? 0 : index) + tabbable.length + (shiftKey ? -1 : 1);
-				tabbable[index % tabbable.length].focus();
+				index = (index < 0 && shiftKey ? 0 : index) + tabbable.length;
+				// Hidden and disabled nodes have a tabIndex too, but can't take the focus, so the next one is tried
+				for (let step = 1; step <= tabbable.length && document.activeElement === activeElement; step++) {
+					tabbable[(index + (shiftKey ? -step : step)) % tabbable.length].focus();
+				}
 			}
 		}
 	};
@@ -343,12 +346,11 @@
 			sourceURL.searchParams.delete('v');
 
 			for (let [key, value] of sourceURL.searchParams) {
-				if (key === 't') {
-					let timeMatch = value.match(/((\d*)m)?(\d*)s?/);
-					if (timeMatch) {
-						key = 'start';
-						value = 60 * parseInt(timeMatch[2] || '0') + parseInt(timeMatch[3] || '0');
-					}
+				// The start time, such as 90, 90s, 1m30s or 1h2m3s
+				const time = key === 't' && value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/);
+				if (time) {
+					key = 'start';
+					value = 3600 * (time[1] | 0) + 60 * (time[2] | 0) + (time[3] | 0);
 				}
 				targetURL.searchParams.set(key, value);
 			}
@@ -723,7 +725,8 @@
 			// Keyboard and screen reader users start inside the gallery
 			node.focus({ preventScroll: true });
 			// The back button closes the gallery instead of leaving the page
-			if (opts.history) {
+			// Not when closed in the same tick as opened, the close has already passed its history.back()
+			if (opts.history && !isClosing) {
 				history.pushState({ bp: 1 }, '');
 				window.addEventListener('popstate', close);
 			}
@@ -845,7 +848,8 @@
 					<a class="bp-dl" href={activeItem.download} download target="_blank" use:label={'download'}></a>
 				{/if}
 				<!-- Close button -->
-				<button class="bp-x" use:label={'close'} on:click={close}></button>
+				<!-- Buttons of type button, so a gallery inside a form doesn't submit it -->
+				<button type="button" class="bp-x" use:label={'close'} on:click={close}></button>
 			</div>
 
 			{#if items.length > 1}
@@ -855,11 +859,13 @@
 				</div>
 				<!-- Forward / back buttons -->
 				<button
+					type="button"
 					class="bp-prev"
 					use:label={'prev'}
 					on:click={prev}
 				></button>
 				<button
+					type="button"
 					class="bp-next"
 					use:label={'next'}
 					on:click={next}
