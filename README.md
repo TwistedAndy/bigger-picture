@@ -616,7 +616,7 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 
 `string`
 
-The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive and Dropbox links. A `srcset` value is an image too, and then the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
+The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive and Dropbox links. A `srcset` value and a `data:image/` URL are images too. With a `srcset`, the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
 
 <!-- prettier-ignore -->
 ```html
@@ -695,7 +695,7 @@ The largest height of the item in pixels. Not needed for HTML.
 
 `string`
 
-Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`.
+Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`. It defaults to the `alt` of the thumbnail image.
 
 `title` is the deprecated name of this property and still works.
 
@@ -788,7 +788,7 @@ bp.open({
 
 The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page. A vertical swipe on an inline gallery scrolls the page.
 
-Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret. After a click in an iframe item, the keys go to the page in the iframe until the focus leaves it.
+Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret. The page doesn't get the keys that the gallery uses, and a gallery opened over another one gets them alone. After a click in an iframe item, the keys go to the page in the iframe until the focus leaves it.
 
 ## Page scroll
 

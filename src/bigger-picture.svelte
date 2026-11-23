@@ -6,6 +6,7 @@
 	import ImageItem from './components/image.svelte';
 	import Iframe from './components/iframe.svelte';
 	import Video from './components/video.svelte';
+	import { isGalleryKey } from './stores';
 
 	// Items in the gallery
 	export let items = undefined;
@@ -158,7 +159,7 @@
 		isClosing = true;
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
-		window.removeEventListener('keydown', onKeydown);
+		window.removeEventListener('keydown', onKeydown, true);
 		// Closed without the back button, drop the history entry the gallery added
 		if (opts.history && history.state?.bp) {
 			history.back();
@@ -202,8 +203,7 @@
 			shiftKey,
 			target
 		} = e;
-		// Browser shortcuts, such as Alt+Left for back and Ctrl+= for the page zoom, stay with the browser
-		if (e.altKey || e.ctrlKey || e.metaKey) {
+		if (!isGalleryKey(e, opts.focusWrap || container)) {
 			return;
 		}
 		// The zoomed image pans with the arrows instead, and a text field in an HTML item moves its caret
@@ -231,7 +231,11 @@
 					tabbable[(index + (shiftKey ? -step : step)) % tabbable.length].focus();
 				}
 			}
+		} else {
+			return;
 		}
+		// The page doesn't get the keys the gallery uses, such as the arrows of a slider under it
+		e.stopPropagation();
 	};
 
 	// Normalize a gallery item
@@ -289,9 +293,9 @@
 
 		if (type === 'image') {
 			let max = 0;
-			for (const [, url, value] of link.matchAll(/(\S+)\s+(\d+)[wx]/gi)) {
-				if (+value > max) {
-					max = +value;
+			for (const { url, value } of parseSrcset(link)) {
+				if (value > max) {
+					max = value;
 					link = url;
 				}
 			}
@@ -302,11 +306,18 @@
 
 	};
 
+	// The candidates of a srcset, also with no space after a comma. A comma inside a URL stays in it
+	const parseSrcset = (srcset) => Array.from(srcset.matchAll(/(?:^|,)\s*(\S+)\s+(\d+)([wx])/gi), ([, url, value, type]) => ({
+		url,
+		value: +value,
+		type
+	}));
+
 	// Parse the link and detect the content type
 	const parseLink = (link, item) => {
 
-		// Also matches the first candidate of a srcset
-		let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
+		// Also matches the first candidate of a srcset, and a data URL of an image
+		let match = link.match(/^data:image\/|\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
 
 		if (match) {
 			item.type = 'image';
@@ -454,6 +465,7 @@
 		if (thumbElement) {
 			item.thumb = thumbElement;
 			item.source = item.thumb;
+			item.alt = item.alt || thumbElement.alt;
 			setDimensions(item, thumbElement);
 
 			if (!item.fit) {
@@ -541,19 +553,14 @@
 			src = item.link,
 			factor = 1;
 
-		// A link with a bare % can't be decoded, it is used as it is
-		try {
-			src = decodeURIComponent(src);
-		} catch {
+		// The href of a link encodes the spaces of a srcset. Only these, other escapes such as %23 are part of the URL
+		if (!/\s/.test(src)) {
+			src = src.replace(/%20/g, ' ');
 		}
 
-		if (/\s+\d+[wx]/.test(src)) {
+		const parts = parseSrcset(src);
 
-			const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
-				url: match[1],
-				value: parseInt(match[2]),
-				type: match[3]
-			}));
+		if (parts.length) {
 
 			const width = calculateDimensions(item)[0];
 
@@ -721,7 +728,8 @@
 
 		// Don't use keyboard events for inline galleries
 		if (!inline) {
-			window.addEventListener('keydown', onKeydown);
+			// In the capture phase, so the gallery gets the keys before the page
+			window.addEventListener('keydown', onKeydown, true);
 			// Keyboard and screen reader users start inside the gallery
 			node.focus({ preventScroll: true });
 			// The back button closes the gallery instead of leaving the page
@@ -738,7 +746,7 @@
 				if (node.open) {
 					node.close();
 				}
-				window.removeEventListener('keydown', onKeydown);
+				window.removeEventListener('keydown', onKeydown, true);
 				window.removeEventListener('popstate', close);
 				closing.set(false);
 				isOpen = false;

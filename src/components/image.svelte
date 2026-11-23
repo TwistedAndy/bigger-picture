@@ -1,5 +1,5 @@
 <script>
-	import { addAttributes, getThumbBackground } from '../stores';
+	import { addAttributes, getThumbBackground, isGalleryKey } from '../stores';
 
 	import Loading from './loading.svelte';
 
@@ -157,8 +157,7 @@
 		// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		// Ctrl+= and Ctrl+- zoom the page, not the image
-		if (opts.inline || $closing || e.altKey || e.ctrlKey || e.metaKey) {
+		if (opts.inline || $closing || !isGalleryKey(e, opts.focusWrap || container)) {
 			return;
 		}
 		if (zoom) {
@@ -167,7 +166,10 @@
 			e.preventDefault();
 			// Starts from the target, so held keys keep panning while the transition runs
 			translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]);
+		} else {
+			return;
 		}
+		e.stopPropagation();
 	};
 
 	const onWheel = (e) => {
@@ -368,7 +370,8 @@
 
 </script>
 
-<svelte:window on:keydown={onKeydown} />
+<!-- In the capture phase, before the page, see onKeydown in bigger-picture.svelte -->
+<svelte:window on:keydown|capture={onKeydown} />
 
 <div
 	class="bp-img-wrap"
@@ -397,7 +400,7 @@
 			<img
 				use:addSrc
 				sizes={activeItem.sizes || opts.sizes || `${sizes}px`}
-				alt={activeItem.alt}
+				alt={activeItem.alt || ''}
 				on:load={(e) => e.target.decode().then(show, show)}
 				on:error={(error) => opts.onError?.(container, activeItem, error)}
 			/>

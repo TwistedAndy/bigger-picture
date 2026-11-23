@@ -1191,7 +1191,14 @@ class Thumbs extends SvelteComponent {
 	}
 }
 
-const getThumbBackground = (activeItem) => activeItem.thumb ? `url(${activeItem.thumb.src})` : null;
+// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url()
+const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${activeItem.thumb.src}")` : null;
+
+// A key for the gallery: not a browser shortcut, such as Alt+Left for back or Ctrl+= for the page zoom, and not from an
+// element outside the gallery, such as from a gallery opened over it. The body has the focus when the focused node is
+// removed, and a script can send a key to the document or the window
+const isGalleryKey = ({ target, altKey, ctrlKey, metaKey }, wrap) => !altKey && !ctrlKey && !metaKey
+	&& (target.nodeType != 1 || target === document.body || wrap.contains(target));
 
 // Adds attributes to the given node based on the provided object
 const addAttributes = (node, attributes) => {
@@ -1379,7 +1386,7 @@ function create_if_block_1$1(ctx) {
 		c() {
 			img = element("img");
 			attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${/*sizes*/ ctx[2]}px`);
-			attr(img, "alt", /*activeItem*/ ctx[10].alt);
+			attr(img, "alt", /*activeItem*/ ctx[10].alt || '');
 		},
 		m(target, anchor) {
 			insert(target, img, anchor);
@@ -1410,7 +1417,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (396:10) {#if showLoader}
+// (398:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -1494,7 +1501,7 @@ function create_fragment$3(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(window, "keydown", /*onKeydown*/ ctx[17]),
+					listen(window, "keydown", /*onKeydown*/ ctx[17], true),
 					action_destroyer(/*onMount*/ ctx[24].call(null, div0)),
 					listen(div1, "wheel", /*onWheel*/ ctx[18]),
 					listen(div1, "pointerdown", /*onPointerDown*/ ctx[19]),
@@ -1764,8 +1771,7 @@ function instance$3($$self, $$props, $$invalidate) {
 			ArrowDown: [0, -100]
 		})[e.key];
 
-		// Ctrl+= and Ctrl+- zoom the page, not the image
-		if (opts.inline || $closing || e.altKey || e.ctrlKey || e.metaKey) {
+		if (opts.inline || $closing || !isGalleryKey(e, opts.focusWrap || container)) {
 			return;
 		}
 
@@ -1776,7 +1782,11 @@ function instance$3($$self, $$props, $$invalidate) {
 
 			// Starts from the target, so held keys keep panning while the transition runs
 			$$invalidate(9, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
+		} else {
+			return;
 		}
+
+		e.stopPropagation();
 	};
 
 	const onWheel = e => {
@@ -2404,7 +2414,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (793:2) {#if !dialog}
+// (801:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2424,7 +2434,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (804:125) {#if containerWidth > 0 && containerHeight > 0}
+// (812:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2499,7 +2509,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (804:483) {:else}
+// (812:483) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2525,7 +2535,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (804:430) 
+// (812:430) 
 function create_if_block_8(ctx) {
 	let iframe;
 	let current;
@@ -2565,7 +2575,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (804:339) 
+// (812:339) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2605,7 +2615,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (804:172) {#if activeItem.type === 'image'}
+// (812:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2651,7 +2661,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (793:94) {#key activeItem.i}
+// (801:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -2733,7 +2743,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (804:625) {#if activeItem.caption}
+// (812:625) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2757,7 +2767,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (804:765) {#if activeItem.download}
+// (812:765) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2796,7 +2806,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (804:1214) {#if items.length > 1}
+// (812:1214) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2859,7 +2869,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (814:25) {#if opts.thumbs && items.length > 1}
+// (822:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2903,7 +2913,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (784:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (792:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3337,7 +3347,7 @@ function instance($$self, $$props, $$invalidate) {
 		isClosing = true;
 		opts.onClose?.(container, activeItem);
 		closing.set(true);
-		window.removeEventListener('keydown', onKeydown);
+		window.removeEventListener('keydown', onKeydown, true);
 
 		// Closed without the back button, drop the history entry the gallery added
 		if (opts.history && history.state?.bp) {
@@ -3377,8 +3387,7 @@ function instance($$self, $$props, $$invalidate) {
 	const onKeydown = e => {
 		const { key, shiftKey, target } = e;
 
-		// Browser shortcuts, such as Alt+Left for back and Ctrl+= for the page zoom, stay with the browser
-		if (e.altKey || e.ctrlKey || e.metaKey) {
+		if (!isGalleryKey(e, opts.focusWrap || container)) {
 			return;
 		}
 
@@ -3410,7 +3419,12 @@ function instance($$self, $$props, $$invalidate) {
 					tabbable[(index + (shiftKey ? -step : step)) % tabbable.length].focus();
 				}
 			}
+		} else {
+			return;
 		}
+
+		// The page doesn't get the keys the gallery uses, such as the arrows of a slider under it
+		e.stopPropagation();
 	};
 
 	// Normalize a gallery item
@@ -3470,9 +3484,9 @@ function instance($$self, $$props, $$invalidate) {
 		if (type === 'image') {
 			let max = 0;
 
-			for (const [,url, value] of link.matchAll(/(\S+)\s+(\d+)[wx]/gi)) {
-				if (+value > max) {
-					max = +value;
+			for (const { url, value } of parseSrcset(link)) {
+				if (value > max) {
+					max = value;
 					link = url;
 				}
 			}
@@ -3483,10 +3497,13 @@ function instance($$self, $$props, $$invalidate) {
 		return sources?.[0]?.src || '';
 	};
 
+	// The candidates of a srcset, also with no space after a comma. A comma inside a URL stays in it
+	const parseSrcset = srcset => Array.from(srcset.matchAll(/(?:^|,)\s*(\S+)\s+(\d+)([wx])/gi), ([,url, value, type]) => ({ url, value: +value, type }));
+
 	// Parse the link and detect the content type
 	const parseLink = (link, item) => {
-		// Also matches the first candidate of a srcset
-		let match = link.match(/\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
+		// Also matches the first candidate of a srcset, and a data URL of an image
+		let match = link.match(/^data:image\/|\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
 
 		if (match) {
 			item.type = 'image';
@@ -3634,6 +3651,7 @@ function instance($$self, $$props, $$invalidate) {
 		if (thumbElement) {
 			item.thumb = thumbElement;
 			item.source = item.thumb;
+			item.alt = item.alt || thumbElement.alt;
 			setDimensions(item, thumbElement);
 
 			if (!item.fit) {
@@ -3713,20 +3731,14 @@ function instance($$self, $$props, $$invalidate) {
 
 		let image = document.createElement('img'), src = item.link, factor = 1;
 
-		// A link with a bare % can't be decoded, it is used as it is
-		try {
-			src = decodeURIComponent(src);
-		} catch {
-			
+		// The href of a link encodes the spaces of a srcset. Only these, other escapes such as %23 are part of the URL
+		if (!(/\s/).test(src)) {
+			src = src.replace(/%20/g, ' ');
 		}
 
-		if ((/\s+\d+[wx]/).test(src)) {
-			const parts = Array.from(src.matchAll(/(\S+)\s+(\d+)([wx])/gi), match => ({
-				url: match[1],
-				value: parseInt(match[2]),
-				type: match[3]
-			}));
+		const parts = parseSrcset(src);
 
+		if (parts.length) {
 			const width = calculateDimensions(item)[0];
 			parts.sort((a, b) => a.value - b.value);
 
@@ -3901,7 +3913,8 @@ function instance($$self, $$props, $$invalidate) {
 
 		// Don't use keyboard events for inline galleries
 		if (!inline) {
-			window.addEventListener('keydown', onKeydown);
+			// In the capture phase, so the gallery gets the keys before the page
+			window.addEventListener('keydown', onKeydown, true);
 
 			// Keyboard and screen reader users start inside the gallery
 			node.focus({ preventScroll: true });
@@ -3921,7 +3934,7 @@ function instance($$self, $$props, $$invalidate) {
 					node.close();
 				}
 
-				window.removeEventListener('keydown', onKeydown);
+				window.removeEventListener('keydown', onKeydown, true);
 				window.removeEventListener('popstate', close);
 				closing.set(false);
 				isOpen = false;
