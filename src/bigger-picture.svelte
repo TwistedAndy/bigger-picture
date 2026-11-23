@@ -199,14 +199,20 @@
 	const onKeydown = (e) => {
 		const {
 			key,
-			shiftKey
+			shiftKey,
+			target
 		} = e;
+		// Browser shortcuts, such as Alt+Left for back and Ctrl+= for the page zoom, stay with the browser
+		if (e.altKey || e.ctrlKey || e.metaKey) {
+			return;
+		}
+		// The zoomed image pans with the arrows instead, and a text field in an HTML item moves its caret
+		const arrows = !$zoomed && !target.isContentEditable && !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
 		if (key === 'Escape') {
 			!opts.persistent && close();
-		} else if (key === 'ArrowRight' && !$zoomed) {
-			// The zoomed image pans with the arrows instead
+		} else if (key === 'ArrowRight' && arrows) {
 			next();
-		} else if (key === 'ArrowLeft' && !$zoomed) {
+		} else if (key === 'ArrowLeft' && arrows) {
 			prev();
 		} else if (key === 'Tab') {
 			// Trap the focus on tab press
@@ -435,11 +441,12 @@
 	// Parse a thumbnail, update dimensions, and the fit option
 	const parseThumbnail = (item) => {
 
-		// An image element wins over the image inside the element, which wins over a thumbnail URL
+		// An image element wins over the element when it is an image, then the image inside it, then a thumbnail URL
 		let thumbLink = item.thumb,
-			thumbElement = thumbLink instanceof HTMLImageElement ? thumbLink : item.element?.querySelector('img');
+			element = item.element,
+			thumbElement = thumbLink instanceof HTMLImageElement ? thumbLink : element?.matches('img') ? element : element?.querySelector('img');
 
-		item.source = item.element;
+		item.source = element;
 		item.thumb = false;
 
 		if (thumbElement) {
@@ -457,9 +464,9 @@
 				setDimensions(item, thumbElement);
 			};
 			item.thumb = thumbElement;
-		} else if (item.type === 'image' && opts.thumbs && item.element?.href) {
+		} else if (item.type === 'image' && opts.thumbs && element?.href) {
 			// A link without a thumbnail shows the full image in the strip, loaded lazily
-			item.thumb = { src: item.element.href };
+			item.thumb = { src: element.href };
 		}
 
 		return item;
@@ -797,9 +804,9 @@
 						role="none"
 						use:slideActions
 						on:pointerdown={(e) => (clickedEl = e.target)}
-						on:pointerup={function (e) {
-						// Only close if left click on self and not dragged
-						if (e.button !== 2 && e.target === this && clickedEl === this) {
+						on:click={function (e) {
+						// Only close if pressed and released on self. On click, not on pointerup, see onClick in image.svelte
+						if (e.target === this && clickedEl === this) {
 							!opts.persistent && close()
 						}
 					}}

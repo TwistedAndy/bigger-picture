@@ -49,6 +49,11 @@
 	};
 
 	const pointerMove = (e) => {
+		// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag
+		if (isPointerDown && !e.buttons) {
+			dragPositions = [];
+			pointerUp();
+		}
 		if (isPointerDown) {
 			let dragAmount = -(pointerDownX - e.clientX);
 			if (hasDragged) {

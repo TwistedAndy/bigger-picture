@@ -79,6 +79,11 @@
 		--bp-stage-gap: 0px;
 		--bp-offset-top: 0px;
 		--bp-offset-bottom: 0px;
+
+		// A vertical touch scrolls the page, as the wheel does
+		&:not(.bp-zoomed) {
+			touch-action: pan-y;
+		}
 	}
 
 	&.bp-zoomed {

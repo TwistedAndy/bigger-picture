@@ -860,7 +860,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (124:3) {#each items as item (item.i)}
+// (129:3) {#each items as item (item.i)}
 function create_each_block(key_1, ctx) {
 	let button;
 	let img;
@@ -1077,6 +1077,12 @@ function instance$5($$self, $$props, $$invalidate) {
 	};
 
 	const pointerMove = e => {
+		// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag
+		if (isPointerDown && !e.buttons) {
+			dragPositions = [];
+			pointerUp();
+		}
+
 		if (isPointerDown) {
 			let dragAmount = -(pointerDownX - e.clientX);
 
@@ -1367,23 +1373,24 @@ function create_if_block_1$1(ctx) {
 	return {
 		c() {
 			img = element("img");
-			attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[9].sizes || /*opts*/ ctx[10].sizes || `${/*sizes*/ ctx[2]}px`);
-			attr(img, "alt", /*activeItem*/ ctx[9].alt);
+			attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${/*sizes*/ ctx[2]}px`);
+			attr(img, "alt", /*activeItem*/ ctx[10].alt);
 		},
 		m(target, anchor) {
 			insert(target, img, anchor);
 
 			if (!mounted) {
 				dispose = [
-					action_destroyer(/*addSrc*/ ctx[22].call(null, img)),
-					listen(img, "error", /*error_handler*/ ctx[28])
+					action_destroyer(/*addSrc*/ ctx[25].call(null, img)),
+					listen(img, "load", /*load_handler*/ ctx[31]),
+					listen(img, "error", /*error_handler*/ ctx[32])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*sizes*/ 4 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[9].sizes || /*opts*/ ctx[10].sizes || `${/*sizes*/ ctx[2]}px`)) {
+			if (dirty[0] & /*sizes*/ 4 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${/*sizes*/ ctx[2]}px`)) {
 				attr(img, "sizes", img_sizes_value);
 			}
 		},
@@ -1398,16 +1405,16 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (362:10) {#if showLoader}
+// (396:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
 
 	loading = new Loading({
 			props: {
-				activeItem: /*activeItem*/ ctx[9],
+				activeItem: /*activeItem*/ ctx[10],
 				loaded: /*loaded*/ ctx[3],
-				closing: /*closing*/ ctx[12]
+				closing: /*closing*/ ctx[13]
 			}
 		});
 
@@ -1443,7 +1450,7 @@ function create_fragment$3(ctx) {
 	let div1;
 	let div0;
 	let if_block0_anchor;
-	let style_transform = `translate3d(${/*translate*/ ctx[8][0]}px, ${/*translate*/ ctx[8][1]}px, 0) scale(${/*scale*/ ctx[1]})`;
+	let style_transform = `translate3d(${/*translate*/ ctx[9][0]}px, ${/*translate*/ ctx[9][1]}px, 0) scale(${/*scale*/ ctx[1]})`;
 	let current;
 	let mounted;
 	let dispose;
@@ -1460,13 +1467,17 @@ function create_fragment$3(ctx) {
 			attr(div0, "class", "bp-img");
 			set_style(div0, "width", /*activeDimensions*/ ctx[0][0] + "px");
 			set_style(div0, "height", /*activeDimensions*/ ctx[0][1] + "px");
-			toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[5]);
-			toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[14] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
-			set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[9]));
+			toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[6]);
+			toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[8]);
+
+			set_style(div0, "background-image", /*shown*/ ctx[5]
+			? null
+			: getThumbBackground(/*activeItem*/ ctx[10]));
+
 			set_style(div0, "transform", style_transform);
 			attr(div1, "class", "bp-img-wrap");
 			attr(div1, "role", "none");
-			toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[6]);
+			toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[7]);
 		},
 		m(target, anchor) {
 			insert(target, div1, anchor);
@@ -1478,13 +1489,14 @@ function create_fragment$3(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(window, "keydown", /*onKeydown*/ ctx[15]),
-					action_destroyer(/*onMount*/ ctx[21].call(null, div0)),
-					listen(div1, "wheel", /*onWheel*/ ctx[16]),
-					listen(div1, "pointerdown", /*onPointerDown*/ ctx[17]),
-					listen(div1, "pointermove", /*onPointerMove*/ ctx[18]),
-					listen(div1, "pointerup", /*onPointerUp*/ ctx[20]),
-					listen(div1, "pointercancel", /*removeEventFromCache*/ ctx[19])
+					listen(window, "keydown", /*onKeydown*/ ctx[17]),
+					action_destroyer(/*onMount*/ ctx[24].call(null, div0)),
+					listen(div1, "wheel", /*onWheel*/ ctx[18]),
+					listen(div1, "pointerdown", /*onPointerDown*/ ctx[19]),
+					listen(div1, "pointermove", /*onPointerMove*/ ctx[20]),
+					listen(div1, "pointerup", /*onPointerUp*/ ctx[22]),
+					listen(div1, "pointercancel", /*onPointerCancel*/ ctx[21]),
+					listen(div1, "click", /*onClick*/ ctx[23])
 				];
 
 				mounted = true;
@@ -1535,26 +1547,28 @@ function create_fragment$3(ctx) {
 				set_style(div0, "height", /*activeDimensions*/ ctx[0][1] + "px");
 			}
 
-			if (!current || dirty[0] & /*pointerDown*/ 32) {
-				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[5]);
+			if (!current || dirty[0] & /*pointerDown*/ 64) {
+				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[6]);
 			}
 
-			if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 16515) {
-				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[14] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[7]);
+			if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 33027) {
+				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[8]);
 			}
 
 			const style_changed = dirty[0] & /*activeDimensions*/ 1;
 
-			if (dirty[0] & /*activeDimensions*/ 1 || style_changed) {
-				set_style(div0, "background-image", getThumbBackground(/*activeItem*/ ctx[9]));
+			if (dirty[0] & /*shown, activeDimensions*/ 33 || style_changed) {
+				set_style(div0, "background-image", /*shown*/ ctx[5]
+				? null
+				: getThumbBackground(/*activeItem*/ ctx[10]));
 			}
 
-			if (dirty[0] & /*translate, scale, activeDimensions*/ 259 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[8][0]}px, ${/*translate*/ ctx[8][1]}px, 0) scale(${/*scale*/ ctx[1]})`) || style_changed) {
+			if (dirty[0] & /*translate, scale, activeDimensions*/ 515 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[9][0]}px, ${/*translate*/ ctx[9][1]}px, 0) scale(${/*scale*/ ctx[1]})`) || style_changed) {
 				set_style(div0, "transform", style_transform);
 			}
 
-			if (!current || dirty[0] & /*closingWhileZoomed*/ 64) {
-				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[6]);
+			if (!current || dirty[0] & /*closingWhileZoomed*/ 128) {
+				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[7]);
 			}
 		},
 		i(local) {
@@ -1588,15 +1602,18 @@ function instance$3($$self, $$props, $$invalidate) {
 	let { containerHeight } = $$props;
 	let { activeDimensions } = $$props;
 	let { activeItem, opts, prev, next, zoomed, closing, container } = props;
-	component_subscribe($$self, zoomed, value => $$invalidate(38, $zoomed = value));
-	component_subscribe($$self, closing, value => $$invalidate(27, $closing = value));
+	component_subscribe($$self, zoomed, value => $$invalidate(42, $zoomed = value));
+	component_subscribe($$self, closing, value => $$invalidate(30, $closing = value));
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 	// Value of sizes attribute
 	let sizes = activeDimensions[0];
 
-	// Tracks load state of image
-	let loaded, showLoader;
+	// Tracks load state of image, shown is true once the img is decoded, then the thumbnail under it goes, so it can't
+	// show through a transparent image
+	let loaded, showLoader, shown;
+
+	const show = () => $$invalidate(5, shown = true);
 
 	// Stores pinch info if multiple touch events active
 	let pinchDetails;
@@ -1616,7 +1633,8 @@ function instance$3($$self, $$props, $$invalidate) {
 	// If true, adds class to .bp-wrap to avoid image cropping
 	let closingWhileZoomed;
 
-	let naturalWidth = +activeItem.width;
+	// Zero until the size is known, so a zoom before the load does nothing
+	let naturalWidth = +activeItem.width || 0;
 
 	// Store positions for drag inertia
 	const dragPositions = [];
@@ -1649,7 +1667,7 @@ function instance$3($$self, $$props, $$invalidate) {
 				// Previous item if dragged past threshold
 				if (x > maxTranslateX + 20) {
 					// Setting pointerDown to undefined stops pointermove from running again
-					$$invalidate(5, pointerDown = prev());
+					$$invalidate(6, pointerDown = prev());
 				}
 			} else {
 				x = maxTranslateX;
@@ -1664,7 +1682,7 @@ function instance$3($$self, $$props, $$invalidate) {
 				// Next item if dragged past threshold
 				if (x < -maxTranslateX - 20) {
 					// Setting pointerDown to undefined stops pointermove from running again
-					$$invalidate(5, pointerDown = next());
+					$$invalidate(6, pointerDown = next());
 				}
 			} else {
 				x = -maxTranslateX;
@@ -1699,7 +1717,7 @@ function instance$3($$self, $$props, $$invalidate) {
 			// If requesting image smaller than starting size
 			$$invalidate(1, scale = 1);
 
-			return $$invalidate(8, translate = [0, 0]);
+			return $$invalidate(9, translate = [0, 0]);
 		}
 
 		let x = 0, y = 0;
@@ -1718,7 +1736,7 @@ function instance$3($$self, $$props, $$invalidate) {
 		// Update sizes property, the browser loads a larger source if there is one
 		$$invalidate(2, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
 
-		$$invalidate(8, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
+		$$invalidate(9, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
 		$$invalidate(1, scale = newScale);
 	}
 
@@ -1741,7 +1759,8 @@ function instance$3($$self, $$props, $$invalidate) {
 			ArrowDown: [0, -100]
 		})[e.key];
 
-		if (opts.inline || $closing) {
+		// Ctrl+= and Ctrl+- zoom the page, not the image
+		if (opts.inline || $closing || e.altKey || e.ctrlKey || e.metaKey) {
 			return;
 		}
 
@@ -1751,7 +1770,7 @@ function instance$3($$self, $$props, $$invalidate) {
 			e.preventDefault();
 
 			// Starts from the target, so held keys keep panning while the transition runs
-			$$invalidate(8, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
+			$$invalidate(9, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
 		}
 	};
 
@@ -1774,6 +1793,17 @@ function instance$3($$self, $$props, $$invalidate) {
 		if (e.button !== 2) {
 			e.preventDefault();
 
+			if (e.isPrimary) {
+				// A new gesture drops the state of the last one, which can end without a pointerup, e.g. under a context
+				// menu, or with an early return in onPointerUp after a swipe or a pinch
+				pointerCache.clear();
+
+				pinchDetails = null;
+				prevDiff = 0;
+				hasDragged = false;
+				dragPositions.length = 0;
+			}
+
 			if ($zoomed) {
 				// Stop the transition where it is, the drag moves the image without one
 				const img = bpImg.getBoundingClientRect();
@@ -1781,13 +1811,13 @@ function instance$3($$self, $$props, $$invalidate) {
 				const wrap = bpImg.parentNode.getBoundingClientRect();
 				$$invalidate(1, scale = img.width / activeDimensions[0]);
 
-				$$invalidate(8, translate = [
+				$$invalidate(9, translate = [
 					img.left + img.width / 2 - wrap.left - wrap.width / 2,
 					img.top + img.height / 2 - wrap.top - wrap.height / 2
 				]);
 			}
 
-			$$invalidate(5, pointerDown = true);
+			$$invalidate(6, pointerDown = true);
 			pointerCache.set(e.pointerId, e);
 			dragStartX = e.clientX;
 			dragStartY = e.clientY;
@@ -1800,13 +1830,18 @@ function instance$3($$self, $$props, $$invalidate) {
 	const onPointerMove = e => {
 		if (pointerCache.size > 1) {
 			// If multiple pointer events, pass to handlePinch function
-			$$invalidate(5, pointerDown = false);
+			$$invalidate(6, pointerDown = false);
 
 			const { noPinch } = opts;
 
 			return (typeof noPinch == 'function'
 			? noPinch(container)
 			: noPinch) || handlePinch(e);
+		}
+
+		// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
+		if (!e.buttons) {
+			$$invalidate(6, pointerDown = false);
 		}
 
 		if (!pointerDown) {
@@ -1830,7 +1865,7 @@ function instance$3($$self, $$props, $$invalidate) {
 		if (!$zoomed) {
 			// Close if swipe up
 			if (y < -90) {
-				$$invalidate(5, pointerDown = !opts.persistent && props.close());
+				$$invalidate(6, pointerDown = !opts.persistent && props.close());
 			}
 
 			// Only handle left / right if not swiping vertically
@@ -1838,20 +1873,20 @@ function instance$3($$self, $$props, $$invalidate) {
 				// Previous if swipe left
 				if (x > 40) {
 					// Setting pointerDown to undefined stops pointermove from running again
-					$$invalidate(5, pointerDown = prev());
+					$$invalidate(6, pointerDown = prev());
 				}
 
 				// Next if swipe right
 				if (x < -40) {
 					// Setting pointerDown to undefined stops pointermove from running again
-					$$invalidate(5, pointerDown = next());
+					$$invalidate(6, pointerDown = next());
 				}
 			}
 		}
 
 		// Image drag when zoomed
 		if ($zoomed && hasDragged && !$closing) {
-			$$invalidate(8, translate = boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]));
+			$$invalidate(9, translate = boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]));
 		}
 	};
 
@@ -1878,18 +1913,18 @@ function instance$3($$self, $$props, $$invalidate) {
 		prevDiff = curDiff;
 	};
 
-	// Remove event from pointer event cache
-	const removeEventFromCache = e => pointerCache.delete(e.pointerId);
+	// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
+	const onPointerCancel = e => {
+		pointerCache.delete(e.pointerId);
+		$$invalidate(6, pointerDown = false);
+	};
 
 	const onPointerUp = function (e) {
-		removeEventFromCache(e);
+		pointerCache.delete(e.pointerId);
 
 		if (pinchDetails) {
-			// Reset prevDiff and clear pointerDown to trigger return below
-			$$invalidate(5, pointerDown = prevDiff = 0);
-
-			// Set pinchDetails to null after last finger lifts
-			pinchDetails = pointerCache.size ? pinchDetails : null;
+			// Reset prevDiff and clear pointerDown to trigger return below, the next gesture clears pinchDetails
+			$$invalidate(6, pointerDown = prevDiff = 0);
 		}
 
 		// Make sure pointer events don't carry over to next image
@@ -1897,11 +1932,11 @@ function instance$3($$self, $$props, $$invalidate) {
 			return;
 		}
 
-		$$invalidate(5, pointerDown = false);
+		$$invalidate(6, pointerDown = false);
 
-		// Close if overlay is clicked
+		// A tap on the space around the image closes the gallery in onClick
 		if (e.target === this && !opts.persistent) {
-			return props.close();
+			return;
 		}
 
 		// Add drag inertia / snap back to bounds
@@ -1910,7 +1945,7 @@ function instance$3($$self, $$props, $$invalidate) {
 
 			// A short flick may have fewer than three moves, it gets no inertia
 			if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
-				$$invalidate(8, translate = boundTranslateValues([
+				$$invalidate(9, translate = boundTranslateValues([
 					translate[0] - (posOne.x - posThree.x) * 5,
 					translate[1] - (posOne.y - posThree.y) * 5
 				]));
@@ -1918,12 +1953,14 @@ function instance$3($$self, $$props, $$invalidate) {
 		} else if (!opts.onImageClick?.(container, activeItem)) {
 			changeZoom($zoomed ? -maxZoom : maxZoom, e);
 		}
+	};
 
-		// Reset pointer states
-		hasDragged = false;
-
-		// Reset dragPositions
-		dragPositions.length = 0;
+	// Close when the space around the image is clicked. On click, not on pointerup: a tap sends its click after the pointerup,
+	// and without an outro, such as with reduced motion, the gallery is gone by then and the click opens the link under it
+	const onClick = function (e) {
+		if (e.target === this && !hasDragged && !opts.persistent) {
+			props.close();
+		}
 	};
 
 	const onMount = node => {
@@ -1931,7 +1968,7 @@ function instance$3($$self, $$props, $$invalidate) {
 
 		// Decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
-			$$invalidate(7, naturalWidth = +activeItem.width);
+			$$invalidate(8, naturalWidth = +activeItem.width || 0);
 			$$invalidate(3, loaded = true);
 			props.preloadNext();
 		});
@@ -1949,36 +1986,45 @@ function instance$3($$self, $$props, $$invalidate) {
 		addAttributes(node, activeItem.attr);
 	};
 
+	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
+	// back into its bounds. A function, so the statement doesn't run again on each translate change
+	const fitZoom = () => {
+		if (opts.inline || !smallScreen) {
+			$$invalidate(1, scale = 1);
+			$$invalidate(9, translate = [0, 0]);
+		} else {
+			$$invalidate(9, translate = boundTranslateValues(translate));
+		}
+	};
+
+	const load_handler = e => e.target.decode().then(show, show);
 	const error_handler = error => opts.onError?.(container, activeItem, error);
 
 	$$self.$$set = $$props => {
 		
-		if ('smallScreen' in $$props) $$invalidate(24, smallScreen = $$props.smallScreen);
-		if ('containerWidth' in $$props) $$invalidate(25, containerWidth = $$props.containerWidth);
-		if ('containerHeight' in $$props) $$invalidate(26, containerHeight = $$props.containerHeight);
+		if ('smallScreen' in $$props) $$invalidate(27, smallScreen = $$props.smallScreen);
+		if ('containerWidth' in $$props) $$invalidate(28, containerWidth = $$props.containerWidth);
+		if ('containerHeight' in $$props) $$invalidate(29, containerHeight = $$props.containerHeight);
 		if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty[0] & /*$closing, scale*/ 134217730) {
+		if ($$self.$$.dirty[0] & /*$closing, scale*/ 1073741826) {
 			// If zoomed while closing, zoom out image and add class
 			// to change contain value on .bp-wrap to avoid cropping
 			if ($closing && scale !== 1 && opts.zoom) {
 				$$invalidate(1, scale = 1);
-				$$invalidate(8, translate = [0, 0]);
-				$$invalidate(6, closingWhileZoomed = true);
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*activeDimensions, smallScreen*/ 16777217) {
-			if (activeDimensions && (opts.inline || !smallScreen)) {
-				$$invalidate(1, scale = 1);
-				$$invalidate(8, translate = [0, 0]);
+				$$invalidate(9, translate = [0, 0]);
+				$$invalidate(7, closingWhileZoomed = true);
 			}
 		}
 
 		if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 3) {
 			zoomed.set(activeDimensions[0] * (scale - 1) > 10);
+		}
+
+		if ($$self.$$.dirty[0] & /*activeDimensions*/ 1) {
+			(fitZoom());
 		}
 	};
 
@@ -1988,6 +2034,7 @@ function instance$3($$self, $$props, $$invalidate) {
 		sizes,
 		loaded,
 		showLoader,
+		shown,
 		pointerDown,
 		closingWhileZoomed,
 		naturalWidth,
@@ -1998,12 +2045,14 @@ function instance$3($$self, $$props, $$invalidate) {
 		closing,
 		container,
 		maxZoom,
+		show,
 		onKeydown,
 		onWheel,
 		onPointerDown,
 		onPointerMove,
-		removeEventFromCache,
+		onPointerCancel,
 		onPointerUp,
+		onClick,
 		onMount,
 		addSrc,
 		props,
@@ -2011,6 +2060,7 @@ function instance$3($$self, $$props, $$invalidate) {
 		containerWidth,
 		containerHeight,
 		$closing,
+		load_handler,
 		error_handler
 	];
 }
@@ -2026,10 +2076,10 @@ let Image$1 = class Image extends SvelteComponent {
 			create_fragment$3,
 			not_equal,
 			{
-				props: 23,
-				smallScreen: 24,
-				containerWidth: 25,
-				containerHeight: 26,
+				props: 26,
+				smallScreen: 27,
+				containerWidth: 28,
+				containerHeight: 29,
 				activeDimensions: 0
 			},
 			null,
@@ -2349,7 +2399,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (783:2) {#if !dialog}
+// (790:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2369,7 +2419,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (794:125) {#if containerWidth > 0 && containerHeight > 0}
+// (801:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2444,7 +2494,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (794:483) {:else}
+// (801:483) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2470,7 +2520,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (794:430) 
+// (801:430) 
 function create_if_block_8(ctx) {
 	let iframe;
 	let current;
@@ -2510,7 +2560,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (794:339) 
+// (801:339) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2550,7 +2600,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (794:172) {#if activeItem.type === 'image'}
+// (801:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2596,7 +2646,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (783:94) {#key activeItem.i}
+// (790:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -2627,7 +2677,7 @@ function create_key_block(ctx) {
 				dispose = [
 					action_destroyer(/*slideActions*/ ctx[20].call(null, div2)),
 					listen(div2, "pointerdown", /*pointerdown_handler*/ ctx[27]),
-					listen(div2, "pointerup", /*pointerup_handler*/ ctx[28])
+					listen(div2, "click", /*click_handler*/ ctx[28])
 				];
 
 				mounted = true;
@@ -2678,7 +2728,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (794:625) {#if activeItem.caption}
+// (801:625) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2702,7 +2752,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (794:765) {#if activeItem.download}
+// (801:765) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2741,7 +2791,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (794:1123) {#if items.length > 1}
+// (801:1123) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2802,7 +2852,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (802:25) {#if opts.thumbs && items.length > 1}
+// (809:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2846,7 +2896,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (774:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (781:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3317,14 +3367,21 @@ function instance($$self, $$props, $$invalidate) {
 
 	// Handle the keyboard events
 	const onKeydown = e => {
-		const { key, shiftKey } = e;
+		const { key, shiftKey, target } = e;
+
+		// Browser shortcuts, such as Alt+Left for back and Ctrl+= for the page zoom, stay with the browser
+		if (e.altKey || e.ctrlKey || e.metaKey) {
+			return;
+		}
+
+		// The zoomed image pans with the arrows instead, and a text field in an HTML item moves its caret
+		const arrows = !$zoomed && !target.isContentEditable && !(/^(INPUT|TEXTAREA|SELECT)$/).test(target.tagName);
 
 		if (key === 'Escape') {
 			!opts.persistent && close();
-		} else if (key === 'ArrowRight' && !$zoomed) {
-			// The zoomed image pans with the arrows instead
+		} else if (key === 'ArrowRight' && arrows) {
 			next();
-		} else if (key === 'ArrowLeft' && !$zoomed) {
+		} else if (key === 'ArrowLeft' && arrows) {
 			prev();
 		} else if (key === 'Tab') {
 			// Trap the focus on tab press
@@ -3552,13 +3609,16 @@ function instance($$self, $$props, $$invalidate) {
 
 	// Parse a thumbnail, update dimensions, and the fit option
 	const parseThumbnail = item => {
-		// An image element wins over the image inside the element, which wins over a thumbnail URL
+		// An image element wins over the element when it is an image, then the image inside it, then a thumbnail URL
 		let thumbLink = item.thumb,
+			element = item.element,
 			thumbElement = thumbLink instanceof HTMLImageElement
 			? thumbLink
-			: item.element?.querySelector('img');
+			: (element?.matches('img'))
+				? element
+				: element?.querySelector('img');
 
-		item.source = item.element;
+		item.source = element;
 		item.thumb = false;
 
 		if (thumbElement) {
@@ -3578,9 +3638,9 @@ function instance($$self, $$props, $$invalidate) {
 			};
 
 			item.thumb = thumbElement;
-		} else if (item.type === 'image' && opts.thumbs && item.element?.href) {
+		} else if (item.type === 'image' && opts.thumbs && element?.href) {
 			// A link without a thumbnail shows the full image in the strip, loaded lazily
-			item.thumb = { src: item.element.href };
+			item.thumb = { src: element.href };
 		}
 
 		return item;
@@ -3893,9 +3953,9 @@ function instance($$self, $$props, $$invalidate) {
 
 	const pointerdown_handler = e => $$invalidate(12, clickedEl = e.target);
 
-	const pointerup_handler = function (e) {
-		// Only close if left click on self and not dragged
-		if (e.button !== 2 && e.target === this && clickedEl === this) {
+	const click_handler = function (e) {
+		// Only close if pressed and released on self. On click, not on pointerup, see onClick in image.svelte
+		if (e.target === this && clickedEl === this) {
 			!opts.persistent && close();
 		}
 	};
@@ -3949,7 +4009,7 @@ function instance($$self, $$props, $$invalidate) {
 		target,
 		open,
 		pointerdown_handler,
-		pointerup_handler
+		click_handler
 	];
 }
 

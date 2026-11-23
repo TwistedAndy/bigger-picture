@@ -16,8 +16,10 @@
 	// Value of sizes attribute
 	let sizes = activeDimensions[0];
 
-	// Tracks load state of image
-	let loaded, showLoader;
+	// Tracks load state of image, shown is true once the img is decoded, then the thumbnail under it goes, so it can't
+	// show through a transparent image
+	let loaded, showLoader, shown;
+	const show = () => (shown = true);
 
 	// Stores pinch info if multiple touch events active
 	let pinchDetails;
@@ -37,7 +39,8 @@
 	// If true, adds class to .bp-wrap to avoid image cropping
 	let closingWhileZoomed;
 
-	let naturalWidth = +activeItem.width;
+	// Zero until the size is known, so a zoom before the load does nothing
+	let naturalWidth = +activeItem.width || 0;
 
 	// Store positions for drag inertia
 	const dragPositions = [];
@@ -154,7 +157,8 @@
 		// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		if (opts.inline || $closing) {
+		// Ctrl+= and Ctrl+- zoom the page, not the image
+		if (opts.inline || $closing || e.altKey || e.ctrlKey || e.metaKey) {
 			return;
 		}
 		if (zoom) {
@@ -182,6 +186,15 @@
 		// Don't run if right click
 		if (e.button !== 2) {
 			e.preventDefault();
+			if (e.isPrimary) {
+				// A new gesture drops the state of the last one, which can end without a pointerup, e.g. under a context
+				// menu, or with an early return in onPointerUp after a swipe or a pinch
+				pointerCache.clear();
+				pinchDetails = null;
+				prevDiff = 0;
+				hasDragged = false;
+				dragPositions.length = 0;
+			}
 			if ($zoomed) {
 				// Stop the transition where it is, the drag moves the image without one
 				const img = bpImg.getBoundingClientRect();
@@ -205,6 +218,11 @@
 			pointerDown = false;
 			const { noPinch } = opts;
 			return (typeof noPinch == 'function' ? noPinch(container) : noPinch) || handlePinch(e);
+		}
+
+		// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
+		if (!e.buttons) {
+			pointerDown = false;
 		}
 
 		if (!pointerDown) {
@@ -270,17 +288,18 @@
 		prevDiff = curDiff;
 	};
 
-	// Remove event from pointer event cache
-	const removeEventFromCache = (e) => pointerCache.delete(e.pointerId);
+	// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
+	const onPointerCancel = (e) => {
+		pointerCache.delete(e.pointerId);
+		pointerDown = false;
+	};
 
 	const onPointerUp = function(e) {
-		removeEventFromCache(e);
+		pointerCache.delete(e.pointerId);
 
 		if (pinchDetails) {
-			// Reset prevDiff and clear pointerDown to trigger return below
+			// Reset prevDiff and clear pointerDown to trigger return below, the next gesture clears pinchDetails
 			pointerDown = prevDiff = 0;
-			// Set pinchDetails to null after last finger lifts
-			pinchDetails = pointerCache.size ? pinchDetails : null;
 		}
 
 		// Make sure pointer events don't carry over to next image
@@ -290,9 +309,9 @@
 
 		pointerDown = false;
 
-		// Close if overlay is clicked
+		// A tap on the space around the image closes the gallery in onClick
 		if (e.target === this && !opts.persistent) {
-			return props.close();
+			return;
 		}
 
 		// Add drag inertia / snap back to bounds
@@ -305,11 +324,14 @@
 		} else if (!opts.onImageClick?.(container, activeItem)) {
 			changeZoom($zoomed ? -maxZoom : maxZoom, e);
 		}
+	};
 
-		// Reset pointer states
-		hasDragged = false;
-		// Reset dragPositions
-		dragPositions.length = 0;
+	// Close when the space around the image is clicked. On click, not on pointerup: a tap sends its click after the pointerup,
+	// and without an outro, such as with reduced motion, the gallery is gone by then and the click opens the link under it
+	const onClick = function (e) {
+		if (e.target === this && !hasDragged && !opts.persistent) {
+			props.close();
+		}
 	};
 
 	const onMount = (node) => {
@@ -317,7 +339,7 @@
 
 		// Decode initial image before rendering
 		props.loadImage(activeItem).then(() => {
-			naturalWidth = +activeItem.width;
+			naturalWidth = +activeItem.width || 0;
 			loaded = true;
 			props.preloadNext();
 		});
@@ -331,10 +353,18 @@
 		addAttributes(node, activeItem.attr);
 	};
 
-	$: if (activeDimensions && (opts.inline || !smallScreen)) {
-		scale = 1;
-		translate = [0, 0];
-	}
+	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
+	// back into its bounds. A function, so the statement doesn't run again on each translate change
+	const fitZoom = () => {
+		if (opts.inline || !smallScreen) {
+			scale = 1;
+			translate = [0, 0];
+		} else {
+			translate = boundTranslateValues(translate);
+		}
+	};
+
+	$: activeDimensions, fitZoom();
 
 </script>
 
@@ -347,7 +377,8 @@
 	on:pointerdown={onPointerDown}
 	on:pointermove={onPointerMove}
 	on:pointerup={onPointerUp}
-	on:pointercancel={removeEventFromCache}
+	on:pointercancel={onPointerCancel}
+	on:click={onClick}
 	class:bp-close={closingWhileZoomed}
 >
 	<div
@@ -355,7 +386,7 @@
 		class="bp-img"
 		class:bp-drag={pointerDown}
 		class:bp-canzoom={maxZoom > 1 && activeDimensions[0] * scale < naturalWidth}
-		style:background-image={getThumbBackground(activeItem)}
+		style:background-image={shown ? null : getThumbBackground(activeItem)}
 		style:transform="translate3d({translate[0]}px, {translate[1]}px, 0) scale({scale})"
 		style="
 			width:{activeDimensions[0]}px;
@@ -367,6 +398,7 @@
 				use:addSrc
 				sizes={activeItem.sizes || opts.sizes || `${sizes}px`}
 				alt={activeItem.alt}
+				on:load={(e) => e.target.decode().then(show, show)}
 				on:error={(error) => opts.onError?.(container, activeItem, error)}
 			/>
 		{/if}

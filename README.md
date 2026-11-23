@@ -455,7 +455,7 @@ Zooms the item out of its element on open and back into it on close. With `false
 
 `boolean` · default `false`
 
-Mounts the gallery inline. It doesn't lock the page scroll or trap Tab, and leaves the keyboard to the page.
+Mounts the gallery inline. It doesn't lock the page scroll or trap Tab, and leaves the keyboard to the page. The wheel and a vertical swipe scroll the page until the image is zoomed.
 
 > [!TIP]
 > Give the container of an inline gallery `position: relative`.
@@ -671,7 +671,7 @@ bp.open({
 
 `string` or `HTMLImageElement`
 
-The thumbnail shown before the item loads. Defaults to the first image inside the element. An image element is also used to detect [`fit`](#fit).
+The thumbnail shown before the item loads. Defaults to the element when it is an image, or to the first image inside it. An image element is also used to detect [`fit`](#fit).
 
 ### fit
 
@@ -786,7 +786,9 @@ bp.open({
 | Swipe left or right           | Previous and next item                           |
 | Swipe up, click the backdrop  | Close                                            |
 
-The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page.
+The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page. A vertical swipe on an inline gallery scrolls the page.
+
+Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret.
 
 ## Page scroll
 
