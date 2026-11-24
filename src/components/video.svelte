@@ -8,7 +8,7 @@
 	// but they make the vanilla bundle larger, so the elements are made here by hand
 
 	import Loading from './loading.svelte';
-	import { addAttributes, getThumbBackground } from '../stores';
+	import { addAttributes, getThumbBackground } from '../utils';
 
 	export let props;
 	export let activeDimensions;
@@ -45,12 +45,15 @@
 		};
 
 		appendToVideo('source', activeItem.sources);
-
-		if (activeItem.tracks) {
-			appendToVideo('track', activeItem.tracks);
-		}
+		appendToVideo('track', activeItem.tracks || []);
 
 		mediaElement.oncanplay = () => (loaded = true);
+
+		// A video with no size given, and no thumbnail to take it from, takes the size of the file, such as a portrait one
+		mediaElement.onloadedmetadata = () => props.setDimensions(activeItem, {
+			naturalWidth: mediaElement.videoWidth,
+			naturalHeight: mediaElement.videoHeight
+		});
 
 		// Before the metadata loads, this sets the position the playback starts from
 		const key = activeItem.sources[0].src;

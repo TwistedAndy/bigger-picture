@@ -1,5 +1,5 @@
 <script>
-	import { getThumbBackground } from '../stores';
+	import { getThumbBackground } from '../utils';
 
 	export let activeItem;
 	export let loaded;

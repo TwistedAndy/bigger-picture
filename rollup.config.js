@@ -18,7 +18,7 @@ const terserOptions = {
 		// fragment and update, so the list must not have a public name, such as the close, prev and next methods
 		properties: {
 			builtins: true,
-			regex: /^(duration|easing|delay|activeItem|activeDimensions|calculateDimensions|containerWidth|containerHeight|loaded|closing|dirty|tick|preloadNext|opts|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|update|\$\$)$/
+			regex: /^(duration|easing|delay|activeItem|activeDimensions|calculateDimensions|containerWidth|containerHeight|loaded|closing|dirty|tick|preloadNext|setDimensions|opts|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|update|\$\$)$/
 		}
 	},
 	compress: {

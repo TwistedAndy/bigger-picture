@@ -389,6 +389,8 @@
 .bp-count {
 	display: flex;
 	position: absolute;
+	// On the left on a right-to-left page too, the actions are on the right
+	left: 0;
 	align-items: center;
 	height: 46px;
 	padding: 0 16px;
@@ -488,6 +490,9 @@
 	max-width: 100%;
 	margin: 0 auto;
 	max-height: 200px;
+	// A long caption scrolls, with touch too: the caption is its own scroll container, so the touch-action of the gallery does
+	// not apply to it
+	overflow-y: auto;
 	padding: 10px 20px;
 	border-radius: 5px;
 	background: rgba(9, 9, 9, 0.8);
@@ -506,6 +511,8 @@
 
 .bp-thumbs {
 	display: block;
+	// The strip measures and moves from the left, also on a right-to-left page
+	direction: ltr;
 	position: relative;
 	overflow: hidden;
 	flex-grow: 0;

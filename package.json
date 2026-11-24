@@ -20,8 +20,7 @@
 		"./dist/bigger-picture.css": "./dist/bigger-picture.css",
 		"./dist/bigger-picture.scss": "./dist/bigger-picture.scss",
 		"./css": "./dist/bigger-picture.css",
-		"./scss": "./dist/bigger-picture.scss",
-		"./svelte/stores": "./src/stores.js"
+		"./scss": "./dist/bigger-picture.scss"
 	},
 	"svelte": "./src/bigger-picture.js",
 	"types": "index.d.ts",
@@ -40,9 +39,6 @@
 			],
 			"svelte": [
 				"index.d.ts"
-			],
-			"svelte/stores": [
-				"src/stores.d.ts"
 			]
 		}
 	},

@@ -27,9 +27,9 @@
 		let { left, right, width } = activeBtn.getBoundingClientRect();
 		let margin = 3;
 		let { offsetLeft } = activeBtn;
-		if (left + width > thumbsPanelWidth) {
+		if (right > thumbsPanelWidth) {
 			thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin);
-		} else if (right - width < 0) {
+		} else if (left < 0) {
 			thumbsTranslate = boundTranslate(-offsetLeft + margin);
 		}
 
@@ -82,31 +82,31 @@
 		initialTranslate = thumbsTranslate;
 	};
 
-	// Scroll to an active position on external change
-	$: if (position !== undefined) {
-		setTimeout(() => scrollToButton());
-	}
+	// Scroll to the active thumbnail when the position changes
+	$: position, setTimeout(scrollToButton);
 
-	// Update dimensions on resize
-	const thumbsActions = function(node) {
+	// Measure the panel and the strip in it, also on resize
+	const thumbsActions = (node) => {
 
 		thumbsPanel = node;
 
-		const resizeObserver = new ResizeObserver(entries => {
-			for (const entry of entries) {
-				if (entry.target === thumbsPanel) {
-					thumbsPanelWidth = entry.contentRect.width;
-				} else {
-					thumbsWidth = entry.contentRect.width;
+		const strip = node.querySelector('.bp-thumbs-inner'),
+			resizeObserver = new ResizeObserver((entries) => {
+				for (const { target, contentRect } of entries) {
+					if (target === strip) {
+						thumbsWidth = contentRect.width;
+					} else {
+						thumbsPanelWidth = contentRect.width;
+					}
 				}
-			}
-		});
+			});
 
 		resizeObserver.observe(node);
+		resizeObserver.observe(strip);
 
 		return {
 			destroy() {
-				resizeObserver.unobserve(node);
+				resizeObserver.disconnect();
 			}
 		};
 
@@ -129,10 +129,7 @@
 		style:transform="translateX({thumbsTranslate}px)"
 		on:pointerdown={pointerDown}
 	>
-		<div
-			use:thumbsActions
-			class="bp-thumbs-inner"
-		>
+		<div class="bp-thumbs-inner">
 			{#each items as item}
 				<button
 					type="button"

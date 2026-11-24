@@ -1,5 +1,5 @@
 <script>
-	import { addAttributes } from '../stores';
+	import { addAttributes } from '../utils';
 	import Loading from './loading.svelte';
 
 	export let props;

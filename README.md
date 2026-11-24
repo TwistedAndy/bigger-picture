@@ -347,7 +347,7 @@ const bp = BiggerPicture({ dialog: true })
 
 ### open(options)
 
-Opens the gallery with the given [options](#options).
+Opens the gallery with the given [options](#options). If the gallery is open, it closes first, and then it opens with the new options.
 
 ### close
 
@@ -364,6 +364,8 @@ Shows the previous item in the gallery.
 ### setPosition(position)
 
 Shows the item at `position`, counted from zero.
+
+`next()`, `prev()` and `setPosition()` do nothing while the gallery is closed or closes.
 
 ## Options
 
@@ -496,7 +498,7 @@ Limits zoom to `maxZoom` times the starting size, even if the item's `width` and
 
 `boolean` · default `false`
 
-Adds a history entry when the gallery opens, so the back button, or the back swipe on phones, closes the gallery instead of leaving the page. Closing the gallery otherwise removes the entry. Inline galleries ignore it.
+Adds a history entry when the gallery opens, so the back button, or the back swipe on phones, closes the gallery instead of leaving the page. Closing the gallery otherwise removes the entry. A link to an anchor in an HTML item adds its own entry, and the gallery stays open. Inline galleries ignore it.
 
 ### download
 
@@ -616,7 +618,7 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 
 `string`
 
-The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive and Dropbox links. A `srcset` value and a `data:image/` URL are images too. With a `srcset`, the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
+The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube (also `youtube-nocookie.com`, Shorts and live), Vimeo (also in channels and groups), SoundCloud, Google Drive and Dropbox links. A `srcset` value and a `data:image/` URL are images too. With a `srcset`, the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
 
 <!-- prettier-ignore -->
 ```html
@@ -683,13 +685,13 @@ How the item zooms out of its thumbnail and back: `cover` (keeps the crop), `con
 
 `number` or `string` · default `1920`
 
-The largest width of the item in pixels. Not needed for HTML.
+The largest width of the item in pixels, such as `800` or `"800px"`. Not needed for HTML. A video with no size takes the size of its file, and a YouTube Shorts link is portrait, 1080 × 1920.
 
 ### height
 
 `number` or `string` · default `1080`
 
-The largest height of the item in pixels. Not needed for HTML.
+The largest height of the item in pixels, such as `600` or `"600px"`. Not needed for HTML.
 
 ### alt
 
@@ -807,6 +809,7 @@ html {
 - Item properties no longer accept functions. Compute the values before calling `open`.
 - Audio is its own `audio` type, in [`types`](#types) and in `activeItem.type`.
 - `activeItem.link` is the URL shown, and `activeItem.img` and `activeItem.iframe` are gone.
+- The `@twistedandy/bigger-picture/svelte/stores` import is removed. Its helpers are internal now.
 
 ## Development
 

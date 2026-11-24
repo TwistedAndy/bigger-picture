@@ -1,5 +1,5 @@
 <script>
-	import { addAttributes, getThumbBackground, isGalleryKey } from '../stores';
+	import { addAttributes, getThumbBackground, isGalleryKey } from '../utils';
 
 	import Loading from './loading.svelte';
 
@@ -11,7 +11,7 @@
 
 	let { activeItem, opts, prev, next, zoomed, closing, container } = props;
 
-	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
+	const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 	// The largest zoomed width, the sizes attribute is at least the shown width
 	let sizes = 0;
@@ -31,16 +31,15 @@
 	let prevDiff = 0;
 
 	let pointerDown, hasDragged;
-	let dragStartX, dragStartY;
 
-	// Translate values on start of drag
-	let dragStartTranslateX, dragStartTranslateY;
+	// The pointerdown event and the translate of the image at the start of the drag
+	let dragStart, dragStartTranslate;
 
 	// If true, adds class to .bp-wrap to avoid image cropping
 	let closingWhileZoomed;
 
 	// Zero until the size is known, so a zoom before the load does nothing
-	let naturalWidth = +activeItem.width || 0;
+	let naturalWidth = activeItem.width || 0;
 
 	// Store positions for drag inertia
 	const dragPositions = [];
@@ -171,7 +170,7 @@
 		// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		if (opts.inline || $closing || !isGalleryKey(e, opts.focusWrap || container)) {
+		if (opts.inline || $closing || !isGalleryKey(e, opts, container)) {
 			return;
 		}
 		if (zoom) {
@@ -220,20 +219,38 @@
 			}
 			pointerDown = true;
 			pointerCache.set(e.pointerId, e);
-			dragStartX = e.clientX;
-			dragStartY = e.clientY;
-			dragStartTranslateX = translate[0];
-			dragStartTranslateY = translate[1];
+			dragStart = e;
+			dragStartTranslate = translate;
 		}
 	};
 
 	// On drag, update image translate val
 	const onPointerMove = (e) => {
 		if (pointerCache.size > 1) {
-			// If multiple pointer events, pass to handlePinch function
+			// Two pointers pinch
 			pointerDown = false;
 			const { noPinch } = opts;
-			return (typeof noPinch == 'function' ? noPinch(container) : noPinch) || handlePinch(e);
+			if (typeof noPinch == 'function' ? noPinch(container) : noPinch) {
+				return;
+			}
+
+			// Update event in cache and get values
+			const [p1, p2] = pointerCache.set(e.pointerId, e).values();
+
+			// The distance between the two pointers
+			const curDiff = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+
+			// Cache the original pinch center
+			pinchDetails = pinchDetails || {
+				clientX: (p1.clientX + p2.clientX) / 2, clientY: (p1.clientY + p2.clientY) / 2
+			};
+
+			// Scale image
+			changeZoom(((prevDiff || curDiff) - curDiff) / -35, pinchDetails);
+
+			// Cache the distance for the next move event
+			prevDiff = curDiff;
+			return;
 		}
 
 		// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
@@ -248,13 +265,12 @@
 		let x = e.clientX;
 		let y = e.clientY;
 
-		// Store positions for drag inertia, flag drag by distance
+		// Store positions for drag inertia
 		dragPositions.push({ x, y });
-		hasDragged = hasDragged || Math.hypot(x - dragStartX, y - dragStartY) > 5;
-
-		// Overall drag diff from start location
-		x = x - dragStartX;
-		y = y - dragStartY;
+		// Overall drag diff from start location, a move of more than 5px is a drag
+		x -= dragStart.clientX;
+		y -= dragStart.clientY;
+		hasDragged = hasDragged || Math.hypot(x, y) > 5;
 
 		// Handle unzoomed left / right / up swipes
 		if (!$zoomed) {
@@ -279,29 +295,8 @@
 
 		// Image drag when zoomed
 		if ($zoomed && hasDragged && !$closing) {
-			translate = boundTranslateValues([dragStartTranslateX + x, dragStartTranslateY + y]);
+			translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]);
 		}
-	};
-
-	const handlePinch = (e) => {
-		// Update event in cache and get values
-		const [p1, p2] = pointerCache.set(e.pointerId, e).values();
-
-		// Calculate the distance between the two pointers
-		const dx = p1.clientX - p2.clientX;
-		const dy = p1.clientY - p2.clientY;
-		const curDiff = Math.hypot(dx, dy);
-
-		// Cache the original pinch center
-		pinchDetails = pinchDetails || {
-			clientX: (p1.clientX + p2.clientX) / 2, clientY: (p1.clientY + p2.clientY) / 2
-		};
-
-		// Scale image
-		changeZoom(((prevDiff || curDiff) - curDiff) / -35, pinchDetails);
-
-		// Cache the distance for the next move event
-		prevDiff = curDiff;
 	};
 
 	// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
@@ -371,7 +366,7 @@
 		// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
 		// after its items are made, and the choice of a srcset candidate needs the size the item fits in
 		queueMicrotask(() => props.loadImage(activeItem).then(() => {
-			naturalWidth = +activeItem.width || 0;
+			naturalWidth = activeItem.width || 0;
 			loaded = true;
 			props.preloadNext();
 		}));
@@ -379,10 +374,6 @@
 		setTimeout(() => {
 			showLoader = !loaded;
 		}, 250);
-	};
-
-	const addSrc = (node) => {
-		addAttributes(node, activeItem.attr);
 	};
 
 </script>
@@ -415,7 +406,7 @@
 	>
 		{#if loaded}
 			<img
-				use:addSrc
+				use:addAttributes={activeItem.attr}
 				sizes={activeItem.sizes || opts.sizes || `${Math.max(sizes, activeDimensions[0])}px`}
 				alt={activeItem.alt || ''}
 				on:load={(e) => e.target.decode().then(show, show)}

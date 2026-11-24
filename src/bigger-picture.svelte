@@ -6,7 +6,7 @@
 	import ImageItem from './components/image.svelte';
 	import Iframe from './components/iframe.svelte';
 	import Video from './components/video.svelte';
-	import { isGalleryKey } from './stores';
+	import { getUpperGallery, isGalleryKey } from './utils';
 
 	// Items in the gallery
 	export let items = undefined;
@@ -25,9 +25,6 @@
 	// Options passed via open method
 	let opts;
 
-	// Bool tracks open state
-	let isOpen;
-
 	// Dom element to restore focus to on close
 	let focusTrigger;
 
@@ -43,7 +40,7 @@
 	// Stores target on pointerdown (ref for overlay close)
 	let clickedEl;
 
-	// Slide of the active item
+	// Slide of the active item, none until the first one zooms in
 	let slide;
 
 	// Texts of the controls, merged with the labels option
@@ -68,7 +65,7 @@
 	const closing = writable(0);
 
 	// Update the active item and dimensions on position change
-	$: if (items && items[position]) {
+	$: if (items?.[position]) {
 		activeItem = items[position];
 		activeDimensions = calculateDimensions(activeItem);
 	}
@@ -81,8 +78,10 @@
 
 	// Receives options and opens gallery
 	export const open = (options) => {
-		if (isClosing) {
+		// A gallery that is open or closes closes first, the new one opens once it is removed
+		if (items) {
 			pendingOptions = options;
+			close();
 			return;
 		}
 
@@ -150,6 +149,13 @@
 
 	};
 
+	// URL of the history entry that the gallery adds
+	let historyUrl;
+
+	// The back button closes the gallery. A link to an anchor in an HTML item adds an entry with another URL, and the gallery
+	// stays open
+	const onPopstate = () => !history.state?.bp && location.href === historyUrl && close();
+
 	// Close the gallery
 	export const close = () => {
 		if (!items || isClosing) {
@@ -185,6 +191,10 @@
 
 	// Jump to a specific position
 	export const setPosition = (index) => {
+		// No items while closed, and the item stays during the outro
+		if (!items || isClosing) {
+			return;
+		}
 		const nextPosition = getNextPosition(index);
 		movement = index - position;
 		if (nextPosition !== position) {
@@ -203,11 +213,12 @@
 			shiftKey,
 			target
 		} = e;
-		if (!isGalleryKey(e, opts.focusWrap || container)) {
+		if (!isGalleryKey(e, opts, container)) {
 			return;
 		}
-		// The zoomed image pans with the arrows instead, and a text field in an HTML item moves its caret
-		const arrows = !$zoomed && !target.isContentEditable && !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+		// The zoomed image pans with the arrows instead, a text field in an HTML item moves its caret, and a focused video or
+		// audio item seeks
+		const arrows = !$zoomed && !target.isContentEditable && !/^(INPUT|TEXTAREA|SELECT|VIDEO|AUDIO)$/.test(target.tagName);
 		if (key === 'Escape') {
 			!opts.persistent && close();
 		} else if (key === 'ArrowRight' && arrows) {
@@ -221,8 +232,7 @@
 			// Allow browser to handle tab into video controls only
 			if (shiftKey || !activeElement.controls) {
 				e.preventDefault();
-				const { focusWrap = container } = opts;
-				const tabbable = [...focusWrap.querySelectorAll('*')].filter((node) => node.tabIndex >= 0);
+				const tabbable = [...(opts.focusWrap || container).querySelectorAll('*')].filter((node) => node.tabIndex >= 0);
 				let index = tabbable.indexOf(activeElement);
 				// From the container itself, Tab goes to the first control and Shift+Tab to the last
 				index = (index < 0 && shiftKey ? 0 : index) + tabbable.length;
@@ -250,6 +260,10 @@
 				item[key] = JSON.parse(item[key]);
 			}
 		});
+
+		// Data attributes pass the size as a string, also with a unit, such as "800px"
+		item.width = parseFloat(item.width) || undefined;
+		item.height = parseFloat(item.height) || undefined;
 
 		// A copy too, the gallery writes the image src, srcset and sizes into it
 		item.attr = { ...item.attr };
@@ -317,7 +331,7 @@
 	const parseLink = (link, item) => {
 
 		// Also matches the first candidate of a srcset, and a data URL of an image
-		let match = link.match(/^data:image\/|\.(?:jpe?g|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[\?#]\S*)?(?:\s|$)/i);
+		let match = link.match(/^data:image\/|\.(?:jpe?g|jfif|png|gif|bmp|webp|avif|svg|tiff|ico)(?:[?#]\S*)?(?:\s|$)/i);
 
 		if (match) {
 			item.type = 'image';
@@ -325,34 +339,32 @@
 		}
 
 		// HTML5 video and audio, the first group holds a video extension
-		match = link.match(/\.(?:(mp4|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
+		match = link.match(/\.(?:(mp4|m4v|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
 
 		if (match) {
 			const ext = (match[1] || match[2]).toLowerCase();
-			const mimeMap = {
-				ogv: 'ogg',
-				mov: 'quicktime',
-				avi: 'x-msvideo',
-				mp3: 'mpeg',
-				m4a: 'mp4',
-				oga: 'ogg',
-				opus: 'ogg',
-				mid: 'midi',
-				weba: 'webm'
-			};
 			item.type = match[1] ? 'video' : 'audio';
-			item.sources = [{ src: link, type: item.type + '/' + (mimeMap[ext] || ext) }];
+			// The MIME subtype, where it is not the extension
+			const subtype = { ogv: 'ogg', mov: 'quicktime', avi: 'x-msvideo', mp3: 'mpeg', m4a: 'mp4', m4v: 'mp4', oga: 'ogg', opus: 'ogg', mid: 'midi', weba: 'webm' }[ext];
+			item.sources = [{ src: link, type: item.type + '/' + (subtype || ext) }];
 			return item;
 		}
 
-		// YouTube Video
-		match = link.match(/(youtube\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|embed\/?)?(videoseries\?list=(?:.*)|[\w-]{11}|\?listType=(?:.*)&list=(?:.*))(?:.*)/i);
+		// YouTube Video, the host is matched from the start, so a link with youtube.com in its path or query is not one
+		match = link.match(/^https?:\/\/([\w-]+\.)*(?:youtube(-nocookie)?\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|live\/|embed\/?)?(videoseries\?list=.*|[\w-]{11}|\?listType=.*&list=.*)/i);
 
 		if (match) {
 
-			let videoID = encodeURIComponent(match[2]),
+			// The privacy-enhanced mode stays on the youtube-nocookie.com host
+			let videoID = encodeURIComponent(match[3]),
 				sourceURL = new URL(link),
-				targetURL = new URL('https://www.youtube.com/embed/' + videoID + '?autoplay=1&playsinline=1&controls=1&rel=0');
+				targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + videoID + '?autoplay=1&playsinline=1&controls=1&rel=0');
+
+			// Shorts are portrait, 9:16
+			if (!item.width && /\/shorts\//.test(link)) {
+				item.width = 1080;
+				item.height = 1920;
+			}
 
 			sourceURL.searchParams.delete('v');
 
@@ -374,12 +386,12 @@
 
 		}
 
-		// Vimeo Video
-		match = link.match(/^.+vimeo.com\/(?:\/)?(video\/)?([\d]+)((\/|\?h=)([a-z0-9]+))?(.*)?/);
+		// Vimeo Video, also in a channel or a group. The hash after the ID or in h is the one of a private video
+		match = link.match(/^https?:\/\/([\w-]+\.)*vimeo\.com\/(?:[^?#]*?\/)?(\d+)(?:(?:\/|\?h=)([\da-f]+))?/i);
 
 		if (match) {
 
-			let videoID = encodeURIComponent(match[2]),
+			let videoID = match[2],
 				sourceURL = new URL(link),
 				targetURL = new URL('https://player.vimeo.com/video/' + videoID + '?autoplay=1&playsinline=1');
 
@@ -387,13 +399,13 @@
 				targetURL.searchParams.set(key, value);
 			}
 
-			if (match[5]) {
-				targetURL.searchParams.set('h', match[5]);
+			if (match[3]) {
+				targetURL.searchParams.set('h', match[3]);
 			} else {
 				item.thumb = item.thumb || 'https://vumbnail.com/' + videoID + '.jpg';
 			}
 
-			if (sourceURL.hash && sourceURL.hash.startsWith('#t=')) {
+			if (sourceURL.hash.startsWith('#t=')) {
 				targetURL.hash = sourceURL.hash;
 			}
 
@@ -409,12 +421,8 @@
 
 		if (match) {
 
-			let targetURL = new URL('https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0');
-
-			targetURL.searchParams.set('url', link);
-
 			item.type = 'iframe';
-			item.link = targetURL.toString();
+			item.link = 'https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0&url=' + encodeURIComponent(link);
 
 			return item;
 
@@ -425,7 +433,7 @@
 
 		if (match) {
 
-			if (match[1] && match[2]) {
+			if (match[2]) {
 				// Google Drive
 				item.link = `https://drive.google.com/file/d/${match[2]}/preview`;
 			} else if (match[3]) {
@@ -463,21 +471,14 @@
 		item.thumb = false;
 
 		if (thumbElement) {
-			item.thumb = thumbElement;
-			item.source = item.thumb;
+			item.thumb = item.source = thumbElement;
 			item.alt = item.alt || thumbElement.alt;
+			item.fit = item.fit || getComputedStyle(thumbElement).objectFit;
 			setDimensions(item, thumbElement);
-
-			if (!item.fit) {
-				item.fit = window.getComputedStyle(thumbElement).objectFit;
-			}
 		} else if (thumbLink) {
-			thumbElement = new Image();
+			item.thumb = thumbElement = new Image();
 			thumbElement.src = thumbLink;
-			thumbElement.onload = () => {
-				setDimensions(item, thumbElement);
-			};
-			item.thumb = thumbElement;
+			thumbElement.onload = () => setDimensions(item, thumbElement);
 		} else if (item.type === 'image' && opts.thumbs && element?.href) {
 			// A link without a thumbnail shows the full image in the strip, loaded lazily
 			item.thumb = { src: element.href };
@@ -493,13 +494,9 @@
 		// A thumbnail that is not loaded yet, such as a lazy one, has no size
 		if ((!item.width || !item.height) && thumb.naturalWidth) {
 
-			let dimensions = calculateDimensions({
-				width: thumb.naturalWidth,
-				height: thumb.naturalHeight
-			});
+			const dimensions = calculateDimensions({ width: thumb.naturalWidth, height: thumb.naturalHeight });
 
-			item.width = dimensions[0];
-			item.height = dimensions[1];
+			[item.width, item.height] = dimensions;
 			item.scaled = 1;
 
 			// The thumbnails of the other items load too, only the shown item changes the size on the screen
@@ -513,24 +510,12 @@
 
 	const readGap = () => (gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0);
 
-	// Fit the active item to a new stage size
-	const resize = (width, height) => {
-		if (width !== containerWidth || height !== containerHeight) {
-			containerWidth = width;
-			containerHeight = height;
-			// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
-			$zoomed || readGap();
-			activeDimensions = calculateDimensions(activeItem);
-		}
-	};
-
 	// Calculate width and height to fit inside a container
 	const calculateDimensions = ({
 		width = 1920,
 		height = 1080
 	}) => {
-		const { scale = 1 } = opts;
-		const ratio = Math.min(((containerWidth - 2 * gap) / width) * scale, ((containerHeight - 2 * gap) / height) * scale);
+		const ratio = (opts.scale ?? 1) * Math.min((containerWidth - 2 * gap) / width, (containerHeight - 2 * gap) / height);
 		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	};
@@ -611,18 +596,12 @@
 			return animate(node, className, `translateY(${className ? -10 : 10}px)`);
 		}
 
-		let dimensions;
-
 		// The slide is centered in the stage, not in the screen. Its size is known: the gallery measures it on mount, and the
 		// ruler observer keeps it
 		const stage = ruler.getBoundingClientRect();
 
-		if (activeItem.type === 'html') {
-			const bpItem = node.querySelector('.bp-html').firstElementChild;
-			dimensions = [bpItem.clientWidth, bpItem.clientHeight];
-		} else {
-			dimensions = activeDimensions;
-		}
+		const content = activeItem.type === 'html' && node.querySelector('.bp-html').firstElementChild;
+		const dimensions = content ? [content.clientWidth, content.clientHeight] : activeDimensions;
 
 		// Rect is the content box of the trigger element, the image is drawn inside its padding and border
 		const source = activeItem.source || focusTrigger;
@@ -635,8 +614,6 @@
 			width: bounds.width - edge('Left') - edge('Right'),
 			height: bounds.height - edge('Top') - edge('Bottom')
 		};
-		const leftOffset = rect.left - stage.left - (containerWidth - rect.width) / 2;
-		const centerTop = rect.top - stage.top - (containerHeight - rect.height) / 2;
 		let scaleWidth = rect.width / dimensions[0];
 		let scaleHeight = rect.height / dimensions[1];
 		let css = '--bp-opacity:1';
@@ -654,20 +631,21 @@
 			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 		}
 
-		animate(node, className, `translate(${leftOffset}px,${centerTop}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
+		// From the center of the stage to the center of the thumbnail
+		const x = rect.left - stage.left - (containerWidth - rect.width) / 2;
+		const y = rect.top - stage.top - (containerHeight - rect.height) / 2;
+		animate(node, className, `translate(${x}px,${y}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
 	};
 
 	// Animate the slides, the first one zooms in, the next ones slide in and out
 	const slideActions = (node) => {
-		slide = node;
-
-		if (isOpen) {
+		if (slide) {
 			animate(node, 'bp-nav', `translate(${movement > 0 ? 20 : -20}px)`);
 		} else {
-			isOpen = true;
 			// Deferred so the item is measured after the container action has shown the dialog and called onOpen
 			queueMicrotask(() => zoom(node, ''));
 		}
+		slide = node;
 
 		return {
 			destroy() {
@@ -687,6 +665,7 @@
 		calculateDimensions,
 		closing,
 		preloadNext,
+		setDimensions,
 		activeItem,
 		loadImage,
 		container,
@@ -742,8 +721,9 @@
 			// The back button closes the gallery instead of leaving the page
 			// Not when closed in the same tick as opened, the close has already passed its history.back()
 			if (opts.history && !isClosing) {
+				historyUrl = location.href;
 				history.pushState({ bp: 1 }, '');
-				window.addEventListener('popstate', close);
+				window.addEventListener('popstate', onPopstate);
 			}
 		}
 
@@ -754,13 +734,15 @@
 					node.close();
 				}
 				window.removeEventListener('keydown', onKeydown, true);
-				window.removeEventListener('popstate', close);
+				window.removeEventListener('popstate', onPopstate);
 				closing.set(false);
-				isOpen = false;
+				slide = null;
 				isClosing = false;
-				// Remove class hiding scroll
-				html.classList.remove('bp-lock');
-				html.style.paddingRight = '';
+				// The page stays locked while another gallery is open, the node of this one is removed already
+				if (!getUpperGallery()) {
+					html.classList.remove('bp-lock');
+					html.style.paddingRight = '';
+				}
 				opts.onClosed?.(container, activeItem);
 				if (pendingOptions) {
 					open(pendingOptions);
@@ -779,11 +761,16 @@
 
 		const rulerObserver = new ResizeObserver((entries) => {
 
-			const rect = entries[0].contentRect;
+			// Fit the active item to the new stage size
+			const { width, height } = entries[0].contentRect;
+			if (width !== containerWidth || height !== containerHeight) {
+				containerWidth = width;
+				containerHeight = height;
+				// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
+				$zoomed || readGap();
+				activeDimensions = calculateDimensions(activeItem);
+			}
 
-			resize(rect.width, rect.height);
-
-			// Run the user-defined resize function
 			opts.onResize?.(container, activeItem);
 
 		});

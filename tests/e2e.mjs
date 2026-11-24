@@ -664,6 +664,49 @@ const groups = [
 			check('an open call during the close opens the gallery once the close ends', value.count === '4 / 7' && value.wraps === 1 && value.lock, show(value));
 		}
 
+		// next, prev and setPosition do nothing with no gallery, and during the close
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				const errors = [];
+				for (const call of ['next', 'prev', 'setPosition']) {
+					try {
+						window.bp[call](2);
+					} catch (error) {
+						errors.push(error.message);
+					}
+				}
+				await t.open();
+				window.bp.close();
+				await t.wait(80);
+				window.bp.next();
+				const during = t.count();
+				await t.idle();
+				return { errors, during, log: t.log };
+			});
+			check('next, prev and setPosition with no gallery open do nothing', !value.errors.length, show(value.errors));
+			check('next during the close does not change the item', value.during === '1 / 7' && !value.log.some((name) => name.startsWith('update')), show(value));
+		}
+
+		// An open call while the gallery is open closes it, and then opens the new items. The focus goes back to the first trigger.
+		{
+			const value = await page.evaluate(async () => {
+				t.$$('#root a')[1].focus();
+				await t.open({ history: true });
+				window.bp.open({ items: [{ html: '<p id="other">other</p>' }, { html: '<p>two</p>' }], ...t.options, history: false });
+				await t.wait(700);
+				await t.idle();
+				const open = { count: t.count(), other: !!t.$('#other'), wraps: t.$$('.bp-wrap').length, state: !!history.state?.bp, log: t.log.join() };
+				window.bp.close();
+				await t.wait(700);
+				await t.idle();
+				return { open, focus: document.activeElement === t.$$('#root a')[1], lock: document.documentElement.classList.contains('bp-lock') };
+			});
+			check('an open call while open closes the gallery, and then opens the new items', value.open.count === '1 / 2' && value.open.other && value.open.wraps === 1 && value.open.log === 'open:0,close:0,closed:0,open:0', show(value.open));
+			check('an open call while open removes the history entry of the first gallery', !value.open.state, show(value.open));
+			check('an open call while open: the close gives the focus back to the first trigger', value.focus && !value.lock, show(value));
+		}
+
 		// No valid items: no gallery and no lock
 		{
 			const value = await page.evaluate(async () => {
@@ -1070,6 +1113,40 @@ const groups = [
 			check('history: the close button removes the history entry', !closed.state?.bp && !closed.wrap, show(closed));
 		}
 
+		// history: a link to an anchor in an HTML item adds an entry and leaves the gallery open. The back button still closes it.
+		{
+			await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '<a id="anchor" href="#part">part</a>' }, { html: '<p>two</p>' }], history: true, ...t.options });
+				await t.idle();
+			});
+			await page.click('#anchor');
+			await idle();
+			const anchor = await page.evaluate(() => !!t.$('.bp-wrap'));
+			await page.goBack();
+			await idle();
+			const first = await page.evaluate(() => !!t.$('.bp-wrap'));
+			await page.goBack();
+			await idle();
+			const second = await page.evaluate(() => ({ wrap: !!t.$('.bp-wrap'), url: location.href }));
+			check('history: a link to an anchor in an HTML item leaves the gallery open', anchor && first, show({ anchor, first }));
+			check('history: after an anchor, the back button closes the gallery', !second.wrap && second.url === base, show(second));
+		}
+
+		// A long caption scrolls with the wheel, and the item stays
+		{
+			await page.evaluate(async () => {
+				await t.grid([{ w: 1500, h: 1000, caption: Array.from({ length: 40 }, (value, index) => 'Line ' + index).join('<br>') }, { w: 1500, h: 1000 }]);
+				await t.open();
+			});
+			const box = await page.evaluate(() => t.center('.bp-caption'));
+			await page.mouse.move(box.x, box.y);
+			await page.mouse.wheel({ deltaY: 100 });
+			await wait(100);
+			const value = await page.evaluate(() => ({ top: t.$('.bp-caption').scrollTop, inside: t.$('.bp-caption').getBoundingClientRect().bottom <= innerHeight, count: t.count(), zoomed: !!t.$('.bp-zoomed') }));
+			check('a long caption scrolls with the wheel, and the item stays', value.top > 0 && value.inside && value.count === '1 / 2' && !value.zoomed, show(value));
+		}
+
 		// The controls: labels, the download link, the caption, and buttons in a form
 		{
 			await page.evaluate(() => t.grid([{ w: 3000, h: 2000, caption: 'A <b>caption</b>', data: { link: '/img/dl/1000x667.png 1000w, /img/dl/3000x2000.png 3000w' } }, { w: 1500, h: 1000, data: { download: 'false' } }]));
@@ -1219,6 +1296,22 @@ const groups = [
 		const start = await strip();
 		check('thumbs: the strip scrolls to show the active thumbnail at the end', end.active === 29 && end.shown && end.translate < 0, show(end));
 		check('thumbs: the strip scrolls back to the start', start.active === 0 && start.shown && start.translate === 0, show(start));
+
+		// A right-to-left page: the strip still scrolls to the active thumbnail, and the counter stays at the left, out of the actions
+		await page.evaluate(() => (document.documentElement.dir = 'rtl'));
+		await page.evaluate(() => window.bp.setPosition(29));
+		await wait(50);
+		await idle();
+		const rtl = await strip(),
+			counter = await page.evaluate(() => t.$('.bp-count').getBoundingClientRect().left);
+		await page.evaluate(() => {
+			document.documentElement.dir = '';
+			window.bp.setPosition(0);
+		});
+		await wait(50);
+		await idle();
+		check('thumbs: on a right-to-left page, the strip scrolls to the active thumbnail', rtl.active === 29 && rtl.shown, show(rtl));
+		check('on a right-to-left page, the counter stays at the left', counter === 0, counter);
 
 		// A drag of the strip moves it and does not click a thumbnail
 		{
@@ -1391,7 +1484,7 @@ const groups = [
 		}
 	}, { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
 
-	['content', async ({ page, check }) => {
+	['content', async ({ page, check, idle }) => {
 		// Other sites get an empty page, so that the checks need no network
 		await page.setRequestInterception(true);
 		page.on('request', (request) => (request.url().startsWith(base) || request.url().startsWith('data:') ? request.continue() : request.respond({ status: 200, contentType: 'text/html', body: '' })));
@@ -1409,7 +1502,14 @@ const groups = [
 				{ sources: [{ src: '/tone.wav', type: 'audio/wav' }], width: 800, height: 450 },
 				{ link: '/img/c/404.png?status=404' },
 				{ link: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" fill="red"/></svg>') },
-				{ link: '/file.txt' }
+				{ link: '/file.txt' },
+				{ link: 'https://www.youtube-nocookie.com/embed/abcdefghijk' },
+				{ link: 'https://vimeo.com/channels/staffpicks/123456' },
+				{ link: 'https://www.youtube.com/shorts/abcdefghijk' },
+				{ link: '/img/c/photo.jfif' },
+				{ link: '/frame.html', type: 'iframe', width: '400px', height: '300px' },
+				{ sources: [{ src: '/tone.wav' }] },
+				{ link: 'https://example.com/page?u=youtube.com/watch?v=abcdefghijk' }
 			];
 			const copy = JSON.stringify(items);
 			window.bp.open({ items, ...t.options });
@@ -1422,7 +1522,19 @@ const groups = [
 				const slide = t.slide();
 				read[index] = { type: window.bp.items[index].type, iframe: t.$('iframe', slide)?.src, img: t.$('.bp-img img', slide)?.currentSrc, audio: !!t.$('audio source', slide), loader: t.$('.bp-load', slide)?.className ?? null, html: !!t.$('#field', slide) };
 			}
-			return { read, count: window.bp.items.length, errors, same: JSON.stringify(items) === copy };
+			const links = window.bp.items.slice(9).map((item) => item.type + ' ' + item.link),
+				sizes = window.bp.items.slice(9).map((item) => item.width + 'x' + item.height);
+			// A video with no size takes the size of the file once its metadata loads
+			window.bp.setPosition(14);
+			await t.idle();
+			const video = t.$('video', t.slide());
+			Object.defineProperties(video, { videoWidth: { value: 270 }, videoHeight: { value: 480 } });
+			video.dispatchEvent(new Event('loadedmetadata'));
+			await t.idle();
+			const box = t.$('.bp-video', t.slide()).getBoundingClientRect();
+			window.bp.setPosition(0);
+			await t.idle();
+			return { read, count: window.bp.items.length, errors, same: JSON.stringify(items) === copy, links, sizes, ratio: box.width / box.height };
 		});
 		const read = value.read;
 		check('YouTube: the embed URL with the start time in seconds', read[0].iframe === 'https://www.youtube.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0&start=3723', read[0].iframe);
@@ -1432,7 +1544,13 @@ const groups = [
 		check('HTML, iframe and audio items show their content', read[4].html && read[5].iframe === base + 'frame.html' && read[6].audio, show([read[4], read[5], read[6]]));
 		check('the loader of an iframe and an audio item fades out once they load', /bp-loaded/.test(read[5].loader ?? 'bp-loaded') && /bp-loaded/.test(read[6].loader ?? 'bp-loaded'), show([read[5].loader, read[6].loader]));
 		check('a data URL of an image is an image item', read[8].type === 'image' && read[8].img?.startsWith('data:image/svg'), show(read[8]));
-		check('a link with no known type is left out, and the item objects stay as they are', value.count === 9 && value.same, show(value));
+		check('a link with no known type is left out, and the item objects stay as they are', value.count === 15 && value.same, show(value));
+		check('youtube-nocookie: the embed stays on its host', value.links[0] === 'iframe https://www.youtube-nocookie.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0', value.links[0]);
+		check('Vimeo: a link in a channel gives the player URL', value.links[1] === 'iframe https://player.vimeo.com/video/123456?autoplay=1&playsinline=1', value.links[1]);
+		check('YouTube Shorts are portrait', value.sizes[2] === '1080x1920', value.sizes[2]);
+		check('a .jfif link is an image', value.links[3] === 'image /img/c/photo.jfif', value.links[3]);
+		check('a size with a unit, such as "400px", is a number', value.sizes[4] === '400x300', value.sizes[4]);
+		check('a video with no size takes the size of the file', Math.abs(value.ratio - 270 / 480) < 0.01, value.ratio);
 		check('onError gets the item of an image that does not load', show(value.errors) === '[7]', show(value.errors));
 
 		// A text field of an HTML item keeps the arrow keys
@@ -1444,7 +1562,20 @@ const groups = [
 			});
 			await page.keyboard.press('ArrowLeft');
 			const count = await page.evaluate(() => t.count());
-			check('an arrow key in a text field of an HTML item moves the caret, not the gallery', count === '5 / 9', count);
+			check('an arrow key in a text field of an HTML item moves the caret, not the gallery', count === '5 / 15', count);
+		}
+
+		// A focused audio or video item keeps the arrow keys, the player seeks
+		{
+			await page.evaluate(async () => {
+				window.bp.setPosition(6);
+				await t.idle();
+				t.$('audio', t.slide()).focus();
+			});
+			await page.keyboard.press('ArrowRight');
+			await idle();
+			const count = await page.evaluate(() => t.count());
+			check('an arrow key on a focused audio item seeks, and does not change the item', count === '7 / 15', count);
 		}
 
 		// The types option
@@ -1547,6 +1678,31 @@ const groups = [
 				return counts;
 			});
 			check('two galleries: a key in the upper gallery moves only that one', value[0] === '1 / 2' && value[1] === '2 / 2', show(value));
+		}
+
+		// Two galleries: a key with no focused node goes to the upper one, and the page stays locked until both close
+		{
+			const value = await page.evaluate(async () => {
+				document.body.style.minHeight = '3000px';
+				await t.open();
+				const under = window.bp,
+					over = BiggerPicture();
+				over.open({ items: t.$$('#root a') });
+				await t.idle();
+				document.activeElement.blur();
+				document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+				await t.idle();
+				const counts = t.$$('.bp-count').map((node) => node.textContent.trim().split(' ')[0]);
+				over.close();
+				await t.wait(700);
+				await t.idle();
+				const lock = document.documentElement.classList.contains('bp-lock');
+				under.$destroy();
+				document.body.style.minHeight = '';
+				return { counts, lock, after: document.documentElement.classList.contains('bp-lock') };
+			});
+			check('two galleries: a key with no focused node moves only the upper one', show(value.counts) === show(['1', '2']), show(value.counts));
+			check('two galleries: the page stays locked until the last one closes', value.lock && !value.after, show(value));
 		}
 	}],
 

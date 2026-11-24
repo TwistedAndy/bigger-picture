@@ -77,9 +77,9 @@ interface options {
 
 interface item {
 	[key: string]: any
-	/** Largest possible width of media item in pixels. Not required for HTML, which can be sized via CSS. */
+	/** Largest possible width of media item in pixels, such as `800` or `'800px'`. Not required for HTML, which can be sized via CSS. A video with no size takes the size of its file. */
 	width?: string | number
-	/** Largest possible height of media item in pixels. Not required for HTML, which can be sized via CSS. */
+	/** Largest possible height of media item in pixels, such as `600` or `'600px'`. Not required for HTML, which can be sized via CSS. */
 	height?: string | number
 	/** The URL to show, `href` by default for elements. Images (also a `srcset` value), video, audio, PDF, YouTube, Vimeo, SoundCloud, Google Drive and Dropbox links are detected. Links of other types are skipped unless `type` is set. */
 	link?: string
@@ -139,7 +139,7 @@ export interface activeItem extends Omit<item, 'type'> {
 }
 
 export interface BiggerPictureInstance {
-	/** Opens the instance. */
+	/** Opens the gallery. An open gallery closes first. */
 	open: (options: options) => void
 	/** Closes the lightbox. */
 	close: () => void
@@ -147,7 +147,7 @@ export interface BiggerPictureInstance {
 	next: () => void
 	/** Changes to previous item in gallery. */
 	prev: () => void
-	/** Changes to `position` item in gallery (zero-indexed). */
+	/** Changes to `position` item in gallery (zero-indexed). `next`, `prev` and `setPosition` do nothing while the gallery is closed or closes. */
 	setPosition: (position: number) => void
 	/** Array of all items in currently active gallery */
 	items: item[]
