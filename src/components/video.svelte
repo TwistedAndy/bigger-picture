@@ -38,7 +38,11 @@
 				let el = document.createElement(tag);
 				addAttributes(el, item);
 				if (tag === 'source') {
-					el.onerror = (error) => opts.onError?.(props.container, activeItem, error);
+					el.onerror = (error) => {
+						// The loader goes when the last source fails too, the browser tries them in order
+						loaded ||= item === list.at(-1);
+						opts.onError?.(props.container, activeItem, error);
+					};
 				}
 				mediaElement.append(el);
 			}

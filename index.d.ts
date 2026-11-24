@@ -118,7 +118,7 @@ interface item {
 	tracks?: string | object[]
 	/** To control the default open / close animation, add a property `element` to each item that contains a node on the page. The active item's `element` will be where the animation opens from / closes to. If you're not using the default scale animation, this is not needed. */
 	element?: HTMLElement | EventTarget
-	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. Items may share one object. */
+	/** Object of attributes to add to the `<img>`, `<iframe>`, `<video>`, `<audio>` elements. Items may share one object. The value `false` removes an attribute, such as `autoplay`. */
 	attr?: Record<string, string | boolean> | object
 	/** The URL of the download link, or `false` to hide it. `true` shows the link for this item even without the `download` option. Attribute name is `data-download`. */
 	download?: string | boolean

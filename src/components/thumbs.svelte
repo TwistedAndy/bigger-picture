@@ -24,17 +24,22 @@
 		if (!activeBtn) {
 			return;
 		}
-		// The button shows in full, 3px from the edge
+		// The button shows in full, 3px from the edge. The panel is not at the left of the screen in an inline gallery
+		const offset = thumbsPanel.getBoundingClientRect().left;
 		let { left, right, width } = activeBtn.getBoundingClientRect();
-		if (right > thumbsPanelWidth) {
+		if (right - offset > thumbsPanelWidth) {
 			thumbsTranslate = boundTranslate(thumbsPanelWidth - activeBtn.offsetLeft - width - 3);
-		} else if (left < 0) {
+		} else if (left < offset) {
 			thumbsTranslate = boundTranslate(3 - activeBtn.offsetLeft);
 		}
 
 		initialTranslate = thumbsTranslate;
 
 	};
+
+	// The text of a caption, which can be HTML, for the title and the label. A parsed document runs no scripts and loads no
+	// images
+	const text = (html) => html && new DOMParser().parseFromString(html, 'text/html').body.textContent;
 
 	const boundTranslate = (int) => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
@@ -96,6 +101,8 @@
 						thumbsPanelWidth = contentRect.width;
 					}
 				}
+				// A wider panel can show more of the strip, or all of it
+				thumbsTranslate = initialTranslate = boundTranslate(thumbsTranslate);
 			});
 
 		resizeObserver.observe(node);
@@ -128,10 +135,11 @@
 	>
 		<div class="bp-thumbs-inner">
 			{#each items as item}
+				{@const caption = text(item.caption)}
 				<button
 					type="button"
-					title={item.caption}
-					aria-label={item.alt || item.caption || `${label} ${item.i + 1}`}
+					title={caption}
+					aria-label={item.alt || caption || `${label} ${item.i + 1}`}
 					data-type={item.thumb ? null : item.type}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}

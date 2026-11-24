@@ -1,5 +1,6 @@
-// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url()
-export const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${activeItem.thumb.src}")` : null;
+// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url(). Escaped, a quote in a data URL, such
+// as of an SVG, doesn't end the string
+export const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${CSS.escape(activeItem.thumb.src)}")` : null;
 
 // The upper modal gallery, the last one on the page
 export const getUpperGallery = () => [...document.querySelectorAll('.bp-wrap:not(.bp-inline)')].pop();
@@ -10,9 +11,12 @@ export const getUpperGallery = () => [...document.querySelectorAll('.bp-wrap:not
 export const isGalleryKey = ({ target, altKey, ctrlKey, metaKey }, { focusWrap }, container) => !altKey && !ctrlKey && !metaKey
 	&& (target.nodeType != 1 || target === document.body ? getUpperGallery() === container : (focusWrap || container).contains(target));
 
-// Adds the attributes of the item to the media element, the item has an attr object always
+// Adds the attributes of the item to the media element, the item has an attr object always. False removes an attribute,
+// such as a default one: a boolean attribute is on with any value, also "false". Not === false, the booleans_as_integers
+// option of terser compiles it to == 0, which is also true for "0" and ""
 export const addAttributes = (node, attributes) => {
 	for (const key in attributes) {
-		node.setAttribute(key, attributes[key]);
+		const value = attributes[key];
+		!value && typeof value == 'boolean' ? node.removeAttribute(key) : node.setAttribute(key, value);
 	}
 };

@@ -766,11 +766,13 @@ function writable(value, start = noop) {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[21] = list[i];
+	child_ctx[22] = list[i];
+	const constants_0 = /*text*/ child_ctx[8](/*item*/ child_ctx[22].caption);
+	child_ctx[23] = constants_0;
 	return child_ctx;
 }
 
-// (125:31) {#each items as item}
+// (132:31) {#each items as item}
 function create_each_block(ctx) {
 	let button;
 	let img;
@@ -782,21 +784,21 @@ function create_each_block(ctx) {
 	let dispose;
 
 	function click_handler() {
-		return /*click_handler*/ ctx[13](/*item*/ ctx[21]);
+		return /*click_handler*/ ctx[14](/*item*/ ctx[22]);
 	}
 
 	return {
 		c() {
 			button = element("button");
 			img = element("img");
-			if (!src_url_equal(img.src, img_src_value = /*item*/ ctx[21].thumb?.src)) attr(img, "src", img_src_value);
+			if (!src_url_equal(img.src, img_src_value = /*item*/ ctx[22].thumb?.src)) attr(img, "src", img_src_value);
 			attr(img, "alt", "");
 			attr(img, "loading", "lazy");
 			attr(button, "type", "button");
-			attr(button, "title", button_title_value = /*item*/ ctx[21].caption);
-			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`);
-			attr(button, "data-type", button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type);
-			toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
+			attr(button, "title", button_title_value = /*caption*/ ctx[23]);
+			attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[22].alt || /*caption*/ ctx[23] || `${/*label*/ ctx[3]} ${/*item*/ ctx[22].i + 1}`);
+			attr(button, "data-type", button_data_type_value = /*item*/ ctx[22].thumb ? null : /*item*/ ctx[22].type);
+			toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
 		},
 		m(target, anchor) {
 			insert(target, button, anchor);
@@ -804,7 +806,7 @@ function create_each_block(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(button, "focus", /*focus_handler*/ ctx[12]),
+					listen(button, "focus", /*focus_handler*/ ctx[13]),
 					listen(button, "click", click_handler)
 				];
 
@@ -814,24 +816,24 @@ function create_each_block(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*items*/ 1 && !src_url_equal(img.src, img_src_value = /*item*/ ctx[21].thumb?.src)) {
+			if (dirty & /*items*/ 1 && !src_url_equal(img.src, img_src_value = /*item*/ ctx[22].thumb?.src)) {
 				attr(img, "src", img_src_value);
 			}
 
-			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*item*/ ctx[21].caption)) {
+			if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*caption*/ ctx[23])) {
 				attr(button, "title", button_title_value);
 			}
 
-			if (dirty & /*items, label*/ 9 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`)) {
+			if (dirty & /*items, label*/ 9 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[22].alt || /*caption*/ ctx[23] || `${/*label*/ ctx[3]} ${/*item*/ ctx[22].i + 1}`)) {
 				attr(button, "aria-label", button_aria_label_value);
 			}
 
-			if (dirty & /*items*/ 1 && button_data_type_value !== (button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type)) {
+			if (dirty & /*items*/ 1 && button_data_type_value !== (button_data_type_value = /*item*/ ctx[22].thumb ? null : /*item*/ ctx[22].type)) {
 				attr(button, "data-type", button_data_type_value);
 			}
 
 			if (dirty & /*items, position*/ 3) {
-				toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
+				toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
 			}
 		},
 		d(detaching) {
@@ -890,18 +892,18 @@ function create_fragment$5(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(div1, "pointerdown", /*pointerDown*/ ctx[8]),
-					action_destroyer(/*thumbsActions*/ ctx[11].call(null, div2)),
-					listen(div2, "pointermove", /*pointerMove*/ ctx[9]),
-					listen(div2, "pointerup", /*pointerUp*/ ctx[10]),
-					listen(div2, "pointercancel", /*pointerUp*/ ctx[10])
+					listen(div1, "pointerdown", /*pointerDown*/ ctx[9]),
+					action_destroyer(/*thumbsActions*/ ctx[12].call(null, div2)),
+					listen(div2, "pointermove", /*pointerMove*/ ctx[10]),
+					listen(div2, "pointerup", /*pointerUp*/ ctx[11]),
+					listen(div2, "pointercancel", /*pointerUp*/ ctx[11])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*items, label, position, scrollToButton, hasDragged, setPosition*/ 207) {
+			if (dirty & /*text, items, label, position, scrollToButton, hasDragged, setPosition*/ 463) {
 				each_value = ensure_array_like(/*items*/ ctx[0]);
 				let i;
 
@@ -969,17 +971,23 @@ function instance$5($$self, $$props, $$invalidate) {
 			return;
 		}
 
-		// The button shows in full, 3px from the edge
+		// The button shows in full, 3px from the edge. The panel is not at the left of the screen in an inline gallery
+		const offset = thumbsPanel.getBoundingClientRect().left;
+
 		let { left, right, width } = activeBtn.getBoundingClientRect();
 
-		if (right > thumbsPanelWidth) {
+		if (right - offset > thumbsPanelWidth) {
 			$$invalidate(4, thumbsTranslate = boundTranslate(thumbsPanelWidth - activeBtn.offsetLeft - width - 3));
-		} else if (left < 0) {
+		} else if (left < offset) {
 			$$invalidate(4, thumbsTranslate = boundTranslate(3 - activeBtn.offsetLeft));
 		}
 
 		initialTranslate = thumbsTranslate;
 	};
+
+	// The text of a caption, which can be HTML, for the title and the label. A parsed document runs no scripts and loads no
+	// images
+	const text = html => html && new DOMParser().parseFromString(html, 'text/html').body.textContent;
 
 	const boundTranslate = int => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
@@ -1045,6 +1053,9 @@ function instance$5($$self, $$props, $$invalidate) {
 							thumbsPanelWidth = contentRect.width;
 						}
 					}
+
+					// A wider panel can show more of the strip, or all of it
+					$$invalidate(4, thumbsTranslate = initialTranslate = boundTranslate(thumbsTranslate));
 				});
 
 		resizeObserver.observe(node);
@@ -1083,6 +1094,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		isPointerDown,
 		hasDragged,
 		scrollToButton,
+		text,
 		pointerDown,
 		pointerMove,
 		pointerUp,
@@ -1105,8 +1117,9 @@ class Thumbs extends SvelteComponent {
 	}
 }
 
-// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url()
-const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${activeItem.thumb.src}")` : null;
+// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url(). Escaped, a quote in a data URL, such
+// as of an SVG, doesn't end the string
+const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${CSS.escape(activeItem.thumb.src)}")` : null;
 
 // The upper modal gallery, the last one on the page
 const getUpperGallery = () => [...document.querySelectorAll('.bp-wrap:not(.bp-inline)')].pop();
@@ -1117,10 +1130,13 @@ const getUpperGallery = () => [...document.querySelectorAll('.bp-wrap:not(.bp-in
 const isGalleryKey = ({ target, altKey, ctrlKey, metaKey }, { focusWrap }, container) => !altKey && !ctrlKey && !metaKey
 	&& (target.nodeType != 1 || target === document.body ? getUpperGallery() === container : (focusWrap || container).contains(target));
 
-// Adds the attributes of the item to the media element, the item has an attr object always
+// Adds the attributes of the item to the media element, the item has an attr object always. False removes an attribute,
+// such as a default one: a boolean attribute is on with any value, also "false". Not === false, the booleans_as_integers
+// option of terser compiles it to == 0, which is also true for "0" and ""
 const addAttributes = (node, attributes) => {
 	for (const key in attributes) {
-		node.setAttribute(key, attributes[key]);
+		const value = attributes[key];
+		!value && typeof value == 'boolean' ? node.removeAttribute(key) : node.setAttribute(key, value);
 	}
 };
 
@@ -2208,7 +2224,12 @@ function instance$1($$self, $$props, $$invalidate) {
 				addAttributes(el, item);
 
 				if (tag === 'source') {
-					el.onerror = error => opts.onError?.(props.container, activeItem, error);
+					el.onerror = error => {
+						// The loader goes when the last source fails too, the browser tries them in order
+						$$invalidate(1, loaded ||= item === list.at(-1));
+
+						opts.onError?.(props.container, activeItem, error);
+					};
 				}
 
 				mediaElement.append(el);
@@ -2306,7 +2327,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (794:2) {#if !dialog}
+// (848:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2326,7 +2347,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (805:125) {#if containerWidth > 0 && containerHeight > 0}
+// (859:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2401,7 +2422,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (805:483) {:else}
+// (859:483) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2427,7 +2448,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (805:430) 
+// (859:430) 
 function create_if_block_8(ctx) {
 	let iframe_1;
 	let current;
@@ -2467,7 +2488,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (805:339) 
+// (859:339) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2507,7 +2528,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (805:172) {#if activeItem.type === 'image'}
+// (859:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2553,7 +2574,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (794:94) {#key activeItem.i}
+// (848:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -2635,7 +2656,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (805:625) {#if activeItem.caption}
+// (859:625) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2659,7 +2680,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (805:765) {#if activeItem.download}
+// (859:765) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2698,7 +2719,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (805:1214) {#if items.length > 1}
+// (859:1214) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2761,7 +2782,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (815:25) {#if opts.thumbs && items.length > 1}
+// (869:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2805,7 +2826,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (785:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (839:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3073,6 +3094,8 @@ function create_fragment(ctx) {
 	};
 }
 
+let pagePadding = null;
+
 function instance($$self, $$props, $$invalidate) {
 	let $zoomed;
 	let $closing;
@@ -3200,6 +3223,11 @@ function instance($$self, $$props, $$invalidate) {
 			list.push(item);
 		});
 
+		// The entry that the last gallery kept for this one, see close. Not for a gallery with no items, inline or no history
+		if (!list.length || inline || !opts.history) {
+			dropEntry();
+		}
+
 		// Nothing to show, e.g. every item was filtered out
 		if (!list.length) {
 			return;
@@ -3218,6 +3246,7 @@ function instance($$self, $$props, $$invalidate) {
 			// Padding takes the place of the hidden scrollbar, toggling scrollbar-gutter instead restyles the whole page,
 			// a stable gutter keeps the space, though clientWidth changes with it
 			if (scrollbar && style.scrollbarGutter === 'auto') {
+				pagePadding = html.style.paddingRight;
 				html.style.paddingRight = parseFloat(style.paddingRight) + scrollbar + 'px';
 			}
 		}
@@ -3225,12 +3254,27 @@ function instance($$self, $$props, $$invalidate) {
 		$$invalidate(0, items = list);
 	};
 
-	// URL of the history entry that the gallery adds
-	let historyUrl;
+	// URL and ID of the history entry that the gallery adds. Each gallery has its own ID, so the back button closes only the
+	// upper one of two
+	let historyUrl, historyId = 0;
 
 	// The back button closes the gallery. A link to an anchor in an HTML item adds an entry with another URL, and the gallery
 	// stays open
-	const onPopstate = () => !history.state?.bp && location.href === historyUrl && close();
+	const onPopstate = () => {
+		if (history.state?.bp !== historyId && location.href === historyUrl) {
+			// The entry is left, the next gallery of an open call made while closing adds its own
+			historyId = 0;
+
+			close();
+		}
+	};
+
+	// Drop the history entry that the gallery added. Not when it is left already, such as for an anchor in an HTML item, or
+	// an entry of another gallery is the current one
+	const dropEntry = () => {
+		history.state?.bp === historyId && history.back();
+		historyId = 0;
+	};
 
 	const close = () => {
 		if (!items || $closing) {
@@ -3241,19 +3285,17 @@ function instance($$self, $$props, $$invalidate) {
 		opts.onClose?.(container, activeItem);
 		window.removeEventListener('keydown', onKeydown, true);
 
-		// Closed without the back button, drop the history entry the gallery added
-		if (opts.history && history.state?.bp) {
-			history.back();
+		// Closed without the back button, drop the history entry. The gallery of an open call made while closing takes it
+		// or drops it, the popstate of a history.back() now would close that gallery
+		if (!pendingOptions) {
+			dropEntry();
 		}
 
 		// No slide yet when closed in the same tick as opened
 		slide && zoom(slide, 'bp-out');
 
 		// Remove the gallery once the slide has finished its outro
-		afterAnimations(slide, () => {
-			$$invalidate(0, items = null);
-			focusTrigger?.focus({ preventScroll: true });
-		});
+		afterAnimations(slide, () => $$invalidate(0, items = null));
 	};
 
 	// Run a callback once the animations of a node are finished, right away if it has none
@@ -3279,7 +3321,7 @@ function instance($$self, $$props, $$invalidate) {
 	};
 
 	// Get the next gallery position
-	const getNextPosition = index => (index + items.length) % items.length;
+	const getNextPosition = index => (index % items.length + items.length) % items.length;
 
 	// Handle the keyboard events
 	const onKeydown = e => {
@@ -3334,6 +3376,10 @@ function instance($$self, $$props, $$invalidate) {
 		e.stopPropagation();
 	};
 
+	// The focus stays in the upper gallery. Tab moves it out of the controls of a video or audio, as the keydown handler
+	// lets the browser move it into them
+	const onFocusin = ({ target }) => !$closing && getUpperGallery() === container && !(opts.focusWrap || container).contains(target) && container.focus({ preventScroll: true });
+
 	// Normalize a gallery item
 	const prepareItem = item => {
 		// Work on a copy, the gallery adds its own fields and the caller's objects stay as they are
@@ -3347,6 +3393,11 @@ function instance($$self, $$props, $$invalidate) {
 				item[key] = JSON.parse(item[key]);
 			}
 		});
+
+		// An empty list is no sources, the player reads the first one
+		if (!item.sources?.[0]) {
+			delete item.sources;
+		}
 
 		// Data attributes pass the size as a string, also with a unit, such as "800px"
 		item.width = parseFloat(item.width) || undefined;
@@ -3362,7 +3413,7 @@ function instance($$self, $$props, $$invalidate) {
 		let link = item.link = item.link || item.element?.href, type = item.type;
 
 		if (item.sources) {
-			item.type = type === 'audio' || (/^audio/).test(item.sources[0]?.type)
+			item.type = type === 'audio' || (/^audio/).test(item.sources[0].type)
 			? 'audio'
 			: 'video';
 		} else if (item.html != null) {
@@ -3396,7 +3447,7 @@ function instance($$self, $$props, $$invalidate) {
 		if (type === 'image') {
 			let max = 0;
 
-			for (const { url, value } of parseSrcset(link)) {
+			for (const { url, value } of parseSrcset(decodeSrcset(link))) {
 				if (value > max) {
 					max = value;
 					link = url;
@@ -3406,11 +3457,15 @@ function instance($$self, $$props, $$invalidate) {
 			return link;
 		}
 
-		return sources?.[0]?.src || '';
+		return sources?.[0].src || '';
 	};
 
-	// The candidates of a srcset, also with no space after a comma. A comma inside a URL stays in it
-	const parseSrcset = srcset => Array.from(srcset.matchAll(/(?:^|,)\s*(\S+)\s+(\d+)([wx])/gi), ([,url, value, type]) => ({ url, value: +value, type }));
+	// The href of a link encodes the spaces of a srcset. Only these, other escapes such as %23 are part of the URL
+	const decodeSrcset = link => (/\s/).test(link) ? link : link.replace(/%20/g, ' ');
+
+	// The candidates of a srcset, also with no space after a comma, and with a density such as 1.5x. A comma inside a URL
+	// stays in it
+	const parseSrcset = srcset => Array.from(srcset.matchAll(/(?:^|,)\s*(\S+)\s+(\d*\.?\d+)([wx])/g), ([,url, value, type]) => ({ url, value: +value, type }));
 
 	// Parse the link and detect the content type
 	const parseLink = (link, item) => {
@@ -3454,13 +3509,13 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		// YouTube Video, the host is matched from the start, so a link with youtube.com in its path or query is not one
-		match = link.match(/^https?:\/\/([\w-]+\.)*(?:youtube(-nocookie)?\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|live\/|embed\/?)?(videoseries\?list=.*|[\w-]{11}|\?listType=.*&list=.*)/i);
+		// The path is the video ID, or videoseries or none for a playlist, and its list goes with the other parameters
+		match = link.match(/^https?:\/\/([\w-]+\.)*(?:youtube(-nocookie)?\.com|youtu\.be)\/(?:watch\?(?:.*&)?v=|v\/|u\/|shorts\/|live\/|embed\/?)?(videoseries(?=\?(?:.*&)?list=)|(?=\?listType=.*&list=)|([\w-]{11}))/i);
 
 		if (match) {
 			// The privacy-enhanced mode stays on the youtube-nocookie.com host
-			let videoID = encodeURIComponent(match[3]),
-				sourceURL = new URL(link),
-				targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + videoID + '?autoplay=1&playsinline=1&controls=1&rel=0');
+			let sourceURL = new URL(link),
+				targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + match[3] + '?autoplay=1&playsinline=1&controls=1&rel=0');
 
 			// Shorts are portrait, 9:16
 			if (!item.width && (/\/shorts\//).test(link)) {
@@ -3482,7 +3537,9 @@ function instance($$self, $$props, $$invalidate) {
 				targetURL.searchParams.set(key, value);
 			}
 
-			item.thumb = item.thumb || 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
+			// A playlist has no thumbnail of its own
+			item.thumb = item.thumb || match[4] && 'https://i.ytimg.com/vi/' + match[4] + '/mqdefault.jpg';
+
 			return iframe(item, targetURL);
 		}
 
@@ -3626,13 +3683,7 @@ function instance($$self, $$props, $$invalidate) {
 			return item.preload;
 		}
 
-		let image = new Image(), src = item.link, factor = 1;
-
-		// The href of a link encodes the spaces of a srcset. Only these, other escapes such as %23 are part of the URL
-		if (!(/\s/).test(src)) {
-			src = src.replace(/%20/g, ' ');
-		}
-
+		let image = new Image(), src = decodeSrcset(item.link), factor = 1;
 		const parts = parseSrcset(src);
 
 		if (parts.length) {
@@ -3641,7 +3692,7 @@ function instance($$self, $$props, $$invalidate) {
 
 			// The first candidate sharp enough for the shown size and the screen density, the same one the browser
 			// picks from the srcset and sizes of the shown image, so the file is loaded once
-			const largest = parts[parts.length - 1];
+			const largest = parts.at(-1);
 
 			const match = parts.find(c => c.value >= (c.type === 'w' ? width : 1) * (window.devicePixelRatio || 1)) || largest;
 
@@ -3678,58 +3729,64 @@ function instance($$self, $$props, $$invalidate) {
 
 	// Zoom the slide out of the thumbnail on open and back into it on close, or fade it up with zoom: false
 	const zoom = (node, className) => {
-		if (!opts.zoom) {
-			return animate(node, className, `translateY(${className ? -10 : 10}px)`);
+		if (opts.zoom) {
+			// The slide is centered in the stage, not in the screen. Its size is known: the gallery measures it on mount, and
+			// the ruler observer keeps it
+			const stage = ruler.getBoundingClientRect();
+
+			// No HTML is shown in a stage with no size
+			const content = activeItem.type === 'html' && node.querySelector('.bp-html')?.firstElementChild;
+
+			const dimensions = content
+			? [content.clientWidth, content.clientHeight]
+			: activeDimensions;
+
+			// Rect is the content box of the trigger element, the image is drawn inside its padding and border
+			const source = activeItem.source || focusTrigger;
+
+			const style = window.getComputedStyle(source);
+			const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
+			const bounds = source.getBoundingClientRect();
+
+			const rect = {
+				left: bounds.left + edge('Left'),
+				top: bounds.top + edge('Top'),
+				width: bounds.width - edge('Left') - edge('Right'),
+				height: bounds.height - edge('Top') - edge('Bottom')
+			};
+
+			// A hidden or removed thumbnail, or an item with no size, has no scale to zoom from, the slide fades instead. A
+			// removed one has a NaN size. The comparison stays a > 0: the unsafe_comps option of terser compiles !(a > 0) to
+			// a <= 0, which is false for NaN
+			if (Math.min(rect.width, rect.height, ...dimensions) > 0) {
+				let scaleWidth = rect.width / dimensions[0];
+				let scaleHeight = rect.height / dimensions[1];
+				let css = '--bp-opacity:1';
+				let crop = '';
+
+				if (activeItem.fit === 'cover') {
+					scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
+
+					// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back
+					// twice as far and clips, and its content returns in place. Translates stay on the compositor, an animated
+					// clip-path repaints every frame. The percents follow the slide when the stage gap comes back after the zoom
+					css += `;--bp-crop-x:calc(50% - ${rect.width / scaleWidth / 2}px);--bp-crop-y:calc(50% - ${rect.height / scaleHeight / 2}px)`;
+
+					crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
+					className += ' bp-clip';
+				} else if (activeItem.fit === 'contain') {
+					scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
+				}
+
+				// From the center of the stage to the center of the thumbnail
+				const x = rect.left - stage.left - (containerWidth - rect.width) / 2;
+
+				const y = rect.top - stage.top - (containerHeight - rect.height) / 2;
+				return animate(node, className, `translate(${x}px,${y}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
+			}
 		}
 
-		// The slide is centered in the stage, not in the screen. Its size is known: the gallery measures it on mount, and the
-		// ruler observer keeps it
-		const stage = ruler.getBoundingClientRect();
-
-		const content = activeItem.type === 'html' && node.querySelector('.bp-html').firstElementChild;
-
-		const dimensions = content
-		? [content.clientWidth, content.clientHeight]
-		: activeDimensions;
-
-		// Rect is the content box of the trigger element, the image is drawn inside its padding and border
-		const source = activeItem.source || focusTrigger;
-
-		const style = window.getComputedStyle(source);
-		const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
-		const bounds = source.getBoundingClientRect();
-
-		const rect = {
-			left: bounds.left + edge('Left'),
-			top: bounds.top + edge('Top'),
-			width: bounds.width - edge('Left') - edge('Right'),
-			height: bounds.height - edge('Top') - edge('Bottom')
-		};
-
-		let scaleWidth = rect.width / dimensions[0];
-		let scaleHeight = rect.height / dimensions[1];
-		let css = '--bp-opacity:1';
-		let crop = '';
-
-		if (activeItem.fit === 'cover') {
-			scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
-
-			// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back twice
-			// as far and clips, and its content returns in place. Translates stay on the compositor, an animated clip-path
-			// repaints every frame. The percents follow the slide when the stage gap comes back after the zoom
-			css += `;--bp-crop-x:calc(50% - ${rect.width / scaleWidth / 2}px);--bp-crop-y:calc(50% - ${rect.height / scaleHeight / 2}px)`;
-
-			crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
-			className += ' bp-clip';
-		} else if (activeItem.fit === 'contain') {
-			scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
-		}
-
-		// From the center of the stage to the center of the thumbnail
-		const x = rect.left - stage.left - (containerWidth - rect.width) / 2;
-
-		const y = rect.top - stage.top - (containerHeight - rect.height) / 2;
-		animate(node, className, `translate(${x}px,${y}px) scale(${scaleWidth},${scaleHeight})` + crop, css);
+		animate(node, className, `translateY(${className ? -10 : 10}px)`);
 	};
 
 	// Animate the slides, the first one zooms in, the next ones slide in and out
@@ -3737,14 +3794,19 @@ function instance($$self, $$props, $$invalidate) {
 		if (slide) {
 			animate(node, 'bp-nav', `translate(${movement > 0 ? 20 : -20}px)`);
 		} else {
-			// Deferred so the item is measured after the container action has shown the dialog and called onOpen
-			queueMicrotask(() => zoom(node, ''));
+			// Deferred so the item is measured after the container action has shown the dialog and called onOpen. Not when
+			// onOpen has closed the gallery, the outro is set then
+			queueMicrotask(() => $closing || zoom(node, ''));
 		}
 
 		slide = node;
 
 		return {
 			destroy() {
+				// The next item and the next open are not zoomed. The image sets the store itself, an item of another type
+				// would keep the value, and the gallery would read the gap of a zoomed one on open
+				zoomed.set(0);
+
 				// The items are removed on close, the slide leaves with the gallery then
 				if (items) {
 					// Svelte has removed the previous slide, put it back under the new one until it slides out
@@ -3815,34 +3877,47 @@ function instance($$self, $$props, $$invalidate) {
 			// In the capture phase, so the gallery gets the keys before the page
 			window.addEventListener('keydown', onKeydown, true);
 
+			window.addEventListener('focusin', onFocusin);
+
 			// Keyboard and screen reader users start inside the gallery
 			node.focus({ preventScroll: true });
 
-			// The back button closes the gallery instead of leaving the page
-			// Not when closed in the same tick as opened, the close has already passed its history.back()
+			// The back button closes the gallery instead of leaving the page. The gallery of an open call made while closing
+			// keeps the entry of the last one. Not when closed in the same tick as opened, the close has already passed its
+			// history.back()
 			if (opts.history && !$closing) {
-				historyUrl = location.href;
-				history.pushState({ bp: 1 }, '');
+				if (!historyId) {
+					historyUrl = location.href;
+					history.pushState({ bp: historyId = Math.random() }, '');
+				}
+
 				window.addEventListener('popstate', onPopstate);
 			}
 		}
 
 		return {
 			destroy() {
-				// Close the dialog properly to remove it from top layer
+				// Close the dialog properly to remove it from top layer. Before the focus goes back, the page is inert while
+				// the modal dialog is open
 				if (node.open) {
 					node.close();
 				}
 
 				window.removeEventListener('keydown', onKeydown, true);
+				window.removeEventListener('focusin', onFocusin);
 				window.removeEventListener('popstate', onPopstate);
+				focusTrigger?.focus({ preventScroll: true });
 				closing.set(0);
 				slide = null;
 
 				// The page stays locked while another gallery is open, the node of this one is removed already
 				if (!getUpperGallery()) {
 					html.classList.remove('bp-lock');
-					html.style.paddingRight = '';
+
+					if (pagePadding != null) {
+						html.style.paddingRight = pagePadding;
+						pagePadding = null;
+					}
 				}
 
 				opts.onClosed?.(container, activeItem);

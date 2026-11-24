@@ -1881,7 +1881,349 @@ const groups = [
 			});
 			check('the close removes all the nodes of the gallery', value.before === value.after && !value.wraps, show(value));
 		}
-	}]
+	}],
+	['edge cases', async ({ page, check, idle }) => {
+		// Other sites get an empty page, so that the checks need no network
+		await page.setRequestInterception(true);
+		page.on('request', (request) => (request.url().startsWith(base) || request.url().startsWith('data:') ? request.continue() : request.respond({ status: 200, contentType: 'text/html', body: '' })));
+
+		// An item of another type after a zoomed image is not zoomed: the caption shows and the arrows work
+		{
+			await page.evaluate(async () => {
+				await t.grid([{ w: 3000, h: 2000 }]);
+				t.make();
+				window.bp.open({ items: [t.$('#root a'), { html: '<p>two</p>', caption: 'Two' }, { html: '<p>three</p>' }], ...t.options });
+				await t.idle();
+			});
+			await page.keyboard.press('Space');
+			await idle();
+			const zoomed = await page.evaluate(() => t.$('.bp-wrap').classList.contains('bp-zoomed'));
+			await page.evaluate(() => window.bp.next());
+			await idle();
+			const next = await page.evaluate(() => ({ zoomed: t.$('.bp-wrap').classList.contains('bp-zoomed'), caption: getComputedStyle(t.$('.bp-caption')).opacity }));
+			await page.keyboard.press('ArrowRight');
+			await idle();
+			const count = await page.evaluate(() => t.$('.bp-count').textContent.trim());
+			check('zoom: the next item of another type is not zoomed', zoomed && !next.zoomed && next.caption === '1' && count === '3 / 3', show({ zoomed, next, count }));
+		}
+
+		// The focus goes back to the trigger in dialog mode too, and onClose can move it out during the outro
+		{
+			const value = await page.evaluate(async () => {
+				const link = t.$('#root a'),
+					button = document.body.appendChild(document.createElement('button'));
+				// After make, the destroy of the last gallery gives the focus back to its own trigger
+				t.make({ dialog: true });
+				link.focus();
+				window.bp.open({ items: [link] });
+				await t.idle();
+				window.bp.close();
+				await t.idle();
+				await t.wait(100);
+				const dialog = document.activeElement === link;
+				t.make({}, { onClose: () => button.focus() });
+				window.bp.open({ items: [link], ...t.options });
+				await t.idle();
+				window.bp.close();
+				const outro = document.activeElement === button;
+				await t.idle();
+				await t.wait(100);
+				button.remove();
+				return { dialog, outro };
+			});
+			check('dialog: the close gives the focus back to the trigger', value.dialog);
+			check('onClose can move the focus out of the gallery during the outro', value.outro);
+		}
+
+		// attr: false removes an attribute, such as a default one. Other values stay, also "0" and ""
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ sources: [{ src: '/tone.wav', type: 'audio/wav' }], attr: { autoplay: false, controls: false, 'data-empty': '', 'data-zero': '0' } }] });
+				await t.wait(50);
+				const audio = t.$('audio');
+				return { autoplay: audio.autoplay, controls: audio.controls, tabindex: audio.getAttribute('tabindex'), empty: audio.getAttribute('data-empty'), zero: audio.getAttribute('data-zero') };
+			});
+			check('attr: false removes an attribute, and "0" and "" stay', !value.autoplay && !value.controls && value.tabindex === '0' && value.empty === '' && value.zero === '0', show(value));
+		}
+
+		// history: each gallery has its own entry
+		{
+			// An open call while open, with no motion: the next gallery takes the entry, so no popstate closes it
+			await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+			const reopen = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '<p>one</p>' }], history: true });
+				await t.wait(100);
+				const length = history.length;
+				window.bp.open({ items: [{ html: '<p>two</p>' }], history: true });
+				await t.wait(500);
+				return { wrap: !!t.$('.bp-wrap'), state: !!history.state?.bp, same: history.length === length };
+			});
+			await page.emulateMediaFeatures([]);
+			check('history: an open call while open, with no motion, shows the next gallery', reopen.wrap && reopen.state && reopen.same, show(reopen));
+
+			// The back button closes the upper one of two galleries, then the lower one
+			const stacked = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '<p>lower</p>' }], history: true });
+				await t.idle();
+				const upper = BiggerPicture({});
+				upper.open({ items: [{ html: '<p>upper</p>' }], history: true });
+				await t.idle();
+				const count = () => t.$$('.bp-wrap').length;
+				history.back();
+				await t.wait(100);
+				await t.idle();
+				const first = count();
+				history.back();
+				await t.wait(100);
+				await t.idle();
+				upper.$destroy();
+				return [first, count()];
+			});
+			check('history: the back button closes the upper of two galleries, then the lower one', stacked[0] === 1 && stacked[1] === 0, show(stacked));
+
+			// An inline gallery adds no entry, so its close removes none
+			const inline = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '<p>modal</p>' }], history: true });
+				await t.idle();
+				const region = BiggerPicture({ target: t.$('#box') });
+				region.open({ items: [{ html: '<p>inline</p>' }], inline: true, history: true });
+				await t.idle();
+				region.close();
+				await t.wait(100);
+				await t.idle();
+				const value = { modal: !!t.$('.bp-wrap:not(.bp-inline)'), state: !!history.state?.bp };
+				region.$destroy();
+				window.bp.close();
+				await t.idle();
+				return value;
+			});
+			check('history: the close of an inline gallery keeps the modal one open', inline.modal && inline.state, show(inline));
+		}
+
+		// YouTube: a playlist keeps its path and list, also after another parameter, and gets no thumbnail of a video
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ link: 'https://www.youtube.com/embed/videoseries?si=abc&list=PL123' }, { link: 'https://www.youtube.com/embed?listType=playlist&list=PL123' }] });
+				await t.wait(50);
+				return { links: window.bp.items.map((item) => item.link), thumbs: window.bp.items.map((item) => item.thumb) };
+			});
+			check('YouTube: a playlist keeps its list and gets no video thumbnail', value.links[0] === 'https://www.youtube.com/embed/videoseries?autoplay=1&playsinline=1&controls=1&rel=0&si=abc&list=PL123' && value.links[1] === 'https://www.youtube.com/embed/?autoplay=1&playsinline=1&controls=1&rel=0&listType=playlist&list=PL123' && !value.thumbs[0] && !value.thumbs[1], show(value));
+		}
+
+		// Items that the gallery can't measure or play: no errors, see the check of page errors
+		{
+			const value = await page.evaluate(async () => {
+				// An HTML item in a hidden target has no size to zoom from
+				const hidden = document.body.appendChild(document.createElement('div'));
+				hidden.style.display = 'none';
+				t.make({ target: hidden });
+				window.bp.open({ items: [{ html: '<p>hidden</p>' }], inline: true });
+				await t.wait(50);
+				window.bp.close();
+				await t.idle();
+				hidden.remove();
+				// An empty list of sources is no sources
+				t.make();
+				window.bp.open({ items: [{ sources: [] }] });
+				await t.wait(50);
+				const none = !t.$('.bp-wrap');
+				window.bp.open({ items: [{ sources: [], html: '<p id="no-sources">html</p>' }] });
+				await t.wait(50);
+				const html = !!t.$('#no-sources');
+				// A failed video hides its loader
+				t.make();
+				window.bp.open({ items: [{ sources: [{ src: '/media/a.mp4?status=404', type: 'video/mp4' }, { src: '/media/b.webm?status=404', type: 'video/webm' }] }] });
+				await t.wait(1000);
+				const loader = t.$('.bp-load')?.className ?? 'removed';
+				// An HTML item with no size fades in, and a removed thumbnail fades out, with no NaN or Infinity
+				t.make();
+				window.bp.open({ items: [{ html: '<div></div>' }] });
+				await t.wait(50);
+				const empty = t.slide().style.cssText;
+				await t.grid([{ w: 3000, h: 2000 }]);
+				await t.open();
+				t.$('#root a').remove();
+				window.bp.close();
+				const removed = t.slide().style.cssText;
+				await t.idle();
+				return { none, html, loader, empty, removed };
+			});
+			check('sources: an empty list is no sources', value.none && value.html, show(value));
+			check('the loader of a video goes when its last source fails', value.loader === 'removed' || /bp-loaded/.test(value.loader), value.loader);
+			check('an item or a thumbnail with no size fades, with no NaN or Infinity', !/NaN|Infinity/.test(value.empty + value.removed) && /translateY/.test(value.empty) && /translateY/.test(value.removed), show(value));
+		}
+
+		// A close in onOpen keeps its outro
+		{
+			const value = await page.evaluate(async () => {
+				t.make({}, { onOpen: () => window.bp.close() });
+				window.bp.open({ items: [{ html: '<p>one</p>' }], ...t.options });
+				await t.wait(50);
+				const className = t.slide()?.className;
+				await t.idle();
+				return className;
+			});
+			check('a close in onOpen keeps its outro', /bp-out/.test(value), value);
+		}
+
+		// The download of a srcset: an encoded href, and a density with a fraction
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ download: true, items: [{ link: '/img/dl/400x300.png%20400w,%20/img/dl/800x600.png%20800w', type: 'image' }, { link: '/img/dl/400x300.png 1x, /img/dl/600x450.png 1.5x' }] });
+				await t.wait(50);
+				return window.bp.items.map((item) => item.download);
+			});
+			check('download: the largest candidate of an encoded srcset and of a 1.5x density', value[0] === '/img/dl/800x600.png' && value[1] === '/img/dl/600x450.png', show(value));
+		}
+
+		// setPosition: an index below the negative length wraps
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '1' }, { html: '2' }, { html: '3' }] });
+				await t.idle();
+				window.bp.setPosition(-5);
+				await t.idle();
+				return t.$('.bp-count').textContent.trim();
+			});
+			check('setPosition: an index below the negative length wraps', value === '2 / 3', value);
+		}
+
+		// Thumbnails of an inline gallery away from the left of the screen, and in a panel that gets wider
+		{
+			const value = await page.evaluate(async () => {
+				const box = t.$('#box');
+				box.style.left = '500px';
+				scrollTo(0, 900);
+				await t.grid(Array.from({ length: 10 }, () => ({ w: 3000, h: 2000 })));
+				t.make({ target: box });
+				window.bp.open({ items: t.$$('#root a'), inline: true, thumbs: true });
+				await t.idle();
+				const left = () => t.$('.bp-thumbs button').getBoundingClientRect().left - t.$('.bp-thumbs').getBoundingClientRect().left;
+				window.bp.setPosition(9);
+				await t.idle();
+				window.bp.setPosition(0);
+				await t.wait(50);
+				await t.idle();
+				const back = left();
+				window.bp.setPosition(9);
+				await t.idle();
+				box.style.width = '1600px';
+				await t.wait(50);
+				await t.idle();
+				const wide = { left: left(), strip: t.$('.bp-thumbs-inner').offsetWidth, panel: t.$('.bp-thumbs').offsetWidth };
+				t.reset();
+				box.style.left = box.style.width = '';
+				scrollTo(0, 0);
+				return { back, wide };
+			});
+			check('thumbnails: the first button comes back into an inline panel away from the left', value.back >= 0, show(value));
+			check('thumbnails: a panel that gets wider than the strip shows it from its start', value.wide.strip < value.wide.panel && value.wide.left >= 0, show(value));
+		}
+
+		// Tab from a player with no control after it keeps the focus in the gallery
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ sources: [{ src: '/tone.wav', type: 'audio/wav' }] }], persistent: true });
+				await t.idle();
+				const after = document.createElement('button');
+				after.id = 'after-gallery';
+				document.body.append(after);
+				t.$('audio').focus();
+			});
+			const inside = [];
+			for (let step = 0; step < 4; step++) {
+				await page.keyboard.press('Tab');
+				inside.push(await page.evaluate(() => !!document.activeElement.closest('.bp-wrap')));
+			}
+			await page.evaluate(() => t.$('#after-gallery').remove());
+			check('Tab from a player with no control after it keeps the focus in the gallery', inside.every(Boolean), show(inside));
+		}
+
+		// The scroll lock gives back the inline padding of the page
+		{
+			const value = await page.evaluate(async () => {
+				// After the reset, the unlock of the last gallery sets the padding it found
+				const root = document.documentElement;
+				t.reset();
+				root.style.paddingRight = '20px';
+				await t.open();
+				const locked = root.style.paddingRight;
+				window.bp.close();
+				await t.idle();
+				await t.wait(100);
+				const after = root.style.paddingRight;
+				root.style.paddingRight = '';
+				return { locked, after };
+			});
+			check('scroll lock: the close gives back the inline padding of the page', value.locked === '35px' && value.after === '20px', show(value));
+		}
+
+		// A thumbnail URL with quotes, such as of an SVG, shows under the image while it loads
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ link: t.image('quote', 400, 300, 3000), thumb: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="30"></svg>' }] });
+				await t.wait(100);
+				return t.$('.bp-img').style.backgroundImage;
+			});
+			check('a thumbnail URL with quotes shows under the image while it loads', /^url\(/.test(value), value);
+		}
+
+		// The backdrop of a dialog takes --bp-duration
+		{
+			const value = await page.evaluate(async () => {
+				const root = document.documentElement;
+				root.style.setProperty('--bp-duration', '100ms');
+				t.make({ dialog: true });
+				window.bp.open({ items: [{ html: '<p>one</p>' }] });
+				await t.wait(50);
+				const duration = getComputedStyle(t.$('dialog'), '::backdrop').animationDuration;
+				root.style.removeProperty('--bp-duration');
+				return duration;
+			});
+			check('dialog: the backdrop takes --bp-duration', value === '0.1s', value);
+		}
+
+		// The thumbnail buttons get the text of an HTML caption
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ thumbs: true, items: [{ html: '<p>one</p>', caption: '<b>Bold</b> &amp; <a href="#">link</a>' }, { html: '<p>two</p>' }] });
+				await t.wait(50);
+				const button = t.$('.bp-thumbs button');
+				return [button.title, button.getAttribute('aria-label')];
+			});
+			check('thumbnails: the title and the label are the text of an HTML caption', value[0] === 'Bold & link' && value[1] === 'Bold & link', show(value));
+		}
+
+		// history: a gallery that doesn't take the entry of the last one drops it: an inline one, and one with no items
+		{
+			const value = await page.evaluate(async () => {
+				const read = async (options) => {
+					// The entries of the checks above stay, so the state goes back to the one before the modal gallery
+					t.make();
+					const before = history.state?.bp;
+					window.bp.open({ items: [{ html: '<p>modal</p>' }], history: true });
+					await t.idle();
+					window.bp.open({ history: true, ...options });
+					await t.wait(100);
+					await t.idle();
+					await t.wait(100);
+					return history.state?.bp === before;
+				};
+				return [await read({ items: [{ html: '<p>inline</p>' }], inline: true }), await read({ items: [] })];
+			});
+			check('history: an inline gallery or one with no items drops the entry of the last one', value[0] && value[1], show(value));
+		}
+	}],
 ];
 
 const start = performance.now();

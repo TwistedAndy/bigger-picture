@@ -44,13 +44,14 @@
 	&:not(.bp-inline) {
 		overflow: visible;
 
+		// The fallbacks are for browsers where the backdrop doesn't inherit the variables, such as Chrome before 122
 		&::backdrop {
 			background: rgba(0, 0, 0, 0.75);
-			animation: bp-fade 500ms;
+			animation: bp-fade var(--bp-duration, 500ms) var(--bp-easing, ease);
 		}
 
 		&.bp-closing::backdrop {
-			animation: bp-fade-out 500ms forwards;
+			animation: bp-fade-out var(--bp-duration, 500ms) var(--bp-easing, ease) forwards;
 		}
 	}
 
