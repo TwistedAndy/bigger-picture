@@ -9,7 +9,7 @@
 	export let containerHeight;
 	export let activeDimensions;
 
-	let { activeItem, opts, prev, next, zoomed, closing, container } = props;
+	const { activeItem, opts, prev, next, zoomed, closing } = props;
 
 	const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
@@ -58,11 +58,16 @@
 	// store below, which must see the scale this sets
 	const fitZoom = () => {
 		if (opts.inline || !smallScreen) {
-			scale = 1;
-			translate = [0, 0];
+			reset();
 		} else {
 			translate = boundTranslateValues(translate);
 		}
+	};
+
+	// Back to the starting size, in the center
+	const reset = () => {
+		scale = 1;
+		translate = [0, 0];
 	};
 
 	$: activeDimensions, fitZoom();
@@ -72,53 +77,28 @@
 	// If zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
 	$: if ($closing && scale !== 1 && opts.zoom) {
-		scale = 1;
-		translate = [0, 0];
+		reset();
 		closingWhileZoomed = true;
 	}
 
+	// A value between -max and max, or 0 when the image is smaller than the stage on that axis
+	const clamp = (value, max) => (max < 0 ? 0 : Math.max(-max, Math.min(value, max)));
+
 	// Calculate translate position with bounds
 	const boundTranslateValues = ([x, y], newScale = scale) => {
-		// Image drag translate bounds
-		let maxTranslateX = (activeDimensions[0] * newScale - containerWidth) / 2,
-			maxTranslateY = (activeDimensions[1] * newScale - containerHeight) / 2;
-		// X max drag
-		if (maxTranslateX < 0) {
-			x = 0;
-		} else if (x > maxTranslateX) {
-			if (smallScreen) {
-				// Bound to left side (allow slight over drag)
-				x = pointerDown ? maxTranslateX + (x - maxTranslateX) / 10 : maxTranslateX;
-				// Previous item if dragged past threshold
-				if (x > maxTranslateX + 20) {
-					// Setting pointerDown to undefined stops pointermove from running again
-					pointerDown = prev();
-				}
-			} else {
-				x = maxTranslateX;
+		const maxX = (activeDimensions[0] * newScale - containerWidth) / 2,
+			edge = clamp(x, maxX);
+		// On a small screen, a drag goes a little past the edge, and more than 20px past it goes to the previous or the next
+		// item. Setting pointerDown to undefined stops pointermove from running again
+		if (smallScreen && maxX >= 0 && x !== edge) {
+			x = pointerDown ? edge + (x - edge) / 10 : edge;
+			if (Math.abs(x - edge) > 20) {
+				pointerDown = x > edge ? prev() : next();
 			}
-		} else if (x < -maxTranslateX) {
-			// Bound to right side (allow slight over drag)
-			if (smallScreen) {
-				x = pointerDown ? -maxTranslateX - (-maxTranslateX - x) / 10 : -maxTranslateX;
-				// Next item if dragged past threshold
-				if (x < -maxTranslateX - 20) {
-					// Setting pointerDown to undefined stops pointermove from running again
-					pointerDown = next();
-				}
-			} else {
-				x = -maxTranslateX;
-			}
+		} else {
+			x = edge;
 		}
-		// Y max drag
-		if (maxTranslateY < 0) {
-			y = 0;
-		} else if (y > maxTranslateY) {
-			y = maxTranslateY;
-		} else if (y < -maxTranslateY) {
-			y = -maxTranslateY;
-		}
-		return [x, y];
+		return [x, clamp(y, (activeDimensions[1] * newScale - containerHeight) / 2)];
 	};
 
 	// Updates zoom level in or out based on amt value
@@ -135,8 +115,7 @@
 			newScale = Math.max(scale, Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]));
 		} else if (newScale < 1) {
 			// If requesting image smaller than starting size
-			scale = 1;
-			return (translate = [0, 0]);
+			return reset();
 		}
 
 		let x = 0,
@@ -170,7 +149,7 @@
 		// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		if (opts.inline || $closing || !isGalleryKey(e, opts, container)) {
+		if (opts.inline || $closing || !isGalleryKey(e, opts, props.container)) {
 			return;
 		}
 		if (zoom) {
@@ -230,7 +209,7 @@
 			// Two pointers pinch
 			pointerDown = false;
 			const { noPinch } = opts;
-			if (typeof noPinch == 'function' ? noPinch(container) : noPinch) {
+			if (typeof noPinch == 'function' ? noPinch(props.container) : noPinch) {
 				return;
 			}
 
@@ -332,7 +311,7 @@
 			if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
 				translate = boundTranslateValues([translate[0] - (posOne.x - posThree.x) * 5, translate[1] - (posOne.y - posThree.y) * 5]);
 			}
-		} else if (!opts.onImageClick?.(container, activeItem)) {
+		} else if (!opts.onImageClick?.(props.container, activeItem)) {
 			if ($zoomed) {
 				const wrap = this.closest('.bp-wrap');
 				wrap.addEventListener('click', dropClick, { capture: true, once: true });
@@ -410,7 +389,7 @@
 				sizes={activeItem.sizes || opts.sizes || `${Math.max(sizes, activeDimensions[0])}px`}
 				alt={activeItem.alt || ''}
 				on:load={(e) => e.target.decode().then(show, show)}
-				on:error={(error) => opts.onError?.(container, activeItem, error)}
+				on:error={(error) => opts.onError?.(props.container, activeItem, error)}
 			/>
 		{/if}
 		{#if showLoader}

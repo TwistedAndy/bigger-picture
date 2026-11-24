@@ -5,7 +5,7 @@
 	export let props;
 	export let activeDimensions;
 
-	let loaded = false;
+	let loaded;
 
 	const { activeItem, closing } = props;
 

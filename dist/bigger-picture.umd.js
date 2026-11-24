@@ -775,7 +775,7 @@
 		return child_ctx;
 	}
 
-	// (128:31) {#each items as item}
+	// (125:31) {#each items as item}
 	function create_each_block(ctx) {
 		let button;
 		let img;
@@ -974,14 +974,13 @@
 				return;
 			}
 
+			// The button shows in full, 3px from the edge
 			let { left, right, width } = activeBtn.getBoundingClientRect();
-			let margin = 3;
-			let { offsetLeft } = activeBtn;
 
 			if (right > thumbsPanelWidth) {
-				$$invalidate(4, thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin));
+				$$invalidate(4, thumbsTranslate = boundTranslate(thumbsPanelWidth - activeBtn.offsetLeft - width - 3));
 			} else if (left < 0) {
-				$$invalidate(4, thumbsTranslate = boundTranslate(-offsetLeft + margin));
+				$$invalidate(4, thumbsTranslate = boundTranslate(3 - activeBtn.offsetLeft));
 			}
 
 			initialTranslate = thumbsTranslate;
@@ -1000,35 +999,33 @@
 		};
 
 		const pointerMove = e => {
-			// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag
-			if (isPointerDown && !e.buttons) {
-				dragPositions = [];
-				pointerUp();
+			if (!isPointerDown) {
+				return;
 			}
 
-			if (isPointerDown) {
-				let dragAmount = -(pointerDownX - e.clientX);
+			// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag, with no
+			// inertia
+			if (!e.buttons) {
+				dragPositions = [];
+				return pointerUp();
+			}
 
-				if (hasDragged) {
-					$$invalidate(4, thumbsTranslate = boundTranslate(initialTranslate + dragAmount));
-					dragPositions.push(e.clientX);
-				} else {
-					$$invalidate(6, hasDragged = Math.abs(dragAmount) > 5);
-				}
+			const dragAmount = e.clientX - pointerDownX;
+
+			if (hasDragged) {
+				$$invalidate(4, thumbsTranslate = boundTranslate(initialTranslate + dragAmount));
+				dragPositions.push(e.clientX);
+			} else {
+				$$invalidate(6, hasDragged = Math.abs(dragAmount) > 5);
 			}
 		};
 
 		const pointerUp = () => {
-			if (hasDragged) {
-				dragPositions = dragPositions.slice(-3);
+			// The speed of the last moves, NaN with no moves, such as after a tap
+			const xDiff = dragPositions.slice(-3)[0] - dragPositions.pop();
 
-				if (dragPositions.length > 1) {
-					let xDiff = dragPositions[0] - dragPositions.pop();
-
-					if (Math.abs(xDiff) > 5) {
-						$$invalidate(4, thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5));
-					}
-				}
+			if (Math.abs(xDiff) > 5) {
+				$$invalidate(4, thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5));
 			}
 
 			dragPositions = [];
@@ -1304,24 +1301,24 @@
 		return {
 			c() {
 				img = element("img");
-				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${Math.max(/*sizes*/ ctx[2], /*activeDimensions*/ ctx[0][0])}px`);
-				attr(img, "alt", /*activeItem*/ ctx[10].alt || '');
+				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[11].sizes || /*opts*/ ctx[12].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`);
+				attr(img, "alt", /*activeItem*/ ctx[11].alt || '');
 			},
 			m(target, anchor) {
 				insert(target, img, anchor);
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[10].attr)),
-						listen(img, "load", /*load_handler*/ ctx[30]),
-						listen(img, "error", /*error_handler*/ ctx[31])
+						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[11].attr)),
+						listen(img, "load", /*load_handler*/ ctx[29]),
+						listen(img, "error", /*error_handler*/ ctx[30])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*sizes, activeDimensions*/ 5 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${Math.max(/*sizes*/ ctx[2], /*activeDimensions*/ ctx[0][0])}px`)) {
+				if (dirty[0] & /*sizes, activeDimensions*/ 10 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[11].sizes || /*opts*/ ctx[12].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`)) {
 					attr(img, "sizes", img_sizes_value);
 				}
 			},
@@ -1336,16 +1333,16 @@
 		};
 	}
 
-	// (406:10) {#if showLoader}
+	// (385:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
 
 		loading = new Loading({
 				props: {
-					activeItem: /*activeItem*/ ctx[10],
-					loaded: /*loaded*/ ctx[3],
-					closing: /*closing*/ ctx[13]
+					activeItem: /*activeItem*/ ctx[11],
+					loaded: /*loaded*/ ctx[4],
+					closing: /*closing*/ ctx[14]
 				}
 			});
 
@@ -1359,7 +1356,7 @@
 			},
 			p(ctx, dirty) {
 				const loading_changes = {};
-				if (dirty[0] & /*loaded*/ 8) loading_changes.loaded = /*loaded*/ ctx[3];
+				if (dirty[0] & /*loaded*/ 16) loading_changes.loaded = /*loaded*/ ctx[4];
 				loading.$set(loading_changes);
 			},
 			i(local) {
@@ -1381,12 +1378,12 @@
 		let div1;
 		let div0;
 		let if_block0_anchor;
-		let style_transform = `translate3d(${/*translate*/ ctx[9][0]}px, ${/*translate*/ ctx[9][1]}px, 0) scale(${/*scale*/ ctx[1]})`;
+		let style_transform = `translate3d(${/*translate*/ ctx[10][0]}px, ${/*translate*/ ctx[10][1]}px, 0) scale(${/*scale*/ ctx[2]})`;
 		let current;
 		let mounted;
 		let dispose;
-		let if_block0 = /*loaded*/ ctx[3] && create_if_block_1$1(ctx);
-		let if_block1 = /*showLoader*/ ctx[4] && create_if_block$1(ctx);
+		let if_block0 = /*loaded*/ ctx[4] && create_if_block_1$1(ctx);
+		let if_block1 = /*showLoader*/ ctx[5] && create_if_block$1(ctx);
 
 		return {
 			c() {
@@ -1396,19 +1393,19 @@
 				if_block0_anchor = empty();
 				if (if_block1) if_block1.c();
 				attr(div0, "class", "bp-img");
-				set_style(div0, "width", /*activeDimensions*/ ctx[0][0] + "px");
-				set_style(div0, "height", /*activeDimensions*/ ctx[0][1] + "px");
-				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[6]);
-				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[8]);
+				set_style(div0, "width", /*activeDimensions*/ ctx[1][0] + "px");
+				set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
+				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[7]);
+				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[9]);
 
-				set_style(div0, "background-image", /*shown*/ ctx[5]
+				set_style(div0, "background-image", /*shown*/ ctx[6]
 				? null
-				: getThumbBackground(/*activeItem*/ ctx[10]));
+				: getThumbBackground(/*activeItem*/ ctx[11]));
 
 				set_style(div0, "transform", style_transform);
 				attr(div1, "class", "bp-img-wrap");
 				attr(div1, "role", "none");
-				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[7]);
+				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[8]);
 			},
 			m(target, anchor) {
 				insert(target, div1, anchor);
@@ -1434,7 +1431,7 @@
 				}
 			},
 			p(ctx, dirty) {
-				if (/*loaded*/ ctx[3]) {
+				if (/*loaded*/ ctx[4]) {
 					if (if_block0) {
 						if_block0.p(ctx, dirty);
 					} else {
@@ -1447,11 +1444,11 @@
 					if_block0 = null;
 				}
 
-				if (/*showLoader*/ ctx[4]) {
+				if (/*showLoader*/ ctx[5]) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 
-						if (dirty[0] & /*showLoader*/ 16) {
+						if (dirty[0] & /*showLoader*/ 32) {
 							transition_in(if_block1, 1);
 						}
 					} else {
@@ -1470,36 +1467,36 @@
 					check_outros();
 				}
 
-				if (!current || dirty[0] & /*activeDimensions*/ 1) {
-					set_style(div0, "width", /*activeDimensions*/ ctx[0][0] + "px");
+				if (!current || dirty[0] & /*activeDimensions*/ 2) {
+					set_style(div0, "width", /*activeDimensions*/ ctx[1][0] + "px");
 				}
 
-				if (!current || dirty[0] & /*activeDimensions*/ 1) {
-					set_style(div0, "height", /*activeDimensions*/ ctx[0][1] + "px");
+				if (!current || dirty[0] & /*activeDimensions*/ 2) {
+					set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
 				}
 
-				if (!current || dirty[0] & /*pointerDown*/ 64) {
-					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[6]);
+				if (!current || dirty[0] & /*pointerDown*/ 128) {
+					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[7]);
 				}
 
-				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 33027) {
-					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[0][0] * /*scale*/ ctx[1] < /*naturalWidth*/ ctx[8]);
+				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 33286) {
+					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[9]);
 				}
 
-				const style_changed = dirty[0] & /*activeDimensions*/ 1;
+				const style_changed = dirty[0] & /*activeDimensions*/ 2;
 
-				if (dirty[0] & /*shown, activeDimensions*/ 33 || style_changed) {
-					set_style(div0, "background-image", /*shown*/ ctx[5]
+				if (dirty[0] & /*shown, activeDimensions*/ 66 || style_changed) {
+					set_style(div0, "background-image", /*shown*/ ctx[6]
 					? null
-					: getThumbBackground(/*activeItem*/ ctx[10]));
+					: getThumbBackground(/*activeItem*/ ctx[11]));
 				}
 
-				if (dirty[0] & /*translate, scale, activeDimensions*/ 515 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[9][0]}px, ${/*translate*/ ctx[9][1]}px, 0) scale(${/*scale*/ ctx[1]})`) || style_changed) {
+				if (dirty[0] & /*translate, scale, activeDimensions*/ 1030 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[10][0]}px, ${/*translate*/ ctx[10][1]}px, 0) scale(${/*scale*/ ctx[2]})`) || style_changed) {
 					set_style(div0, "transform", style_transform);
 				}
 
-				if (!current || dirty[0] & /*closingWhileZoomed*/ 128) {
-					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[7]);
+				if (!current || dirty[0] & /*closingWhileZoomed*/ 256) {
+					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[8]);
 				}
 			},
 			i(local) {
@@ -1532,9 +1529,9 @@
 		let { containerWidth } = $$props;
 		let { containerHeight } = $$props;
 		let { activeDimensions } = $$props;
-		let { activeItem, opts, prev, next, zoomed, closing, container } = props;
-		component_subscribe($$self, zoomed, value => $$invalidate(39, $zoomed = value));
-		component_subscribe($$self, closing, value => $$invalidate(29, $closing = value));
+		const { activeItem, opts, prev, next, zoomed, closing } = props;
+		component_subscribe($$self, zoomed, value => $$invalidate(38, $zoomed = value));
+		component_subscribe($$self, closing, value => $$invalidate(28, $closing = value));
 		const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 		// The largest zoomed width, the sizes attribute is at least the shown width
@@ -1544,7 +1541,7 @@
 		// show through a transparent image
 		let loaded, showLoader, shown;
 
-		const show = () => $$invalidate(5, shown = true);
+		const show = () => $$invalidate(6, shown = true);
 
 		// Stores pinch info if multiple touch events active
 		let pinchDetails;
@@ -1583,64 +1580,39 @@
 		// store below, which must see the scale this sets
 		const fitZoom = () => {
 			if (opts.inline || !smallScreen) {
-				$$invalidate(1, scale = 1);
-				$$invalidate(9, translate = [0, 0]);
+				reset();
 			} else {
-				$$invalidate(9, translate = boundTranslateValues(translate));
+				$$invalidate(10, translate = boundTranslateValues(translate));
 			}
 		};
 
+		// Back to the starting size, in the center
+		const reset = () => {
+			$$invalidate(2, scale = 1);
+			$$invalidate(10, translate = [0, 0]);
+		};
+
+		// A value between -max and max, or 0 when the image is smaller than the stage on that axis
+		const clamp = (value, max) => max < 0 ? 0 : Math.max(-max, Math.min(value, max));
+
 		// Calculate translate position with bounds
 		const boundTranslateValues = ([x, y], newScale = scale) => {
-			// Image drag translate bounds
-			let maxTranslateX = (activeDimensions[0] * newScale - containerWidth) / 2,
-				maxTranslateY = (activeDimensions[1] * newScale - containerHeight) / 2;
+			const maxX = (activeDimensions[0] * newScale - containerWidth) / 2,
+				edge = clamp(x, maxX);
 
-			// X max drag
-			if (maxTranslateX < 0) {
-				x = 0;
-			} else if (x > maxTranslateX) {
-				if (smallScreen) {
-					// Bound to left side (allow slight over drag)
-					x = pointerDown
-					? maxTranslateX + (x - maxTranslateX) / 10
-					: maxTranslateX;
+			// On a small screen, a drag goes a little past the edge, and more than 20px past it goes to the previous or the next
+			// item. Setting pointerDown to undefined stops pointermove from running again
+			if (smallScreen && maxX >= 0 && x !== edge) {
+				x = pointerDown ? edge + (x - edge) / 10 : edge;
 
-					// Previous item if dragged past threshold
-					if (x > maxTranslateX + 20) {
-						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(6, pointerDown = prev());
-					}
-				} else {
-					x = maxTranslateX;
+				if (Math.abs(x - edge) > 20) {
+					$$invalidate(7, pointerDown = x > edge ? prev() : next());
 				}
-			} else if (x < -maxTranslateX) {
-				// Bound to right side (allow slight over drag)
-				if (smallScreen) {
-					x = pointerDown
-					? -maxTranslateX - (-maxTranslateX - x) / 10
-					: -maxTranslateX;
-
-					// Next item if dragged past threshold
-					if (x < -maxTranslateX - 20) {
-						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(6, pointerDown = next());
-					}
-				} else {
-					x = -maxTranslateX;
-				}
+			} else {
+				x = edge;
 			}
 
-			// Y max drag
-			if (maxTranslateY < 0) {
-				y = 0;
-			} else if (y > maxTranslateY) {
-				y = maxTranslateY;
-			} else if (y < -maxTranslateY) {
-				y = -maxTranslateY;
-			}
-
-			return [x, y];
+			return [x, clamp(y, (activeDimensions[1] * newScale - containerHeight) / 2)];
 		};
 
 		// Updates zoom level in or out based on amt value
@@ -1657,9 +1629,7 @@
 				newScale = Math.max(scale, Math.min(newScale, maxZoom, naturalWidth / activeDimensions[0]));
 			} else if (newScale < 1) {
 				// If requesting image smaller than starting size
-				$$invalidate(1, scale = 1);
-
-				return $$invalidate(9, translate = [0, 0]);
+				return reset();
 			}
 
 			let x = 0, y = 0;
@@ -1676,10 +1646,10 @@
 			const ratio = 1 - newScale / scale;
 
 			// Update sizes property, the browser loads a larger source if there is one
-			$$invalidate(2, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
+			$$invalidate(3, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
 
-			$$invalidate(9, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
-			$$invalidate(1, scale = newScale);
+			$$invalidate(10, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
+			$$invalidate(2, scale = newScale);
 		}
 
 		// Allow zoom to be read / set externally
@@ -1701,7 +1671,7 @@
 				ArrowDown: [0, -100]
 			})[e.key];
 
-			if (opts.inline || $closing || !isGalleryKey(e, opts, container)) {
+			if (opts.inline || $closing || !isGalleryKey(e, opts, props.container)) {
 				return;
 			}
 
@@ -1711,7 +1681,7 @@
 				e.preventDefault();
 
 				// Starts from the target, so held keys keep panning while the transition runs
-				$$invalidate(9, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
+				$$invalidate(10, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
 			} else {
 				return;
 			}
@@ -1754,15 +1724,15 @@
 					const img = bpImg.getBoundingClientRect();
 
 					const wrap = bpImg.parentNode.getBoundingClientRect();
-					$$invalidate(1, scale = img.width / activeDimensions[0]);
+					$$invalidate(2, scale = img.width / activeDimensions[0]);
 
-					$$invalidate(9, translate = [
+					$$invalidate(10, translate = [
 						img.left + img.width / 2 - wrap.left - wrap.width / 2,
 						img.top + img.height / 2 - wrap.top - wrap.height / 2
 					]);
 				}
 
-				$$invalidate(6, pointerDown = true);
+				$$invalidate(7, pointerDown = true);
 				pointerCache.set(e.pointerId, e);
 				dragStart = e;
 				dragStartTranslate = translate;
@@ -1773,12 +1743,12 @@
 		const onPointerMove = e => {
 			if (pointerCache.size > 1) {
 				// Two pointers pinch
-				$$invalidate(6, pointerDown = false);
+				$$invalidate(7, pointerDown = false);
 
 				const { noPinch } = opts;
 
 				if (typeof noPinch == 'function'
-				? noPinch(container)
+				? noPinch(props.container)
 				: noPinch) {
 					return;
 				}
@@ -1806,7 +1776,7 @@
 
 			// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
 			if (!e.buttons) {
-				$$invalidate(6, pointerDown = false);
+				$$invalidate(7, pointerDown = false);
 			}
 
 			if (!pointerDown) {
@@ -1829,7 +1799,7 @@
 			if (!$zoomed) {
 				// Close if swipe up
 				if (y < -90) {
-					$$invalidate(6, pointerDown = !opts.persistent && props.close());
+					$$invalidate(7, pointerDown = !opts.persistent && props.close());
 				}
 
 				// Only handle left / right if not swiping vertically
@@ -1837,27 +1807,27 @@
 					// Previous if swipe left
 					if (x > 40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(6, pointerDown = prev());
+						$$invalidate(7, pointerDown = prev());
 					}
 
 					// Next if swipe right
 					if (x < -40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(6, pointerDown = next());
+						$$invalidate(7, pointerDown = next());
 					}
 				}
 			}
 
 			// Image drag when zoomed
 			if ($zoomed && hasDragged && !$closing) {
-				$$invalidate(9, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
+				$$invalidate(10, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
 			}
 		};
 
 		// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
 		const onPointerCancel = e => {
 			pointerCache.delete(e.pointerId);
-			$$invalidate(6, pointerDown = false);
+			$$invalidate(7, pointerDown = false);
 		};
 
 		const onPointerUp = function (e) {
@@ -1865,7 +1835,7 @@
 
 			if (pinchDetails) {
 				// Reset prevDiff and clear pointerDown to trigger return below, the next gesture clears pinchDetails
-				$$invalidate(6, pointerDown = prevDiff = 0);
+				$$invalidate(7, pointerDown = prevDiff = 0);
 			}
 
 			// Make sure pointer events don't carry over to next image
@@ -1873,7 +1843,7 @@
 				return;
 			}
 
-			$$invalidate(6, pointerDown = false);
+			$$invalidate(7, pointerDown = false);
 
 			// A tap on the space around the image closes the gallery in onClick
 			if (e.target === this && !opts.persistent) {
@@ -1886,12 +1856,12 @@
 
 				// A short flick may have fewer than three moves, it gets no inertia
 				if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
-					$$invalidate(9, translate = boundTranslateValues([
+					$$invalidate(10, translate = boundTranslateValues([
 						translate[0] - (posOne.x - posThree.x) * 5,
 						translate[1] - (posOne.y - posThree.y) * 5
 					]));
 				}
-			} else if (!opts.onImageClick?.(container, activeItem)) {
+			} else if (!opts.onImageClick?.(props.container, activeItem)) {
 				if ($zoomed) {
 					const wrap = this.closest('.bp-wrap');
 					wrap.addEventListener('click', dropClick, { capture: true, once: true });
@@ -1926,52 +1896,52 @@
 			// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
 			// after its items are made, and the choice of a srcset candidate needs the size the item fits in
 			queueMicrotask(() => props.loadImage(activeItem).then(() => {
-				$$invalidate(8, naturalWidth = activeItem.width || 0);
-				$$invalidate(3, loaded = true);
+				$$invalidate(9, naturalWidth = activeItem.width || 0);
+				$$invalidate(4, loaded = true);
 				props.preloadNext();
 			}));
 
 			// Show loading indicator if needed
 			setTimeout(
 				() => {
-					$$invalidate(4, showLoader = !loaded);
+					$$invalidate(5, showLoader = !loaded);
 				},
 				250
 			);
 		};
 
 		const load_handler = e => e.target.decode().then(show, show);
-		const error_handler = error => opts.onError?.(container, activeItem, error);
+		const error_handler = error => opts.onError?.(props.container, activeItem, error);
 
 		$$self.$$set = $$props => {
 			
-			if ('smallScreen' in $$props) $$invalidate(26, smallScreen = $$props.smallScreen);
-			if ('containerWidth' in $$props) $$invalidate(27, containerWidth = $$props.containerWidth);
-			if ('containerHeight' in $$props) $$invalidate(28, containerHeight = $$props.containerHeight);
-			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
+			if ('smallScreen' in $$props) $$invalidate(25, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(26, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(27, containerHeight = $$props.containerHeight);
+			if ('activeDimensions' in $$props) $$invalidate(1, activeDimensions = $$props.activeDimensions);
 		};
 
 		$$self.$$.update = () => {
-			if ($$self.$$.dirty[0] & /*activeDimensions*/ 1) {
+			if ($$self.$$.dirty[0] & /*activeDimensions*/ 2) {
 				(fitZoom());
 			}
 
-			if ($$self.$$.dirty[0] & /*$closing, scale*/ 536870914) {
+			if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 6) {
+				zoomed.set(activeDimensions[0] * (scale - 1) > 10);
+			}
+
+			if ($$self.$$.dirty[0] & /*$closing, scale*/ 268435460) {
 				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && scale !== 1 && opts.zoom) {
-					$$invalidate(1, scale = 1);
-					$$invalidate(9, translate = [0, 0]);
-					$$invalidate(7, closingWhileZoomed = true);
+					reset();
+					$$invalidate(8, closingWhileZoomed = true);
 				}
-			}
-
-			if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 3) {
-				zoomed.set(activeDimensions[0] * (scale - 1) > 10);
 			}
 		};
 
 		return [
+			props,
 			activeDimensions,
 			scale,
 			sizes,
@@ -1986,7 +1956,6 @@
 			opts,
 			zoomed,
 			closing,
-			container,
 			maxZoom,
 			show,
 			onKeydown,
@@ -1997,7 +1966,6 @@
 			onPointerUp,
 			onClick,
 			onMount,
-			props,
 			smallScreen,
 			containerWidth,
 			containerHeight,
@@ -2018,11 +1986,11 @@
 				create_fragment$3,
 				not_equal,
 				{
-					props: 25,
-					smallScreen: 26,
-					containerWidth: 27,
-					containerHeight: 28,
-					activeDimensions: 0
+					props: 0,
+					smallScreen: 25,
+					containerWidth: 26,
+					containerHeight: 27,
+					activeDimensions: 1
 				},
 				null,
 				[-1, -1]
@@ -2113,7 +2081,7 @@
 	function instance$2($$self, $$props, $$invalidate) {
 		let { props } = $$props;
 		let { activeDimensions } = $$props;
-		let loaded = false;
+		let loaded;
 		const { activeItem, closing } = props;
 
 		const addSrc = node => {
@@ -2215,8 +2183,8 @@
 	function instance$1($$self, $$props, $$invalidate) {
 		let { props } = $$props;
 		let { activeDimensions } = $$props;
-		let loaded = false;
-		const { activeItem, opts, closing, container } = props;
+		let loaded;
+		const { activeItem, opts, closing } = props;
 
 		// Create audio / video element
 		const onMount = node => {
@@ -2245,7 +2213,7 @@
 					addAttributes(el, item);
 
 					if (tag === 'source') {
-						el.onerror = error => opts.onError?.(container, activeItem, error);
+						el.onerror = error => opts.onError?.(props.container, activeItem, error);
 					}
 
 					mediaElement.append(el);
@@ -2343,7 +2311,7 @@
 		};
 	}
 
-	// (795:2) {#if !dialog}
+	// (794:2) {#if !dialog}
 	function create_if_block_9(ctx) {
 		let div;
 
@@ -2363,7 +2331,7 @@
 		};
 	}
 
-	// (806:125) {#if containerWidth > 0 && containerHeight > 0}
+	// (805:125) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2438,7 +2406,7 @@
 		};
 	}
 
-	// (806:483) {:else}
+	// (805:483) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2464,12 +2432,12 @@
 		};
 	}
 
-	// (806:430) 
+	// (805:430) 
 	function create_if_block_8(ctx) {
-		let iframe;
+		let iframe_1;
 		let current;
 
-		iframe = new Iframe({
+		iframe_1 = new Iframe({
 				props: {
 					props: /*getChildProps*/ ctx[21](),
 					activeDimensions: /*activeDimensions*/ ctx[15]
@@ -2478,33 +2446,33 @@
 
 		return {
 			c() {
-				create_component(iframe.$$.fragment);
+				create_component(iframe_1.$$.fragment);
 			},
 			m(target, anchor) {
-				mount_component(iframe, target, anchor);
+				mount_component(iframe_1, target, anchor);
 				current = true;
 			},
 			p(ctx, dirty) {
-				const iframe_changes = {};
-				if (dirty[0] & /*activeDimensions*/ 32768) iframe_changes.activeDimensions = /*activeDimensions*/ ctx[15];
-				iframe.$set(iframe_changes);
+				const iframe_1_changes = {};
+				if (dirty[0] & /*activeDimensions*/ 32768) iframe_1_changes.activeDimensions = /*activeDimensions*/ ctx[15];
+				iframe_1.$set(iframe_1_changes);
 			},
 			i(local) {
 				if (current) return;
-				transition_in(iframe.$$.fragment, local);
+				transition_in(iframe_1.$$.fragment, local);
 				current = true;
 			},
 			o(local) {
-				transition_out(iframe.$$.fragment, local);
+				transition_out(iframe_1.$$.fragment, local);
 				current = false;
 			},
 			d(detaching) {
-				destroy_component(iframe, detaching);
+				destroy_component(iframe_1, detaching);
 			}
 		};
 	}
 
-	// (806:339) 
+	// (805:339) 
 	function create_if_block_7(ctx) {
 		let video;
 		let current;
@@ -2544,7 +2512,7 @@
 		};
 	}
 
-	// (806:172) {#if activeItem.type === 'image'}
+	// (805:172) {#if activeItem.type === 'image'}
 	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
@@ -2590,7 +2558,7 @@
 		};
 	}
 
-	// (795:94) {#key activeItem.i}
+	// (794:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -2672,7 +2640,7 @@
 		};
 	}
 
-	// (806:625) {#if activeItem.caption}
+	// (805:625) {#if activeItem.caption}
 	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2696,7 +2664,7 @@
 		};
 	}
 
-	// (806:765) {#if activeItem.download}
+	// (805:765) {#if activeItem.download}
 	function create_if_block_3(ctx) {
 		let a;
 		let a_href_value;
@@ -2735,7 +2703,7 @@
 		};
 	}
 
-	// (806:1214) {#if items.length > 1}
+	// (805:1214) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2798,7 +2766,7 @@
 		};
 	}
 
-	// (816:25) {#if opts.thumbs && items.length > 1}
+	// (815:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2842,7 +2810,7 @@
 		};
 	}
 
-	// (786:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+	// (785:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3154,7 +3122,7 @@
 		let containerHeight;
 
 		// Active item object
-		let activeItem = null;
+		let activeItem;
 
 		let activeDimensions;
 
@@ -3167,9 +3135,6 @@
 		const closing = writable(0);
 
 		component_subscribe($$self, closing, value => $$invalidate(17, $closing = value));
-
-		// True while the gallery runs its outro animation
-		let isClosing;
 
 		// Options of an open call made while closing, applied once the gallery is removed
 		let pendingOptions;
@@ -3204,8 +3169,8 @@
 			// Update trigger element to restore focus
 			focusTrigger = document.activeElement;
 
+			// The size before the gallery mounts, for the items that take it, such as a PDF
 			if (target) {
-				container = target;
 				$$invalidate(7, containerWidth = target.offsetWidth);
 
 				$$invalidate(14, containerHeight = target === document.body
@@ -3273,13 +3238,12 @@
 		const onPopstate = () => !history.state?.bp && location.href === historyUrl && close();
 
 		const close = () => {
-			if (!items || isClosing) {
+			if (!items || $closing) {
 				return;
 			}
 
-			isClosing = true;
+			closing.set(1);
 			opts.onClose?.(container, activeItem);
-			closing.set(true);
 			window.removeEventListener('keydown', onKeydown, true);
 
 			// Closed without the back button, drop the history entry the gallery added
@@ -3306,7 +3270,7 @@
 
 		const setPosition = index => {
 			// No items while closed, and the item stays during the outro
-			if (!items || isClosing) {
+			if (!items || $closing) {
 				return;
 			}
 
@@ -3340,6 +3304,15 @@
 				next();
 			} else if (key === 'ArrowLeft' && arrows) {
 				prev();
+			} else if (key === ' ' && target === container) {
+				// Space zooms an image in and out as a click does, and plays or pauses a video or audio. A focused control, such as
+				// a button or a player, keeps its own Space action. The last player is the one of the active item while it slides in
+				if (activeItem.type === 'image') {
+					$$invalidate(8, activeItem.zoom = !activeItem.zoom, activeItem);
+				} else if (activeItem.sources) {
+					const media = [...container.querySelectorAll('video,audio')].pop();
+					media.paused ? media.play() : media.pause();
+				}
 			} else if (key === 'Tab') {
 				// Trap the focus on tab press
 				const { activeElement } = document;
@@ -3514,10 +3487,8 @@
 					targetURL.searchParams.set(key, value);
 				}
 
-				item.type = 'iframe';
-				item.link = targetURL.toString();
 				item.thumb = item.thumb || 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
-				return item;
+				return iframe(item, targetURL);
 			}
 
 			// Vimeo Video, also in a channel or a group. The hash after the ID or in h is the one of a private video
@@ -3542,18 +3513,14 @@
 					targetURL.hash = sourceURL.hash;
 				}
 
-				item.type = 'iframe';
-				item.link = targetURL.toString();
-				return item;
+				return iframe(item, targetURL);
 			}
 
 			// SoundCloud Widget
 			match = link.match(/^(https?:\/\/)?(www\.)?(m\.)?soundcloud\.com\/([a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+.*)$/);
 
 			if (match) {
-				item.type = 'iframe';
-				item.link = 'https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0&url=' + encodeURIComponent(link);
-				return item;
+				return iframe(item, 'https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0&url=' + encodeURIComponent(link));
 			}
 
 			// Google Drive, Dropbox, and PDF files
@@ -3577,11 +3544,17 @@
 					item.height = containerHeight;
 				}
 
-				item.type = 'iframe';
-				return item;
+				return iframe(item, item.link);
 			}
 
 			return false;
+		};
+
+		// Show an item in an iframe, with the link as a string
+		const iframe = (item, link) => {
+			item.type = 'iframe';
+			item.link = link + '';
+			return item;
 		};
 
 		// Parse a thumbnail, update dimensions, and the fit option
@@ -3658,7 +3631,7 @@
 				return item.preload;
 			}
 
-			let image = document.createElement('img'), src = item.link, factor = 1;
+			let image = new Image(), src = item.link, factor = 1;
 
 			// The href of a link encodes the spaces of a srcset. Only these, other escapes such as %23 are part of the URL
 			if (!(/\s/).test(src)) {
@@ -3791,13 +3764,15 @@
 
 		// Provides object w/ needed funcs / data to child components
 		const getChildProps = () => ({
-			calculateDimensions,
 			closing,
 			preloadNext,
 			setDimensions,
 			activeItem,
 			loadImage,
-			container,
+			// A getter, the first item is made before the gallery element mounts
+			get container() {
+				return container;
+			},
 			zoomed,
 			close,
 			opts,
@@ -3835,11 +3810,7 @@
 				// Keep the dialog open on Escape, the keydown handler closes it with the outro animation
 				node.oncancel = e => e.preventDefault();
 
-				if (!inline) {
-					node.showModal();
-				} else {
-					node.show();
-				}
+				node[inline ? 'show' : 'showModal']();
 			}
 
 			opts.onOpen?.(container, activeItem);
@@ -3854,7 +3825,7 @@
 
 				// The back button closes the gallery instead of leaving the page
 				// Not when closed in the same tick as opened, the close has already passed its history.back()
-				if (opts.history && !isClosing) {
+				if (opts.history && !$closing) {
 					historyUrl = location.href;
 					history.pushState({ bp: 1 }, '');
 					window.addEventListener('popstate', onPopstate);
@@ -3870,9 +3841,8 @@
 
 					window.removeEventListener('keydown', onKeydown, true);
 					window.removeEventListener('popstate', onPopstate);
-					closing.set(false);
+					closing.set(0);
 					slide = null;
-					isClosing = false;
 
 					// The page stays locked while another gallery is open, the node of this one is removed already
 					if (!getUpperGallery()) {

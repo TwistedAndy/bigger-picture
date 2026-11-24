@@ -656,7 +656,7 @@ A video or audio opened again resumes from where it was closed, until the page r
 
 `string`
 
-HTML rendered in the gallery. Size it with CSS, `width` and `height` are not used.
+HTML rendered in the gallery. Size it with CSS, `width` and `height` are not used. The first element fits in the stage: if it is larger, it scrolls, and a long word, such as a URL, breaks to the next line.
 
 For advanced use, pass an empty string and mount your own content in [`onOpen`](#onopen):
 
@@ -780,6 +780,7 @@ bp.open({
 | <kbd>Esc</kbd>                | Close, unless `persistent` is set                |
 | <kbd>←</kbd> <kbd>→</kbd>     | Previous and next item                           |
 | <kbd>+</kbd> <kbd>-</kbd>     | Zoom an image in and out                         |
+| <kbd>Space</kbd>              | Zoom an image, play or pause a video or audio    |
 | Arrow keys while zoomed       | Move the zoomed image                            |
 | <kbd>Tab</kbd>                | Moves focus between the gallery controls only    |
 | Click or tap an image         | Zoom in to full size, click again to zoom out    |
@@ -788,7 +789,7 @@ bp.open({
 | Swipe left or right           | Previous and next item                           |
 | Swipe up, click the backdrop  | Close                                            |
 
-The gallery takes the focus when it opens and gives it back to the element that had it on close. Inline galleries handle the mouse and touch, but leave the keyboard to the page. A vertical swipe on an inline gallery scrolls the page.
+The gallery takes the focus when it opens and gives it back to the element that had it on close. A focused button or player keeps its own <kbd>Space</kbd> action. Inline galleries handle the mouse and touch, but leave the keyboard to the page. A vertical swipe on an inline gallery scrolls the page.
 
 Keys with <kbd>Alt</kbd>, <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> stay with the browser, such as <kbd>Alt</kbd>+<kbd>←</kbd> for back and <kbd>Ctrl</kbd>+<kbd>+</kbd> for the page zoom. In a text field of an HTML item, <kbd>←</kbd> and <kbd>→</kbd> move the caret. The page doesn't get the keys that the gallery uses, and a gallery opened over another one gets them alone. After a click in an iframe item, the keys go to the page in the iframe until the focus leaves it.
 

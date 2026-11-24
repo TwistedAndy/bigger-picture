@@ -310,8 +310,13 @@
 .bp-html {
 	display: contents;
 
+	// The content fits in the stage, and larger content scrolls. A long word, such as a URL, breaks to the next line
 	> :first-child {
 		margin: auto;
+		max-width: 100%;
+		max-height: 100%;
+		overflow: auto;
+		overflow-wrap: break-word;
 	}
 }
 

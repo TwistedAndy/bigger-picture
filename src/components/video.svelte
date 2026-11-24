@@ -13,9 +13,9 @@
 	export let props;
 	export let activeDimensions;
 
-	let loaded = false;
+	let loaded;
 
-	const { activeItem, opts, closing, container } = props;
+	const { activeItem, opts, closing } = props;
 
 	// Create audio / video element
 	const onMount = (node) => {
@@ -38,7 +38,7 @@
 				let el = document.createElement(tag);
 				addAttributes(el, item);
 				if (tag === 'source') {
-					el.onerror = (error) => opts.onError?.(container, activeItem, error);
+					el.onerror = (error) => opts.onError?.(props.container, activeItem, error);
 				}
 				mediaElement.append(el);
 			}

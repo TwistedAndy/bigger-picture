@@ -24,13 +24,12 @@
 		if (!activeBtn) {
 			return;
 		}
+		// The button shows in full, 3px from the edge
 		let { left, right, width } = activeBtn.getBoundingClientRect();
-		let margin = 3;
-		let { offsetLeft } = activeBtn;
 		if (right > thumbsPanelWidth) {
-			thumbsTranslate = boundTranslate(-offsetLeft - width + thumbsPanelWidth - margin);
+			thumbsTranslate = boundTranslate(thumbsPanelWidth - activeBtn.offsetLeft - width - 3);
 		} else if (left < 0) {
-			thumbsTranslate = boundTranslate(-offsetLeft + margin);
+			thumbsTranslate = boundTranslate(3 - activeBtn.offsetLeft);
 		}
 
 		initialTranslate = thumbsTranslate;
@@ -49,31 +48,29 @@
 	};
 
 	const pointerMove = (e) => {
-		// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag
-		if (isPointerDown && !e.buttons) {
-			dragPositions = [];
-			pointerUp();
+		if (!isPointerDown) {
+			return;
 		}
-		if (isPointerDown) {
-			let dragAmount = -(pointerDownX - e.clientX);
-			if (hasDragged) {
-				thumbsTranslate = boundTranslate(initialTranslate + dragAmount);
-				dragPositions.push(e.clientX);
-			} else {
-				hasDragged = Math.abs(dragAmount) > 5;
-			}
+		// A release outside the strip sends no pointerup to it, so a move without a pressed button ends the drag, with no
+		// inertia
+		if (!e.buttons) {
+			dragPositions = [];
+			return pointerUp();
+		}
+		const dragAmount = e.clientX - pointerDownX;
+		if (hasDragged) {
+			thumbsTranslate = boundTranslate(initialTranslate + dragAmount);
+			dragPositions.push(e.clientX);
+		} else {
+			hasDragged = Math.abs(dragAmount) > 5;
 		}
 	};
 
 	const pointerUp = () => {
-		if (hasDragged) {
-			dragPositions = dragPositions.slice(-3);
-			if (dragPositions.length > 1) {
-				let xDiff = dragPositions[0] - dragPositions.pop();
-				if (Math.abs(xDiff) > 5) {
-					thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5);
-				}
-			}
+		// The speed of the last moves, NaN with no moves, such as after a tap
+		const xDiff = dragPositions.slice(-3)[0] - dragPositions.pop();
+		if (Math.abs(xDiff) > 5) {
+			thumbsTranslate = boundTranslate(thumbsTranslate - xDiff * 5);
 		}
 		dragPositions = [];
 		isPointerDown = false;

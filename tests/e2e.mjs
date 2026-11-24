@@ -846,6 +846,26 @@ const groups = [
 			check('ArrowRight goes to the next item when the image is not zoomed', next.count === '2 / 3', next.count);
 		}
 
+		// Space zooms an image in and out, as a click does
+		{
+			await page.evaluate(() => t.open());
+			const fit = await page.evaluate(() => t.img());
+			await page.keyboard.press(' ');
+			await idle();
+			const zoomIn = await zoomed();
+			await page.keyboard.press(' ');
+			await idle();
+			const zoomOut = await zoomed();
+			// Space on a link does nothing, and must not zoom the image
+			await page.evaluate(() => t.open({ download: true }).then(() => t.$('.bp-dl').focus()));
+			await page.keyboard.press(' ');
+			await idle();
+			const link = await zoomed();
+			check('Space zooms the image in', zoomIn.zoomed && zoomIn.img.width > fit.width * 1.5, show({ fit: fit.width, zoom: zoomIn.img.width }));
+			check('Space zooms the image out to its fit size', !zoomOut.zoomed && near(zoomOut.img, fit), show(zoomOut.img));
+			check('Space on a focused control does not zoom the image', !link.zoomed, show(link));
+		}
+
 		// A drag pans a zoomed image, and stops at its edges
 		{
 			await page.evaluate(() => t.open());
@@ -1576,6 +1596,54 @@ const groups = [
 			await idle();
 			const count = await page.evaluate(() => t.count());
 			check('an arrow key on a focused audio item seeks, and does not change the item', count === '7 / 15', count);
+		}
+
+		// Space plays and pauses an audio or video item, and a focused player toggles once
+		{
+			const paused = () => page.evaluate(() => t.$('audio', t.slide()).paused);
+			const start = await paused();
+			await page.keyboard.press(' ');
+			const player = await paused();
+			await page.evaluate(() => t.$('.bp-wrap').focus());
+			await page.keyboard.press(' ');
+			const wrap = await paused();
+			await page.keyboard.press(' ');
+			const back = await paused();
+			check('Space on a focused player plays or pauses it once', player !== start, show({ start, player }));
+			check('Space plays and pauses the audio item', wrap !== player && back === player, show({ player, wrap, back }));
+		}
+
+		// HTML larger than the stage fits in it and scrolls, and a long word breaks
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [{ html: '<div id="tall" style="background: #fff"><div style="width: 5000px; height: 5000px">x</div></div>' }, { html: '<p id="long" style="background: #fff">' + 'a'.repeat(1000) + '</p>' }], ...t.options });
+				await t.idle();
+				const stage = t.stage(),
+					tall = t.$('#tall'),
+					rect = tall.getBoundingClientRect(),
+					inside = rect.left >= stage.left && rect.top >= stage.top && rect.right <= stage.right && rect.bottom <= stage.bottom;
+				tall.scrollTop = 200;
+				const scrolled = tall.scrollTop;
+				window.bp.next();
+				await t.idle();
+				const long = t.$('#long');
+				return { inside, scrolled, wide: long.scrollWidth - long.clientWidth, width: long.getBoundingClientRect().width, stage: stage.width };
+			});
+			check('HTML larger than the stage fits in it, and scrolls', value.inside && value.scrolled === 200, show(value));
+			check('a long word in an HTML item breaks to the next line', value.wide === 0 && value.width <= value.stage, show(value));
+		}
+
+		// The callbacks of the first item get the gallery element, which mounts after the item is made
+		{
+			const value = await page.evaluate(async () => {
+				let gallery;
+				t.make({}, { onError: (container) => (gallery = container) });
+				window.bp.open({ items: [{ link: '/img/c/404.png?status=404' }], ...t.options });
+				await t.idle();
+				return gallery?.className;
+			});
+			check('onError of the first item gets the gallery element', /bp-wrap/.test(value), value);
 		}
 
 		// The types option

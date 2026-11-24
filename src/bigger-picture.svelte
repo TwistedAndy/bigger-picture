@@ -55,7 +55,7 @@
 	let containerHeight;
 
 	// Active item object
-	let activeItem = null;
+	let activeItem;
 	let activeDimensions;
 
 	// True if the image is zoomed past its starting size
@@ -69,9 +69,6 @@
 		activeItem = items[position];
 		activeDimensions = calculateDimensions(activeItem);
 	}
-
-	// True while the gallery runs its outro animation
-	let isClosing;
 
 	// Options of an open call made while closing, applied once the gallery is removed
 	let pendingOptions;
@@ -93,8 +90,8 @@
 		// Update trigger element to restore focus
 		focusTrigger = document.activeElement;
 
+		// The size before the gallery mounts, for the items that take it, such as a PDF
 		if (target) {
-			container = target;
 			containerWidth = target.offsetWidth;
 			containerHeight = target === document.body ? window.innerHeight : target.clientHeight;
 		}
@@ -158,12 +155,11 @@
 
 	// Close the gallery
 	export const close = () => {
-		if (!items || isClosing) {
+		if (!items || $closing) {
 			return;
 		}
-		isClosing = true;
+		closing.set(1);
 		opts.onClose?.(container, activeItem);
-		closing.set(true);
 		window.removeEventListener('keydown', onKeydown, true);
 		// Closed without the back button, drop the history entry the gallery added
 		if (opts.history && history.state?.bp) {
@@ -192,7 +188,7 @@
 	// Jump to a specific position
 	export const setPosition = (index) => {
 		// No items while closed, and the item stays during the outro
-		if (!items || isClosing) {
+		if (!items || $closing) {
 			return;
 		}
 		const nextPosition = getNextPosition(index);
@@ -225,6 +221,15 @@
 			next();
 		} else if (key === 'ArrowLeft' && arrows) {
 			prev();
+		} else if (key === ' ' && target === container) {
+			// Space zooms an image in and out as a click does, and plays or pauses a video or audio. A focused control, such as
+			// a button or a player, keeps its own Space action. The last player is the one of the active item while it slides in
+			if (activeItem.type === 'image') {
+				activeItem.zoom = !activeItem.zoom;
+			} else if (activeItem.sources) {
+				const media = [...container.querySelectorAll('video,audio')].pop();
+				media.paused ? media.play() : media.pause();
+			}
 		} else if (key === 'Tab') {
 			// Trap the focus on tab press
 			const { activeElement } = document;
@@ -378,11 +383,9 @@
 				targetURL.searchParams.set(key, value);
 			}
 
-			item.type = 'iframe';
-			item.link = targetURL.toString();
 			item.thumb = item.thumb || 'https://i.ytimg.com/vi/' + videoID + '/mqdefault.jpg';
 
-			return item;
+			return iframe(item, targetURL);
 
 		}
 
@@ -409,10 +412,7 @@
 				targetURL.hash = sourceURL.hash;
 			}
 
-			item.type = 'iframe';
-			item.link = targetURL.toString();
-
-			return item;
+			return iframe(item, targetURL);
 
 		}
 
@@ -421,10 +421,7 @@
 
 		if (match) {
 
-			item.type = 'iframe';
-			item.link = 'https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0&url=' + encodeURIComponent(link);
-
-			return item;
+			return iframe(item, 'https://w.soundcloud.com/player/?auto_play=1&visual=1&hide_related=1&show_comments=0&url=' + encodeURIComponent(link));
 
 		}
 
@@ -449,14 +446,19 @@
 				item.height = containerHeight;
 			}
 
-			item.type = 'iframe';
-
-			return item;
+			return iframe(item, item.link);
 
 		}
 
 		return false;
 
+	};
+
+	// Show an item in an iframe, with the link as a string
+	const iframe = (item, link) => {
+		item.type = 'iframe';
+		item.link = link + '';
+		return item;
 	};
 
 	// Parse a thumbnail, update dimensions, and the fit option
@@ -535,7 +537,7 @@
 			return item.preload;
 		}
 
-		let image = document.createElement('img'),
+		let image = new Image(),
 			src = item.link,
 			factor = 1;
 
@@ -662,13 +664,15 @@
 
 	// Provides object w/ needed funcs / data to child components
 	const getChildProps = () => ({
-		calculateDimensions,
 		closing,
 		preloadNext,
 		setDimensions,
 		activeItem,
 		loadImage,
-		container,
+		// A getter, the first item is made before the gallery element mounts
+		get container() {
+			return container;
+		},
 		zoomed,
 		close,
 		opts,
@@ -703,11 +707,7 @@
 		if (dialog) {
 			// Keep the dialog open on Escape, the keydown handler closes it with the outro animation
 			node.oncancel = (e) => e.preventDefault();
-			if (!inline) {
-				node.showModal();
-			} else {
-				node.show();
-			}
+			node[inline ? 'show' : 'showModal']();
 		}
 
 		opts.onOpen?.(container, activeItem);
@@ -720,7 +720,7 @@
 			node.focus({ preventScroll: true });
 			// The back button closes the gallery instead of leaving the page
 			// Not when closed in the same tick as opened, the close has already passed its history.back()
-			if (opts.history && !isClosing) {
+			if (opts.history && !$closing) {
 				historyUrl = location.href;
 				history.pushState({ bp: 1 }, '');
 				window.addEventListener('popstate', onPopstate);
@@ -735,9 +735,8 @@
 				}
 				window.removeEventListener('keydown', onKeydown, true);
 				window.removeEventListener('popstate', onPopstate);
-				closing.set(false);
+				closing.set(0);
 				slide = null;
-				isClosing = false;
 				// The page stays locked while another gallery is open, the node of this one is removed already
 				if (!getUpperGallery()) {
 					html.classList.remove('bp-lock');
