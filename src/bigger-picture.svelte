@@ -515,7 +515,6 @@
 		if (thumbElement) {
 			item.thumb = item.source = thumbElement;
 			item.alt = item.alt || thumbElement.alt;
-			item.fit = item.fit || getComputedStyle(thumbElement).objectFit;
 			setDimensions(item, thumbElement);
 		} else if (thumbLink) {
 			item.thumb = thumbElement = new Image();
@@ -641,6 +640,8 @@
 			// Rect is the content box of the trigger element, the image is drawn inside its padding and border
 			const source = activeItem.source || focusTrigger;
 			const style = window.getComputedStyle(source);
+			// The object-fit of the thumbnail, read for the active item only, not for each item on open
+			const fit = activeItem.fit || style.objectFit;
 			const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
 			const bounds = source.getBoundingClientRect();
 			const rect = {
@@ -659,7 +660,7 @@
 				let css = '--bp-opacity:1';
 				let crop = '';
 
-				if (activeItem.fit === 'cover') {
+				if (fit === 'cover') {
 					scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
 					// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back
 					// twice as far and clips, and its content returns in place. Translates stay on the compositor, an animated
@@ -667,7 +668,7 @@
 					css += `;--bp-crop-x:calc(50% - ${rect.width / scaleWidth / 2}px);--bp-crop-y:calc(50% - ${rect.height / scaleHeight / 2}px)`;
 					crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
 					className += ' bp-clip';
-				} else if (activeItem.fit === 'contain') {
+				} else if (fit === 'contain') {
 					scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 				}
 

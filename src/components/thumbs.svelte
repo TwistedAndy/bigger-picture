@@ -37,9 +37,13 @@
 
 	};
 
-	// The text of a caption, which can be HTML, for the title and the label. A parsed document runs no scripts and loads no
-	// images
-	const text = (html) => html && new DOMParser().parseFromString(html, 'text/html').body.textContent;
+	// The text of each caption, which can be HTML, for the title and the label. Once for the items, not on each change of the
+	// position. The content of a template runs no scripts and loads no images
+	const template = document.createElement('template');
+	$: captions = items.map(({ caption }) => {
+		template.innerHTML = caption || '';
+		return template.content.textContent;
+	});
 
 	const boundTranslate = (int) => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
@@ -135,11 +139,10 @@
 	>
 		<div class="bp-thumbs-inner">
 			{#each items as item}
-				{@const caption = text(item.caption)}
 				<button
 					type="button"
-					title={caption}
-					aria-label={item.alt || caption || `${label} ${item.i + 1}`}
+					title={captions[item.i] || null}
+					aria-label={item.alt || captions[item.i] || `${label} ${item.i + 1}`}
 					data-type={item.thumb ? null : item.type}
 					class:active={item.i === position}
 					on:focus={(e) => scrollToButton(e.target)}

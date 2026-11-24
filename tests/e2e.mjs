@@ -2223,6 +2223,56 @@ const groups = [
 			});
 			check('history: an inline gallery or one with no items drops the entry of the last one', value[0] && value[1], show(value));
 		}
+
+		// The strip parses the captions once, not on each change of the position, and the open reads the style of the active
+		// thumbnail only, not of each one
+		{
+			const value = await page.evaluate(async () => {
+				await t.grid(Array.from({ length: 20 }, () => ({ w: 3000, h: 2000 })));
+				const html = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML'),
+					style = window.getComputedStyle;
+				let parses = 0,
+					styles = 0;
+				Object.defineProperty(HTMLTemplateElement.prototype, 'innerHTML', { configurable: true, set(value) { parses++; html.set.call(this, value); } });
+				window.getComputedStyle = (...args) => (styles++, style(...args));
+				t.make();
+				window.bp.open({ items: t.$$('#root a'), thumbs: true });
+				await t.wait(50);
+				const open = { parses, styles };
+				for (let step = 0; step < 5; step++) {
+					window.bp.next();
+					await t.wait(20);
+				}
+				const next = parses - open.parses;
+				Reflect.deleteProperty(HTMLTemplateElement.prototype, 'innerHTML');
+				window.getComputedStyle = style;
+				await t.idle();
+				return { open, next };
+			});
+			check('thumbnails: the captions are parsed once, not on each change of the position', value.open.parses === 20 && value.next === 0, show(value));
+			check('the open does not read the style of each thumbnail', value.open.styles < 20, show(value));
+		}
+
+		// A pinch scales the image with no transition, as a drag moves it. A cancel, such as for a system gesture, ends the pinch
+		{
+			await page.evaluate(() => t.open());
+			const cdp = await page.createCDPSession(),
+				touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points.map(([x, y], id) => ({ x, y, id })) }),
+				{ x, y } = await page.evaluate(() => t.center('.bp-img'));
+			await touch('touchStart', [[x - 30, y], [x + 30, y]]);
+			for (let step = 1; step <= 4; step++) {
+				await touch('touchMove', [[x - 30 - step * 8, y], [x + 30 + step * 8, y]]);
+				await wait(16);
+			}
+			const value = await page.evaluate(() => ({ drag: t.$('.bp-img').classList.contains('bp-drag'), transitions: t.$('.bp-img').getAnimations().length }));
+			await touch('touchCancel', []);
+			await wait(50);
+			const cancelled = await page.evaluate(() => t.$('.bp-img').classList.contains('bp-drag'));
+			await idle();
+			await cdp.detach();
+			check('a pinch scales the image with no transition', value.drag && !value.transitions, show(value));
+			check('a cancelled pinch ends the drag state', !cancelled, show({ cancelled }));
+		}
 	}],
 ];
 

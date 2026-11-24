@@ -771,13 +771,11 @@
 
 	function get_each_context(ctx, list, i) {
 		const child_ctx = ctx.slice();
-		child_ctx[22] = list[i];
-		const constants_0 = /*text*/ child_ctx[8](/*item*/ child_ctx[22].caption);
-		child_ctx[23] = constants_0;
+		child_ctx[23] = list[i];
 		return child_ctx;
 	}
 
-	// (132:31) {#each items as item}
+	// (136:31) {#each items as item}
 	function create_each_block(ctx) {
 		let button;
 		let img;
@@ -789,21 +787,21 @@
 		let dispose;
 
 		function click_handler() {
-			return /*click_handler*/ ctx[14](/*item*/ ctx[22]);
+			return /*click_handler*/ ctx[15](/*item*/ ctx[23]);
 		}
 
 		return {
 			c() {
 				button = element("button");
 				img = element("img");
-				if (!src_url_equal(img.src, img_src_value = /*item*/ ctx[22].thumb?.src)) attr(img, "src", img_src_value);
+				if (!src_url_equal(img.src, img_src_value = /*item*/ ctx[23].thumb?.src)) attr(img, "src", img_src_value);
 				attr(img, "alt", "");
 				attr(img, "loading", "lazy");
 				attr(button, "type", "button");
-				attr(button, "title", button_title_value = /*caption*/ ctx[23]);
-				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[22].alt || /*caption*/ ctx[23] || `${/*label*/ ctx[3]} ${/*item*/ ctx[22].i + 1}`);
-				attr(button, "data-type", button_data_type_value = /*item*/ ctx[22].thumb ? null : /*item*/ ctx[22].type);
-				toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
+				attr(button, "title", button_title_value = /*captions*/ ctx[7][/*item*/ ctx[23].i] || null);
+				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[23].alt || /*captions*/ ctx[7][/*item*/ ctx[23].i] || `${/*label*/ ctx[3]} ${/*item*/ ctx[23].i + 1}`);
+				attr(button, "data-type", button_data_type_value = /*item*/ ctx[23].thumb ? null : /*item*/ ctx[23].type);
+				toggle_class(button, "active", /*item*/ ctx[23].i === /*position*/ ctx[1]);
 			},
 			m(target, anchor) {
 				insert(target, button, anchor);
@@ -811,7 +809,7 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(button, "focus", /*focus_handler*/ ctx[13]),
+						listen(button, "focus", /*focus_handler*/ ctx[14]),
 						listen(button, "click", click_handler)
 					];
 
@@ -821,24 +819,24 @@
 			p(new_ctx, dirty) {
 				ctx = new_ctx;
 
-				if (dirty & /*items*/ 1 && !src_url_equal(img.src, img_src_value = /*item*/ ctx[22].thumb?.src)) {
+				if (dirty & /*items*/ 1 && !src_url_equal(img.src, img_src_value = /*item*/ ctx[23].thumb?.src)) {
 					attr(img, "src", img_src_value);
 				}
 
-				if (dirty & /*items*/ 1 && button_title_value !== (button_title_value = /*caption*/ ctx[23])) {
+				if (dirty & /*captions, items*/ 129 && button_title_value !== (button_title_value = /*captions*/ ctx[7][/*item*/ ctx[23].i] || null)) {
 					attr(button, "title", button_title_value);
 				}
 
-				if (dirty & /*items, label*/ 9 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[22].alt || /*caption*/ ctx[23] || `${/*label*/ ctx[3]} ${/*item*/ ctx[22].i + 1}`)) {
+				if (dirty & /*items, captions, label*/ 137 && button_aria_label_value !== (button_aria_label_value = /*item*/ ctx[23].alt || /*captions*/ ctx[7][/*item*/ ctx[23].i] || `${/*label*/ ctx[3]} ${/*item*/ ctx[23].i + 1}`)) {
 					attr(button, "aria-label", button_aria_label_value);
 				}
 
-				if (dirty & /*items*/ 1 && button_data_type_value !== (button_data_type_value = /*item*/ ctx[22].thumb ? null : /*item*/ ctx[22].type)) {
+				if (dirty & /*items*/ 1 && button_data_type_value !== (button_data_type_value = /*item*/ ctx[23].thumb ? null : /*item*/ ctx[23].type)) {
 					attr(button, "data-type", button_data_type_value);
 				}
 
 				if (dirty & /*items, position*/ 3) {
-					toggle_class(button, "active", /*item*/ ctx[22].i === /*position*/ ctx[1]);
+					toggle_class(button, "active", /*item*/ ctx[23].i === /*position*/ ctx[1]);
 				}
 			},
 			d(detaching) {
@@ -908,7 +906,7 @@
 				}
 			},
 			p(ctx, [dirty]) {
-				if (dirty & /*text, items, label, position, scrollToButton, hasDragged, setPosition*/ 463) {
+				if (dirty & /*captions, items, label, position, scrollToButton, hasDragged, setPosition*/ 463) {
 					each_value = ensure_array_like(/*items*/ ctx[0]);
 					let i;
 
@@ -954,6 +952,7 @@
 	}
 
 	function instance$5($$self, $$props, $$invalidate) {
+		let captions;
 		let { items } = $$props;
 		let { position } = $$props;
 		let { setPosition } = $$props;
@@ -990,9 +989,9 @@
 			initialTranslate = thumbsTranslate;
 		};
 
-		// The text of a caption, which can be HTML, for the title and the label. A parsed document runs no scripts and loads no
-		// images
-		const text = html => html && new DOMParser().parseFromString(html, 'text/html').body.textContent;
+		// The text of each caption, which can be HTML, for the title and the label. Once for the items, not on each change of the
+		// position. The content of a template runs no scripts and loads no images
+		const template = document.createElement('template');
 
 		const boundTranslate = int => Math.min(0, Math.max(int, thumbsPanelWidth - thumbsWidth - 1));
 
@@ -1084,6 +1083,13 @@
 		};
 
 		$$self.$$.update = () => {
+			if ($$self.$$.dirty & /*items, template*/ 8193) {
+				$$invalidate(7, captions = items.map(({ caption }) => {
+					$$invalidate(13, template.innerHTML = caption || '', template);
+					return template.content.textContent;
+				}));
+			}
+
 			if ($$self.$$.dirty & /*position*/ 2) {
 				// Scroll to the active thumbnail when the position changes
 				(setTimeout(scrollToButton));
@@ -1098,12 +1104,13 @@
 			thumbsTranslate,
 			isPointerDown,
 			hasDragged,
+			captions,
 			scrollToButton,
-			text,
 			pointerDown,
 			pointerMove,
 			pointerUp,
 			thumbsActions,
+			template,
 			focus_handler,
 			click_handler
 		];
@@ -1317,24 +1324,24 @@
 		return {
 			c() {
 				img = element("img");
-				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[11].sizes || /*opts*/ ctx[12].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`);
-				attr(img, "alt", /*activeItem*/ ctx[11].alt || '');
+				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[12].sizes || /*opts*/ ctx[13].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`);
+				attr(img, "alt", /*activeItem*/ ctx[12].alt || '');
 			},
 			m(target, anchor) {
 				insert(target, img, anchor);
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[11].attr)),
-						listen(img, "load", /*load_handler*/ ctx[29]),
-						listen(img, "error", /*error_handler*/ ctx[30])
+						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[12].attr)),
+						listen(img, "load", /*load_handler*/ ctx[30]),
+						listen(img, "error", /*error_handler*/ ctx[31])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*sizes, activeDimensions*/ 10 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[11].sizes || /*opts*/ ctx[12].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`)) {
+				if (dirty[0] & /*sizes, activeDimensions*/ 10 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[12].sizes || /*opts*/ ctx[13].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`)) {
 					attr(img, "sizes", img_sizes_value);
 				}
 			},
@@ -1356,9 +1363,9 @@
 
 		loading = new Loading({
 				props: {
-					activeItem: /*activeItem*/ ctx[11],
+					activeItem: /*activeItem*/ ctx[12],
 					loaded: /*loaded*/ ctx[4],
-					closing: /*closing*/ ctx[14]
+					closing: /*closing*/ ctx[15]
 				}
 			});
 
@@ -1394,7 +1401,7 @@
 		let div1;
 		let div0;
 		let if_block0_anchor;
-		let style_transform = `translate3d(${/*translate*/ ctx[10][0]}px, ${/*translate*/ ctx[10][1]}px, 0) scale(${/*scale*/ ctx[2]})`;
+		let style_transform = `translate3d(${/*translate*/ ctx[11][0]}px, ${/*translate*/ ctx[11][1]}px, 0) scale(${/*scale*/ ctx[2]})`;
 		let current;
 		let mounted;
 		let dispose;
@@ -1411,17 +1418,17 @@
 				attr(div0, "class", "bp-img");
 				set_style(div0, "width", /*activeDimensions*/ ctx[1][0] + "px");
 				set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
-				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[7]);
-				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[9]);
+				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[8] || /*prevDiff*/ ctx[7]);
+				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[16] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[10]);
 
 				set_style(div0, "background-image", /*shown*/ ctx[6]
 				? null
-				: getThumbBackground(/*activeItem*/ ctx[11]));
+				: getThumbBackground(/*activeItem*/ ctx[12]));
 
 				set_style(div0, "transform", style_transform);
 				attr(div1, "class", "bp-img-wrap");
 				attr(div1, "role", "none");
-				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[8]);
+				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[9]);
 			},
 			m(target, anchor) {
 				insert(target, div1, anchor);
@@ -1433,14 +1440,14 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(window, "keydown", /*onKeydown*/ ctx[17], true),
-						action_destroyer(/*onMount*/ ctx[24].call(null, div0)),
-						listen(div1, "wheel", /*onWheel*/ ctx[18]),
-						listen(div1, "pointerdown", /*onPointerDown*/ ctx[19]),
-						listen(div1, "pointermove", /*onPointerMove*/ ctx[20]),
-						listen(div1, "pointerup", /*onPointerUp*/ ctx[22]),
-						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[21]),
-						listen(div1, "click", /*onClick*/ ctx[23])
+						listen(window, "keydown", /*onKeydown*/ ctx[18], true),
+						action_destroyer(/*onMount*/ ctx[25].call(null, div0)),
+						listen(div1, "wheel", /*onWheel*/ ctx[19]),
+						listen(div1, "pointerdown", /*onPointerDown*/ ctx[20]),
+						listen(div1, "pointermove", /*onPointerMove*/ ctx[21]),
+						listen(div1, "pointerup", /*onPointerUp*/ ctx[23]),
+						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[22]),
+						listen(div1, "click", /*onClick*/ ctx[24])
 					];
 
 					mounted = true;
@@ -1491,12 +1498,12 @@
 					set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
 				}
 
-				if (!current || dirty[0] & /*pointerDown*/ 128) {
-					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[7]);
+				if (!current || dirty[0] & /*pointerDown, prevDiff*/ 384) {
+					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[8] || /*prevDiff*/ ctx[7]);
 				}
 
-				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 33286) {
-					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[9]);
+				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 66566) {
+					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[16] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[10]);
 				}
 
 				const style_changed = dirty[0] & /*activeDimensions*/ 2;
@@ -1504,15 +1511,15 @@
 				if (dirty[0] & /*shown, activeDimensions*/ 66 || style_changed) {
 					set_style(div0, "background-image", /*shown*/ ctx[6]
 					? null
-					: getThumbBackground(/*activeItem*/ ctx[11]));
+					: getThumbBackground(/*activeItem*/ ctx[12]));
 				}
 
-				if (dirty[0] & /*translate, scale, activeDimensions*/ 1030 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[10][0]}px, ${/*translate*/ ctx[10][1]}px, 0) scale(${/*scale*/ ctx[2]})`) || style_changed) {
+				if (dirty[0] & /*translate, scale, activeDimensions*/ 2054 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[11][0]}px, ${/*translate*/ ctx[11][1]}px, 0) scale(${/*scale*/ ctx[2]})`) || style_changed) {
 					set_style(div0, "transform", style_transform);
 				}
 
-				if (!current || dirty[0] & /*closingWhileZoomed*/ 256) {
-					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[8]);
+				if (!current || dirty[0] & /*closingWhileZoomed*/ 512) {
+					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[9]);
 				}
 			},
 			i(local) {
@@ -1547,7 +1554,7 @@
 		let { activeDimensions } = $$props;
 		const { activeItem, opts, prev, next, zoomed, closing } = props;
 		component_subscribe($$self, zoomed, value => $$invalidate(38, $zoomed = value));
-		component_subscribe($$self, closing, value => $$invalidate(28, $closing = value));
+		component_subscribe($$self, closing, value => $$invalidate(29, $closing = value));
 		const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 		// The largest zoomed width, the sizes attribute is at least the shown width
@@ -1565,7 +1572,7 @@
 		// Image html element (.bp-img)
 		let bpImg;
 
-		// Track distance for pinch events
+		// Track distance for pinch events. Not zero during a pinch, which scales the image with no transition, as a drag moves it
 		let prevDiff = 0;
 
 		let pointerDown, hasDragged;
@@ -1598,14 +1605,14 @@
 			if (opts.inline || !smallScreen) {
 				reset();
 			} else {
-				$$invalidate(10, translate = boundTranslateValues(translate));
+				$$invalidate(11, translate = boundTranslateValues(translate));
 			}
 		};
 
 		// Back to the starting size, in the center
 		const reset = () => {
 			$$invalidate(2, scale = 1);
-			$$invalidate(10, translate = [0, 0]);
+			$$invalidate(11, translate = [0, 0]);
 		};
 
 		// A value between -max and max, or 0 when the image is smaller than the stage on that axis
@@ -1622,7 +1629,7 @@
 				x = pointerDown ? edge + (x - edge) / 10 : edge;
 
 				if (Math.abs(x - edge) > 20) {
-					$$invalidate(7, pointerDown = x > edge ? prev() : next());
+					$$invalidate(8, pointerDown = x > edge ? prev() : next());
 				}
 			} else {
 				x = edge;
@@ -1664,7 +1671,7 @@
 			// Update sizes property, the browser loads a larger source if there is one
 			$$invalidate(3, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
 
-			$$invalidate(10, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
+			$$invalidate(11, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
 			$$invalidate(2, scale = newScale);
 		}
 
@@ -1697,7 +1704,7 @@
 				e.preventDefault();
 
 				// Starts from the target, so held keys keep panning while the transition runs
-				$$invalidate(10, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
+				$$invalidate(11, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
 			} else {
 				return;
 			}
@@ -1730,7 +1737,7 @@
 					pointerCache.clear();
 
 					pinchDetails = null;
-					prevDiff = 0;
+					$$invalidate(7, prevDiff = 0);
 					hasDragged = false;
 					dragPositions.length = 0;
 				}
@@ -1742,13 +1749,13 @@
 					const wrap = bpImg.parentNode.getBoundingClientRect();
 					$$invalidate(2, scale = img.width / activeDimensions[0]);
 
-					$$invalidate(10, translate = [
+					$$invalidate(11, translate = [
 						img.left + img.width / 2 - wrap.left - wrap.width / 2,
 						img.top + img.height / 2 - wrap.top - wrap.height / 2
 					]);
 				}
 
-				$$invalidate(7, pointerDown = true);
+				$$invalidate(8, pointerDown = true);
 				pointerCache.set(e.pointerId, e);
 				dragStart = e;
 				dragStartTranslate = translate;
@@ -1759,7 +1766,7 @@
 		const onPointerMove = e => {
 			if (pointerCache.size > 1) {
 				// Two pointers pinch
-				$$invalidate(7, pointerDown = false);
+				$$invalidate(8, pointerDown = false);
 
 				const { noPinch } = opts;
 
@@ -1785,14 +1792,14 @@
 				changeZoom(((prevDiff || curDiff) - curDiff) / -35, pinchDetails);
 
 				// Cache the distance for the next move event
-				prevDiff = curDiff;
+				$$invalidate(7, prevDiff = curDiff);
 
 				return;
 			}
 
 			// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
 			if (!e.buttons) {
-				$$invalidate(7, pointerDown = false);
+				$$invalidate(8, pointerDown = false);
 			}
 
 			if (!pointerDown) {
@@ -1815,7 +1822,7 @@
 			if (!$zoomed) {
 				// Close if swipe up
 				if (y < -90) {
-					$$invalidate(7, pointerDown = !opts.persistent && props.close());
+					$$invalidate(8, pointerDown = !opts.persistent && props.close());
 				}
 
 				// Only handle left / right if not swiping vertically
@@ -1823,27 +1830,27 @@
 					// Previous if swipe left
 					if (x > 40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(7, pointerDown = prev());
+						$$invalidate(8, pointerDown = prev());
 					}
 
 					// Next if swipe right
 					if (x < -40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(7, pointerDown = next());
+						$$invalidate(8, pointerDown = next());
 					}
 				}
 			}
 
 			// Image drag when zoomed
 			if ($zoomed && hasDragged && !$closing) {
-				$$invalidate(10, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
+				$$invalidate(11, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
 			}
 		};
 
-		// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
+		// The browser took the pointer, such as for a system gesture, so the drag or the pinch ends without a tap
 		const onPointerCancel = e => {
 			pointerCache.delete(e.pointerId);
-			$$invalidate(7, pointerDown = false);
+			$$invalidate(8, pointerDown = $$invalidate(7, prevDiff = 0));
 		};
 
 		const onPointerUp = function (e) {
@@ -1851,7 +1858,7 @@
 
 			if (pinchDetails) {
 				// Reset prevDiff and clear pointerDown to trigger return below, the next gesture clears pinchDetails
-				$$invalidate(7, pointerDown = prevDiff = 0);
+				$$invalidate(8, pointerDown = $$invalidate(7, prevDiff = 0));
 			}
 
 			// Make sure pointer events don't carry over to next image
@@ -1859,7 +1866,7 @@
 				return;
 			}
 
-			$$invalidate(7, pointerDown = false);
+			$$invalidate(8, pointerDown = false);
 
 			// A tap on the space around the image closes the gallery in onClick
 			if (e.target === this && !opts.persistent) {
@@ -1872,7 +1879,7 @@
 
 				// A short flick may have fewer than three moves, it gets no inertia
 				if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
-					$$invalidate(10, translate = boundTranslateValues([
+					$$invalidate(11, translate = boundTranslateValues([
 						translate[0] - (posOne.x - posThree.x) * 5,
 						translate[1] - (posOne.y - posThree.y) * 5
 					]));
@@ -1912,7 +1919,7 @@
 			// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
 			// after its items are made, and the choice of a srcset candidate needs the size the item fits in
 			queueMicrotask(() => props.loadImage(activeItem).then(() => {
-				$$invalidate(9, naturalWidth = activeItem.width || 0);
+				$$invalidate(10, naturalWidth = activeItem.width || 0);
 				$$invalidate(4, loaded = true);
 				props.preloadNext();
 			}));
@@ -1931,9 +1938,9 @@
 
 		$$self.$$set = $$props => {
 			
-			if ('smallScreen' in $$props) $$invalidate(25, smallScreen = $$props.smallScreen);
-			if ('containerWidth' in $$props) $$invalidate(26, containerWidth = $$props.containerWidth);
-			if ('containerHeight' in $$props) $$invalidate(27, containerHeight = $$props.containerHeight);
+			if ('smallScreen' in $$props) $$invalidate(26, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(27, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(28, containerHeight = $$props.containerHeight);
 			if ('activeDimensions' in $$props) $$invalidate(1, activeDimensions = $$props.activeDimensions);
 		};
 
@@ -1946,12 +1953,12 @@
 				zoomed.set(activeDimensions[0] * (scale - 1) > 10);
 			}
 
-			if ($$self.$$.dirty[0] & /*$closing, scale*/ 268435460) {
+			if ($$self.$$.dirty[0] & /*$closing, scale*/ 536870916) {
 				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
 				if ($closing && scale !== 1 && opts.zoom) {
 					reset();
-					$$invalidate(8, closingWhileZoomed = true);
+					$$invalidate(9, closingWhileZoomed = true);
 				}
 			}
 		};
@@ -1964,6 +1971,7 @@
 			loaded,
 			showLoader,
 			shown,
+			prevDiff,
 			pointerDown,
 			closingWhileZoomed,
 			naturalWidth,
@@ -2003,9 +2011,9 @@
 				not_equal,
 				{
 					props: 0,
-					smallScreen: 25,
-					containerWidth: 26,
-					containerHeight: 27,
+					smallScreen: 26,
+					containerWidth: 27,
+					containerHeight: 28,
 					activeDimensions: 1
 				},
 				null,
@@ -2332,7 +2340,7 @@
 		};
 	}
 
-	// (848:2) {#if !dialog}
+	// (849:2) {#if !dialog}
 	function create_if_block_9(ctx) {
 		let div;
 
@@ -2352,7 +2360,7 @@
 		};
 	}
 
-	// (859:125) {#if containerWidth > 0 && containerHeight > 0}
+	// (860:125) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2427,7 +2435,7 @@
 		};
 	}
 
-	// (859:483) {:else}
+	// (860:483) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2453,7 +2461,7 @@
 		};
 	}
 
-	// (859:430) 
+	// (860:430) 
 	function create_if_block_8(ctx) {
 		let iframe_1;
 		let current;
@@ -2493,7 +2501,7 @@
 		};
 	}
 
-	// (859:339) 
+	// (860:339) 
 	function create_if_block_7(ctx) {
 		let video;
 		let current;
@@ -2533,7 +2541,7 @@
 		};
 	}
 
-	// (859:172) {#if activeItem.type === 'image'}
+	// (860:172) {#if activeItem.type === 'image'}
 	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
@@ -2579,7 +2587,7 @@
 		};
 	}
 
-	// (848:94) {#key activeItem.i}
+	// (849:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -2661,7 +2669,7 @@
 		};
 	}
 
-	// (859:625) {#if activeItem.caption}
+	// (860:625) {#if activeItem.caption}
 	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2685,7 +2693,7 @@
 		};
 	}
 
-	// (859:765) {#if activeItem.download}
+	// (860:765) {#if activeItem.download}
 	function create_if_block_3(ctx) {
 		let a;
 		let a_href_value;
@@ -2724,7 +2732,7 @@
 		};
 	}
 
-	// (859:1214) {#if items.length > 1}
+	// (860:1214) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2787,7 +2795,7 @@
 		};
 	}
 
-	// (869:25) {#if opts.thumbs && items.length > 1}
+	// (870:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2831,7 +2839,7 @@
 		};
 	}
 
-	// (839:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+	// (840:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3631,7 +3639,6 @@
 			if (thumbElement) {
 				item.thumb = item.source = thumbElement;
 				item.alt = item.alt || thumbElement.alt;
-				item.fit = item.fit || getComputedStyle(thumbElement).objectFit;
 				setDimensions(item, thumbElement);
 			} else if (thumbLink) {
 				item.thumb = thumbElement = new Image();
@@ -3750,6 +3757,10 @@
 				const source = activeItem.source || focusTrigger;
 
 				const style = window.getComputedStyle(source);
+
+				// The object-fit of the thumbnail, read for the active item only, not for each item on open
+				const fit = activeItem.fit || style.objectFit;
+
 				const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
 				const bounds = source.getBoundingClientRect();
 
@@ -3769,7 +3780,7 @@
 					let css = '--bp-opacity:1';
 					let crop = '';
 
-					if (activeItem.fit === 'cover') {
+					if (fit === 'cover') {
 						scaleWidth = scaleHeight = Math.max(scaleHeight, scaleWidth);
 
 						// Crop the item like the thumbnail: the slide shifts by the crop and clips, the crop inside it shifts back
@@ -3779,7 +3790,7 @@
 
 						crop = ' translate(var(--bp-crop-x),var(--bp-crop-y))';
 						className += ' bp-clip';
-					} else if (activeItem.fit === 'contain') {
+					} else if (fit === 'contain') {
 						scaleWidth = scaleHeight = Math.min(scaleHeight, scaleWidth);
 					}
 

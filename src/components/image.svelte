@@ -27,7 +27,7 @@
 	// Image html element (.bp-img)
 	let bpImg;
 
-	// Track distance for pinch events
+	// Track distance for pinch events. Not zero during a pinch, which scales the image with no transition, as a drag moves it
 	let prevDiff = 0;
 
 	let pointerDown, hasDragged;
@@ -278,10 +278,10 @@
 		}
 	};
 
-	// The browser took the pointer, e.g. for a system gesture, so the drag ends without a tap
+	// The browser took the pointer, such as for a system gesture, so the drag or the pinch ends without a tap
 	const onPointerCancel = (e) => {
 		pointerCache.delete(e.pointerId);
-		pointerDown = false;
+		pointerDown = prevDiff = 0;
 	};
 
 	const onPointerUp = function(e) {
@@ -374,7 +374,7 @@
 	<div
 		use:onMount
 		class="bp-img"
-		class:bp-drag={pointerDown}
+		class:bp-drag={pointerDown || prevDiff}
 		class:bp-canzoom={maxZoom > 1 && activeDimensions[0] * scale < naturalWidth}
 		style:background-image={shown ? null : getThumbBackground(activeItem)}
 		style:transform="translate3d({translate[0]}px, {translate[1]}px, 0) scale({scale})"

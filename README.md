@@ -32,13 +32,13 @@ Load the minified build and the stylesheet from jsDelivr. The script exposes a g
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.2/dist/bigger-picture.css"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.3/dist/bigger-picture.css"
   integrity="sha384-H4CYn4NGroChgThoNLp/unCtvj2o9fms0GGiVaqP8JeDY0HkoQg1GsTaWKEphfrX"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.2/dist/bigger-picture.min.js"
-  integrity="sha384-bpc6UTyLibKI8RULwhL33EudVQ9eahJgSrA9Kd9dd9gqNCDpkqsIAUAouKItFlyc"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.3/dist/bigger-picture.min.js"
+  integrity="sha384-IT147BK9cZPIaS7Wp5vqskg0s1byY7nHqkqAf4l4VCD/6ETzABTzzIZapSjW3Yz4"
   crossorigin="anonymous"
 ></script>
 ```
@@ -832,9 +832,9 @@ The docs page is [`index.html`](index.html), with its scripts and styles in [`de
 
 | File                    | Minified | Gzipped |  Brotli |
 | ----------------------- | -------: | ------: | ------: |
-| `bigger-picture.min.js` |  31.6 KB | 12.6 KB | 11.3 KB |
+| `bigger-picture.min.js` |  31.7 KB | 12.6 KB | 11.4 KB |
 | `bigger-picture.css`    |  10.5 KB |  2.7 KB |  2.3 KB |
-| **Total**               |  42.2 KB | 15.2 KB | 13.6 KB |
+| **Total**               |  42.2 KB | 15.3 KB | 13.7 KB |
 
 Compared with [Fancybox](https://fancyapps.com/fancybox/) 6.1.15 on the same page: 9 thumbnails with their natural aspect ratio that open a gallery with thumbnails, a zoom from the thumbnail and back, default options. Measured in headless Chrome with phone emulation (390×844 at 3×) and the CPU slowed 4×, over 10 runs.
 
