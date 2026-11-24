@@ -814,7 +814,13 @@ html {
 npm install
 npm start       # watch the library and the docs page, serve it locally
 npm run build   # build dist/ and demo/demo.css
+npm run e2e     # build dist/, then run the browser tests in Chrome
+npm run mutate  # build copies of the library with small bugs, and run the browser tests on each copy
 ```
+
+The browser tests in [`tests/e2e.mjs`](tests/e2e.mjs) test `dist/bigger-picture.min.js`. A local server gives the test page and generated images, so the tests need no web server and no network. The test groups run at the same time, with one Chrome for each four CPU threads. To use a different Chrome, set `CHROME`. If the motion checks fail on a slow CPU, set `E2E_WORKERS` to a smaller number. To run some groups only, set `E2E_GROUPS` to their names, separated by commas.
+
+The mutation tests in [`tests/mutate.mjs`](tests/mutate.mjs) put one small bug at a time into a copy of `src/`. Then they run the browser tests on the build of that copy. A bug that no test finds shows a gap in the tests. `node tests/mutate.mjs --list` lists the bugs, and `node tests/mutate.mjs 3 7` runs only the bugs with these numbers.
 
 The docs page is [`index.html`](index.html), with its scripts and styles in [`demo/`](demo). It is published to GitHub Pages on every push to `main`.
 

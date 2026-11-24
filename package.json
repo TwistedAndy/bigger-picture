@@ -98,17 +98,20 @@
 		"serve": "live-server",
 		"rollup-build": "rollup -c",
 		"sass-watch": "sass --watch --no-source-map --silence-deprecation=import demo/styles/demo.scss:demo/demo.css",
-		"sass-build": "sass --style=compressed --no-source-map --silence-deprecation=import demo/styles/demo.scss:demo/demo.css"
+		"sass-build": "sass --style=compressed --no-source-map --silence-deprecation=import demo/styles/demo.scss:demo/demo.css",
+		"e2e": "rollup -c && node tests/e2e.mjs",
+		"mutate": "node tests/mutate.mjs"
 	},
 	"packageManager": "pnpm@10.13.1",
 	"devDependencies": {
-		"@rollup/plugin-terser": "^0.4.4",
 		"@rollup/plugin-commonjs": "^28.0.6",
 		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@rollup/plugin-terser": "^0.4.4",
 		"flexmasonry": "^0.2.3",
 		"live-server": "^1.2.2",
 		"npm-run-all2": "^8.0.4",
 		"prismjs": "^1.30.0",
+		"puppeteer-core": "^25.18.1",
 		"rollup": "^4.44.2",
 		"rollup-plugin-modify": "^3.0.0",
 		"rollup-plugin-size": "^0.3.1",

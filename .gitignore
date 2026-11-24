@@ -5,3 +5,4 @@ demo/demo.css
 demo/videos/*
 demo/img/*
 .kopiaignore
+tests/.mutants

@@ -13,8 +13,8 @@
 
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
-	// Value of sizes attribute
-	let sizes = activeDimensions[0];
+	// The largest zoomed width, the sizes attribute is at least the shown width
+	let sizes = 0;
 
 	// Tracks load state of image, shown is true once the img is decoded, then the thumbnail under it goes, so it can't
 	// show through a transparent image
@@ -53,6 +53,20 @@
 
 	// Translate of the zoomed image, animated with the scale
 	let translate = [0, 0];
+
+	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
+	// back into its bounds. A function, so the statement doesn't run again on each translate change. Before the zoomed
+	// store below, which must see the scale this sets
+	const fitZoom = () => {
+		if (opts.inline || !smallScreen) {
+			scale = 1;
+			translate = [0, 0];
+		} else {
+			translate = boundTranslateValues(translate);
+		}
+	};
+
+	$: activeDimensions, fitZoom();
 
 	$: zoomed.set(activeDimensions[0] * (scale - 1) > 10);
 
@@ -324,7 +338,22 @@
 				translate = boundTranslateValues([translate[0] - (posOne.x - posThree.x) * 5, translate[1] - (posOne.y - posThree.y) * 5]);
 			}
 		} else if (!opts.onImageClick?.(container, activeItem)) {
+			if ($zoomed) {
+				const wrap = this.closest('.bp-wrap');
+				wrap.addEventListener('click', dropClick, { capture: true, once: true });
+				wrap.addEventListener('pointerdown', () => wrap.removeEventListener('click', dropClick, true), { capture: true, once: true });
+			}
 			changeZoom($zoomed ? -maxZoom : maxZoom, e);
+		}
+	};
+
+	// The click of a tap comes after its pointerup. Once the tap zooms out, a small screen shows the controls it hides while
+	// zoomed, and the click must not press the one under the finger. So the gallery drops the next click out of the image,
+	// up to the next press
+	const dropClick = (e) => {
+		if (!bpImg.parentNode.contains(e.target)) {
+			e.stopPropagation();
+			e.preventDefault();
 		}
 	};
 
@@ -339,12 +368,13 @@
 	const onMount = (node) => {
 		bpImg = node;
 
-		// Decode initial image before rendering
-		props.loadImage(activeItem).then(() => {
+		// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
+		// after its items are made, and the choice of a srcset candidate needs the size the item fits in
+		queueMicrotask(() => props.loadImage(activeItem).then(() => {
 			naturalWidth = +activeItem.width || 0;
 			loaded = true;
 			props.preloadNext();
-		});
+		}));
 		// Show loading indicator if needed
 		setTimeout(() => {
 			showLoader = !loaded;
@@ -354,19 +384,6 @@
 	const addSrc = (node) => {
 		addAttributes(node, activeItem.attr);
 	};
-
-	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
-	// back into its bounds. A function, so the statement doesn't run again on each translate change
-	const fitZoom = () => {
-		if (opts.inline || !smallScreen) {
-			scale = 1;
-			translate = [0, 0];
-		} else {
-			translate = boundTranslateValues(translate);
-		}
-	};
-
-	$: activeDimensions, fitZoom();
 
 </script>
 
@@ -399,7 +416,7 @@
 		{#if loaded}
 			<img
 				use:addSrc
-				sizes={activeItem.sizes || opts.sizes || `${sizes}px`}
+				sizes={activeItem.sizes || opts.sizes || `${Math.max(sizes, activeDimensions[0])}px`}
 				alt={activeItem.alt || ''}
 				on:load={(e) => e.target.decode().then(show, show)}
 				on:error={(error) => opts.onError?.(container, activeItem, error)}

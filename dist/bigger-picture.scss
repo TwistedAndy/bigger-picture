@@ -134,6 +134,8 @@
 .bp-overlay {
 	@extend %fill;
 	background: rgba(0, 0, 0, 0.75);
+	// Keeps the layer of the fade in, dropping it once the intro ends repaints the whole screen and can blink
+	will-change: opacity;
 }
 
 .bp-overlay,

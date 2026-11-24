@@ -49,7 +49,7 @@
 	// Texts of the controls, merged with the labels option
 	let labels;
 
-	// Gap around the stage, read on open and on resize instead of on every measure
+	// Gap around the stage, read from the gallery on open and on resize instead of on every measure
 	let gap = 0;
 
 	let ruler;
@@ -98,7 +98,6 @@
 			container = target;
 			containerWidth = target.offsetWidth;
 			containerHeight = target === document.body ? window.innerHeight : target.clientHeight;
-			readGap();
 		}
 
 		position = 0;
@@ -175,7 +174,8 @@
 	};
 
 	// Run a callback once the animations of a node are finished, right away if it has none
-	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map((animation) => animation.finished) || []).finally(callback);
+	// A cancelled animation, such as of a slide that a change removes during the close, runs it too
+	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map((animation) => animation.finished) || []).then(callback, callback);
 
 	// Switch to the previous item
 	export const prev = () => setPosition(position - 1);
@@ -518,7 +518,8 @@
 		if (width !== containerWidth || height !== containerHeight) {
 			containerWidth = width;
 			containerHeight = height;
-			readGap();
+			// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
+			$zoomed || readGap();
 			activeDimensions = calculateDimensions(activeItem);
 		}
 	};
@@ -612,10 +613,9 @@
 
 		let dimensions;
 
-		// Measure the stage before the animation. On open, the thumbnails and the offsets make it smaller than the first guess,
-		// and the slide is centered in the stage, not in the screen
+		// The slide is centered in the stage, not in the screen. Its size is known: the gallery measures it on mount, and the
+		// ruler observer keeps it
 		const stage = ruler.getBoundingClientRect();
-		resize(stage.width, stage.height);
 
 		if (activeItem.type === 'html') {
 			const bpItem = node.querySelector('.bp-html').firstElementChild;
@@ -706,6 +706,13 @@
 	// Process the gallery mount and destroy
 	const containerActions = (node) => {
 		container = node;
+
+		// Measure the stage, which the thumbnails, the offsets and the scroll lock make other than the target, and read the gap
+		// of the gallery, which can set its own, such as none when inline. The image of the item loads after this, see onMount
+		// in image.svelte, so it picks the srcset candidate the browser picks
+		({ width: containerWidth, height: containerHeight } = ruler.getBoundingClientRect());
+		readGap();
+		activeDimensions = calculateDimensions(activeItem);
 
 		// Set here, attributes on svelte:element compile to a much larger spread
 		node.tabIndex = -1;

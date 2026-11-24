@@ -1385,7 +1385,7 @@ function create_if_block_1$1(ctx) {
 	return {
 		c() {
 			img = element("img");
-			attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${/*sizes*/ ctx[2]}px`);
+			attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${Math.max(/*sizes*/ ctx[2], /*activeDimensions*/ ctx[0][0])}px`);
 			attr(img, "alt", /*activeItem*/ ctx[10].alt || '');
 		},
 		m(target, anchor) {
@@ -1402,7 +1402,7 @@ function create_if_block_1$1(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*sizes*/ 4 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${/*sizes*/ ctx[2]}px`)) {
+			if (dirty[0] & /*sizes, activeDimensions*/ 5 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[10].sizes || /*opts*/ ctx[11].sizes || `${Math.max(/*sizes*/ ctx[2], /*activeDimensions*/ ctx[0][0])}px`)) {
 				attr(img, "sizes", img_sizes_value);
 			}
 		},
@@ -1417,7 +1417,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (398:10) {#if showLoader}
+// (415:10) {#if showLoader}
 function create_if_block$1(ctx) {
 	let loading;
 	let current;
@@ -1618,8 +1618,8 @@ function instance$3($$self, $$props, $$invalidate) {
 	component_subscribe($$self, closing, value => $$invalidate(30, $closing = value));
 	let maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
-	// Value of sizes attribute
-	let sizes = activeDimensions[0];
+	// The largest zoomed width, the sizes attribute is at least the shown width
+	let sizes = 0;
 
 	// Tracks load state of image, shown is true once the img is decoded, then the thumbnail under it goes, so it can't
 	// show through a transparent image
@@ -1659,6 +1659,18 @@ function instance$3($$self, $$props, $$invalidate) {
 
 	// Translate of the zoomed image, animated with the scale
 	let translate = [0, 0];
+
+	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
+	// back into its bounds. A function, so the statement doesn't run again on each translate change. Before the zoomed
+	// store below, which must see the scale this sets
+	const fitZoom = () => {
+		if (opts.inline || !smallScreen) {
+			$$invalidate(1, scale = 1);
+			$$invalidate(9, translate = [0, 0]);
+		} else {
+			$$invalidate(9, translate = boundTranslateValues(translate));
+		}
+	};
 
 	// Calculate translate position with bounds
 	const boundTranslateValues = ([x, y], newScale = scale) => {
@@ -1966,7 +1978,23 @@ function instance$3($$self, $$props, $$invalidate) {
 				]));
 			}
 		} else if (!opts.onImageClick?.(container, activeItem)) {
+			if ($zoomed) {
+				const wrap = this.closest('.bp-wrap');
+				wrap.addEventListener('click', dropClick, { capture: true, once: true });
+				wrap.addEventListener('pointerdown', () => wrap.removeEventListener('click', dropClick, true), { capture: true, once: true });
+			}
+
 			changeZoom($zoomed ? -maxZoom : maxZoom, e);
+		}
+	};
+
+	// The click of a tap comes after its pointerup. Once the tap zooms out, a small screen shows the controls it hides while
+	// zoomed, and the click must not press the one under the finger. So the gallery drops the next click out of the image,
+	// up to the next press
+	const dropClick = e => {
+		if (!bpImg.parentNode.contains(e.target)) {
+			e.stopPropagation();
+			e.preventDefault();
 		}
 	};
 
@@ -1981,12 +2009,13 @@ function instance$3($$self, $$props, $$invalidate) {
 	const onMount = node => {
 		bpImg = node;
 
-		// Decode initial image before rendering
-		props.loadImage(activeItem).then(() => {
+		// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
+		// after its items are made, and the choice of a srcset candidate needs the size the item fits in
+		queueMicrotask(() => props.loadImage(activeItem).then(() => {
 			$$invalidate(8, naturalWidth = +activeItem.width || 0);
 			$$invalidate(3, loaded = true);
 			props.preloadNext();
-		});
+		}));
 
 		// Show loading indicator if needed
 		setTimeout(
@@ -2001,17 +2030,6 @@ function instance$3($$self, $$props, $$invalidate) {
 		addAttributes(node, activeItem.attr);
 	};
 
-	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
-	// back into its bounds. A function, so the statement doesn't run again on each translate change
-	const fitZoom = () => {
-		if (opts.inline || !smallScreen) {
-			$$invalidate(1, scale = 1);
-			$$invalidate(9, translate = [0, 0]);
-		} else {
-			$$invalidate(9, translate = boundTranslateValues(translate));
-		}
-	};
-
 	const load_handler = e => e.target.decode().then(show, show);
 	const error_handler = error => opts.onError?.(container, activeItem, error);
 
@@ -2024,6 +2042,10 @@ function instance$3($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$$.update = () => {
+		if ($$self.$$.dirty[0] & /*activeDimensions*/ 1) {
+			(fitZoom());
+		}
+
 		if ($$self.$$.dirty[0] & /*$closing, scale*/ 1073741826) {
 			// If zoomed while closing, zoom out image and add class
 			// to change contain value on .bp-wrap to avoid cropping
@@ -2036,10 +2058,6 @@ function instance$3($$self, $$props, $$invalidate) {
 
 		if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 3) {
 			zoomed.set(activeDimensions[0] * (scale - 1) > 10);
-		}
-
-		if ($$self.$$.dirty[0] & /*activeDimensions*/ 1) {
-			(fitZoom());
 		}
 	};
 
@@ -2414,7 +2432,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (801:2) {#if !dialog}
+// (808:2) {#if !dialog}
 function create_if_block_9(ctx) {
 	let div;
 
@@ -2434,7 +2452,7 @@ function create_if_block_9(ctx) {
 	};
 }
 
-// (812:125) {#if containerWidth > 0 && containerHeight > 0}
+// (819:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2509,7 +2527,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (812:483) {:else}
+// (819:483) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2535,7 +2553,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (812:430) 
+// (819:430) 
 function create_if_block_8(ctx) {
 	let iframe;
 	let current;
@@ -2575,7 +2593,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (812:339) 
+// (819:339) 
 function create_if_block_7(ctx) {
 	let video;
 	let current;
@@ -2615,7 +2633,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (812:172) {#if activeItem.type === 'image'}
+// (819:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2661,7 +2679,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (801:94) {#key activeItem.i}
+// (808:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -2743,7 +2761,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (812:625) {#if activeItem.caption}
+// (819:625) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2767,7 +2785,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (812:765) {#if activeItem.download}
+// (819:765) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2806,7 +2824,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (812:1214) {#if items.length > 1}
+// (819:1214) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2869,7 +2887,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (822:25) {#if opts.thumbs && items.length > 1}
+// (829:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2913,7 +2931,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (792:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+// (799:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3219,7 +3237,7 @@ function instance($$self, $$props, $$invalidate) {
 	// Texts of the controls, merged with the labels option
 	let labels;
 
-	// Gap around the stage, read on open and on resize instead of on every measure
+	// Gap around the stage, read from the gallery on open and on resize instead of on every measure
 	let gap = 0;
 
 	let ruler;
@@ -3283,8 +3301,6 @@ function instance($$self, $$props, $$invalidate) {
 			$$invalidate(14, containerHeight = target === document.body
 			? window.innerHeight
 			: target.clientHeight);
-
-			readGap();
 		}
 
 		$$invalidate(6, position = 0);
@@ -3365,7 +3381,8 @@ function instance($$self, $$props, $$invalidate) {
 	};
 
 	// Run a callback once the animations of a node are finished, right away if it has none
-	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map(animation => animation.finished) || []).finally(callback);
+	// A cancelled animation, such as of a slide that a change removes during the close, runs it too
+	const afterAnimations = (node, callback) => Promise.all(node?.getAnimations().map(animation => animation.finished) || []).then(callback, callback);
 
 	const prev = () => setPosition(position - 1);
 	const next = () => setPosition(position + 1);
@@ -3701,7 +3718,10 @@ function instance($$self, $$props, $$invalidate) {
 		if (width !== containerWidth || height !== containerHeight) {
 			$$invalidate(7, containerWidth = width);
 			$$invalidate(14, containerHeight = height);
-			readGap();
+
+			// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
+			$zoomed || readGap();
+
 			$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
 		}
 	};
@@ -3787,11 +3807,9 @@ function instance($$self, $$props, $$invalidate) {
 
 		let dimensions;
 
-		// Measure the stage before the animation. On open, the thumbnails and the offsets make it smaller than the first guess,
-		// and the slide is centered in the stage, not in the screen
+		// The slide is centered in the stage, not in the screen. Its size is known: the gallery measures it on mount, and the
+		// ruler observer keeps it
 		const stage = ruler.getBoundingClientRect();
-
-		resize(stage.width, stage.height);
 
 		if (activeItem.type === 'html') {
 			const bpItem = node.querySelector('.bp-html').firstElementChild;
@@ -3889,6 +3907,14 @@ function instance($$self, $$props, $$invalidate) {
 	// Process the gallery mount and destroy
 	const containerActions = node => {
 		container = node;
+
+		// Measure the stage, which the thumbnails, the offsets and the scroll lock make other than the target, and read the gap
+		// of the gallery, which can set its own, such as none when inline. The image of the item loads after this, see onMount
+		// in image.svelte, so it picks the srcset candidate the browser picks
+		$$invalidate(7, { width: containerWidth, height: containerHeight } = ruler.getBoundingClientRect(), containerWidth, $$invalidate(14, containerHeight));
+
+		readGap();
+		$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
 
 		// Set here, attributes on svelte:element compile to a much larger spread
 		node.tabIndex = -1;
