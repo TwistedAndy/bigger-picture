@@ -133,7 +133,7 @@
 			use:thumbsActions
 			class="bp-thumbs-inner"
 		>
-			{#each items as item (item.i)}
+			{#each items as item}
 				<button
 					type="button"
 					title={item.caption}

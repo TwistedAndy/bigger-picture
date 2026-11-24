@@ -14,8 +14,11 @@ const stylesSource = 'src/bigger-picture.scss';
 const terserOptions = {
 	ecma: 2015,
 	mangle: {
+		// Internal names of Svelte and of the components. Builtins lets terser mangle the names it knows from the DOM, such as
+		// fragment and update, so the list must not have a public name, such as the close, prev and next methods
 		properties: {
-			regex: /^(duration|easing|delay|activeItem|calculateDimensions|dirty|tick|preloadNext|opts|prev|next|close|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|\$\$)$/
+			builtins: true,
+			regex: /^(duration|easing|delay|activeItem|activeDimensions|calculateDimensions|containerWidth|containerHeight|loaded|closing|dirty|tick|preloadNext|opts|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|update|\$\$)$/
 		}
 	},
 	compress: {
@@ -50,21 +53,11 @@ const cleanSvelteWhitespace = {
  * Reduce the size of scripts
  */
 const findReplaceOptions = [
-	[/^\s*validate_store.+$|throw.+interpolate.+$/gm, ''],
 	['if (options.hydrate)', 'if (false)'],
 	['if (options.intro)', 'if (false)'],
 	[`, important ? 'important' : ''`, ''],
 	[/if \('props' in \$\$props.+;$/gm, ''],
-	[/\$\$self\.\$\$set = \$\$props => {\s+};$/gm, ''],
-	[
-		/if \(type === 'object'\) {(.|\n)+if \(type === 'number'\)/gm,
-		`if (type === 'number')`,
-	],
 	[': blank_object()', ': {}'],
-	['__svelte', '_bp'],
-	[`typeof window !== 'undefined'`, 'true'],
-	['const doc = get_root_for_style(node)', 'const doc = document'],
-	[/get_root_for_style\(node\),/g, 'document,'],
 ].map(([find, replace]) => modify({ find, replace }))
 
 /**
@@ -93,6 +86,16 @@ if (production) {
 		replace: ''
 	}));
 }
+
+const svelteOptions = {
+	preprocess: [cleanSvelteWhitespace],
+	compilerOptions: {
+		immutable: true,
+		// No code that adds the Svelte version to window
+		discloseVersion: false,
+		css: false
+	}
+};
 
 /**
  * The entry checks for the Svelte 5 `mount`, which Svelte 4 does not export
@@ -129,13 +132,7 @@ let config = [
 		],
 		plugins: [
 			commonjs(),
-			svelte({
-				preprocess: [cleanSvelteWhitespace],
-				compilerOptions: {
-					immutable: true,
-					css: false
-				}
-			}),
+			svelte(svelteOptions),
 			resolve({ browser: true }),
 			...findReplaceOptions,
 			styles
@@ -162,13 +159,7 @@ if (production) {
 		],
 		plugins: [
 			commonjs(),
-			svelte({
-				preprocess: [cleanSvelteWhitespace],
-				compilerOptions: {
-					immutable: true,
-					css: false
-				}
-			}),
+			svelte(svelteOptions),
 			resolve({ browser: true }),
 			...findReplaceOptions,
 			terser(terserOptions),

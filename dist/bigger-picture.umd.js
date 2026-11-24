@@ -108,6 +108,14 @@
 	}
 
 	/**
+	 * @returns {void} */
+	function destroy_each(iterations, detaching) {
+		for (let i = 0; i < iterations.length; i += 1) {
+			if (iterations[i]) iterations[i].d(detaching);
+		}
+	}
+
+	/**
 	 * @template {keyof HTMLElementTagNameMap} K
 	 * @param {K} name
 	 * @returns {HTMLElementTagNameMap[K]}
@@ -496,98 +504,6 @@
 			: Array.from(array_like_or_iterator);
 	}
 
-	// keyed each functions:
-
-	/** @returns {void} */
-	function destroy_block(block, lookup) {
-		block.d(1);
-		lookup.delete(block.key);
-	}
-
-	/** @returns {any[]} */
-	function update_keyed_each(
-		old_blocks,
-		dirty,
-		get_key,
-		dynamic,
-		ctx,
-		list,
-		lookup,
-		node,
-		destroy,
-		create_each_block,
-		next,
-		get_context
-	) {
-		let o = old_blocks.length;
-		let n = list.length;
-		let i = o;
-		const old_indexes = {};
-		while (i--) old_indexes[old_blocks[i].key] = i;
-		const new_blocks = [];
-		const new_lookup = new Map();
-		const deltas = new Map();
-		const updates = [];
-		i = n;
-		while (i--) {
-			const child_ctx = get_context(ctx, list, i);
-			const key = get_key(child_ctx);
-			let block = lookup.get(key);
-			if (!block) {
-				block = create_each_block(key, child_ctx);
-				block.c();
-			} else {
-				// defer updates until all the DOM shuffling is done
-				updates.push(() => block.p(child_ctx, dirty));
-			}
-			new_lookup.set(key, (new_blocks[i] = block));
-			if (key in old_indexes) deltas.set(key, Math.abs(i - old_indexes[key]));
-		}
-		const will_move = new Set();
-		const did_move = new Set();
-		/** @returns {void} */
-		function insert(block) {
-			transition_in(block, 1);
-			block.m(node, next);
-			lookup.set(block.key, block);
-			next = block.first;
-			n--;
-		}
-		while (o && n) {
-			const new_block = new_blocks[n - 1];
-			const old_block = old_blocks[o - 1];
-			const new_key = new_block.key;
-			const old_key = old_block.key;
-			if (new_block === old_block) {
-				// do nothing
-				next = new_block.first;
-				o--;
-				n--;
-			} else if (!new_lookup.has(old_key)) {
-				// remove old block
-				destroy(old_block, lookup);
-				o--;
-			} else if (!lookup.has(new_key) || will_move.has(new_key)) {
-				insert(new_block);
-			} else if (did_move.has(old_key)) {
-				o--;
-			} else if (deltas.get(new_key) > deltas.get(old_key)) {
-				did_move.add(new_key);
-				insert(new_block);
-			} else {
-				will_move.add(old_key);
-				o--;
-			}
-		}
-		while (o--) {
-			const old_block = old_blocks[o];
-			if (!new_lookup.has(old_block.key)) destroy(old_block, lookup);
-		}
-		while (n) insert(new_blocks[n - 1]);
-		run_all(updates);
-		return new_blocks;
-	}
-
 	/** @returns {void} */
 	function create_component(block) {
 		block && block.c();
@@ -780,12 +696,6 @@
 	 * @property {'String'|'Boolean'|'Number'|'Array'|'Object'} [type]
 	 */
 
-	// generated during release, do not modify
-
-	const PUBLIC_VERSION = '4';
-
-	(window._bp || (window._bp = { v: new Set() })).v.add(PUBLIC_VERSION);
-
 	const subscriber_queue = [];
 
 	/**
@@ -865,8 +775,8 @@
 		return child_ctx;
 	}
 
-	// (131:3) {#each items as item (item.i)}
-	function create_each_block(key_1, ctx) {
+	// (131:3) {#each items as item}
+	function create_each_block(ctx) {
 		let button;
 		let img;
 		let img_src_value;
@@ -881,8 +791,6 @@
 		}
 
 		return {
-			key: key_1,
-			first: null,
 			c() {
 				button = element("button");
 				img = element("img");
@@ -894,7 +802,6 @@
 				attr(button, "aria-label", button_aria_label_value = /*item*/ ctx[21].alt || /*item*/ ctx[21].caption || `${/*label*/ ctx[3]} ${/*item*/ ctx[21].i + 1}`);
 				attr(button, "data-type", button_data_type_value = /*item*/ ctx[21].thumb ? null : /*item*/ ctx[21].type);
 				toggle_class(button, "active", /*item*/ ctx[21].i === /*position*/ ctx[1]);
-				this.first = button;
 			},
 			m(target, anchor) {
 				insert(target, button, anchor);
@@ -947,18 +854,14 @@
 		let div2;
 		let div1;
 		let div0;
-		let each_blocks = [];
-		let each_1_lookup = new Map();
 		let style_transform = `translateX(${/*thumbsTranslate*/ ctx[4]}px)`;
 		let mounted;
 		let dispose;
 		let each_value = ensure_array_like(/*items*/ ctx[0]);
-		const get_key = ctx => /*item*/ ctx[21].i;
+		let each_blocks = [];
 
 		for (let i = 0; i < each_value.length; i += 1) {
-			let child_ctx = get_each_context(ctx, each_value, i);
-			let key = get_key(child_ctx);
-			each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
+			each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
 		}
 
 		return {
@@ -1006,7 +909,25 @@
 			p(ctx, [dirty]) {
 				if (dirty & /*items, label, position, scrollToButton, hasDragged, setPosition*/ 207) {
 					each_value = ensure_array_like(/*items*/ ctx[0]);
-					each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div0, destroy_block, create_each_block, null, get_each_context);
+					let i;
+
+					for (i = 0; i < each_value.length; i += 1) {
+						const child_ctx = get_each_context(ctx, each_value, i);
+
+						if (each_blocks[i]) {
+							each_blocks[i].p(child_ctx, dirty);
+						} else {
+							each_blocks[i] = create_each_block(child_ctx);
+							each_blocks[i].c();
+							each_blocks[i].m(div0, null);
+						}
+					}
+
+					for (; i < each_blocks.length; i += 1) {
+						each_blocks[i].d(1);
+					}
+
+					each_blocks.length = each_value.length;
 				}
 
 				if (dirty & /*isPointerDown*/ 32) {
@@ -1024,10 +945,7 @@
 					detach(div2);
 				}
 
-				for (let i = 0; i < each_blocks.length; i += 1) {
-					each_blocks[i].d();
-				}
-
+				destroy_each(each_blocks, detaching);
 				mounted = false;
 				run_all(dispose);
 			}
