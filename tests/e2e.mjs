@@ -571,6 +571,18 @@ const groups = [
 			check('a slow image: the thumbnail goes once the image shows', value.background === '', show(value));
 		}
 
+		// A thumbnail URL loads once its item shows, not on the open, and an item without a size takes its ratio until the image loads
+		{
+			const value = await page.evaluate(async () => {
+				t.make();
+				window.bp.open({ items: [0, 1, 2].map((i) => ({ link: t.image('urlfull/' + i, 3000, 1000, 900), thumb: t.image('urlthumb/' + i, 300, 300) })) });
+				await t.wait(400);
+				const { offsetWidth: width, offsetHeight: height } = t.$('.bp-img');
+				return { width, height };
+			});
+			check('a thumbnail URL: only the shown item loads it, and the item takes its ratio', Math.abs(value.width - value.height) <= 1 && requests('/urlthumb/') === 1, show({ ...value, loads: requests('/urlthumb/') }));
+		}
+
 		// zoom: false fades the slide up from 10 px under its place
 		{
 			await page.evaluate((specs) => t.grid(specs), specs);

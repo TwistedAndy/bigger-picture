@@ -32,13 +32,13 @@ Load the minified build and the stylesheet from jsDelivr. The script exposes a g
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.3/dist/bigger-picture.css"
-  integrity="sha384-H4CYn4NGroChgThoNLp/unCtvj2o9fms0GGiVaqP8JeDY0HkoQg1GsTaWKEphfrX"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.4/dist/bigger-picture.css"
+  integrity="sha384-FqLLbHS7HnznxHVY6vHj02K9JCid7V8XWSSeaocXXzggR5m83m5BtgEkGMYntBMK"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.3/dist/bigger-picture.min.js"
-  integrity="sha384-IT147BK9cZPIaS7Wp5vqskg0s1byY7nHqkqAf4l4VCD/6ETzABTzzIZapSjW3Yz4"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.4/dist/bigger-picture.min.js"
+  integrity="sha384-hnpR9sBmWNX9f53pk3gB/R/YcUmC6eVFp/2H6/mrWKSCYv13+kDgRUrVdZxTdkBj"
   crossorigin="anonymous"
 ></script>
 ```
@@ -667,7 +667,7 @@ bp.open({
 
 `string` or `HTMLImageElement`
 
-The thumbnail shown before the item loads. Defaults to the element when it is an image, or to the first image inside it. An image element is also used to detect [`fit`](#fit).
+The thumbnail shown before the item loads. Defaults to the element when it is an image, or to the first image inside it. An image element is also used to detect [`fit`](#fit). A thumbnail URL loads when its item shows, not when the gallery opens. Until the item loads, an item without a size takes the ratio of its thumbnail.
 
 ### fit
 
@@ -795,7 +795,7 @@ html {
 }
 ```
 
-## Upgrading from 1.4
+## Upgrading from 1.4.3
 
 - The deprecated names are removed. Use [`current`](#current) for `el`, [`zoom: false`](#zoom) for `intro: 'fadeup'`, [`persistent`](#persistent) for `noClose`, and the item's [`alt`](#alt) for `title` (`data-alt` for `data-title`).
 
@@ -828,9 +828,9 @@ The docs page is [`index.html`](index.html), with its scripts and styles in [`de
 
 | File                    | Minified | Gzipped |  Brotli |
 | ----------------------- | -------: | ------: | ------: |
-| `bigger-picture.min.js` |  29.1 KB | 11.9 KB | 10.6 KB |
-| `bigger-picture.css`    |  10.5 KB |  2.7 KB |  2.3 KB |
-| **Total**               |  39.6 KB | 14.6 KB | 12.9 KB |
+| `bigger-picture.min.js` |  29.2 KB | 11.9 KB | 10.7 KB |
+| `bigger-picture.css`    |  10.5 KB |  2.7 KB |  2.4 KB |
+| **Total**               |  39.8 KB | 14.5 KB | 13.0 KB |
 
 Compared with [Fancybox](https://fancyapps.com/fancybox/) 6.1.15 on the same page: 9 thumbnails with their natural aspect ratio that open a gallery with thumbnails, a zoom from the thumbnail and back, default options. Measured in headless Chrome with phone emulation (390×844 at 3×) and the CPU slowed 4×, over 10 runs.
 

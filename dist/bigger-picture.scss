@@ -311,8 +311,9 @@
 .bp-html {
 	display: contents;
 
-	// The content fits in the stage, and larger content scrolls. A long word, such as a URL, breaks to the next line
-	> :first-child {
+	// The content fits in the stage, and larger content scrolls. A long word, such as a URL, breaks to the next line.
+	// The :where adds no weight, so a class of the content that comes after this file wins, such as overflow: hidden
+	> :where(:first-child) {
 		margin: auto;
 		max-width: 100%;
 		max-height: 100%;

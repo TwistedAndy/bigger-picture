@@ -169,14 +169,13 @@
 		e.stopPropagation();
 	};
 
+	// The wheel scrolls the page past an inline image that is not zoomed. A wheel listener makes the browser wait for it
+	// before it scrolls, so there is none then
+	$: if (bpImg) bpImg.parentNode.onwheel = zoomed || !opts.inline ? onWheel : null;
+
 	const onWheel = (e) => {
-		// Return if scrolling past inline gallery w/ wheel
-		if (opts.inline && !zoomed) {
-			return;
-		}
-		// Prevent the default to stop scrolling on a zoomed inline image
+		// Zoom instead of scrolling the page
 		e.preventDefault();
-		// Change zoom on wheel
 		changeZoom(e.deltaY / -300, e);
 	};
 
@@ -368,7 +367,6 @@
 <div
 	class="bp-img-wrap"
 	role="none"
-	on:wheel={onWheel}
 	on:pointerdown={onPointerDown}
 	on:pointermove={onPointerMove}
 	on:pointerup={onPointerUp}

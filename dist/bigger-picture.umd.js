@@ -1138,7 +1138,7 @@
 		};
 	}
 
-	// (390:10) {#if showLoader}
+	// (388:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
@@ -1224,13 +1224,12 @@
 				if (!mounted) {
 					dispose = [
 						listen(window, "keydown", /*onKeydown*/ ctx[17], true),
-						action_destroyer(/*onMount*/ ctx[24].call(null, div0)),
-						listen(div1, "wheel", /*onWheel*/ ctx[18]),
-						listen(div1, "pointerdown", /*onPointerDown*/ ctx[19]),
-						listen(div1, "pointermove", /*onPointerMove*/ ctx[20]),
-						listen(div1, "pointerup", /*onPointerUp*/ ctx[22]),
-						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[21]),
-						listen(div1, "click", /*onClick*/ ctx[23])
+						action_destroyer(/*onMount*/ ctx[23].call(null, div0)),
+						listen(div1, "pointerdown", /*onPointerDown*/ ctx[18]),
+						listen(div1, "pointermove", /*onPointerMove*/ ctx[19]),
+						listen(div1, "pointerup", /*onPointerUp*/ ctx[21]),
+						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[20]),
+						listen(div1, "click", /*onClick*/ ctx[22])
 					];
 
 					mounted = true;
@@ -1494,15 +1493,9 @@
 		};
 
 		const onWheel = e => {
-			// Return if scrolling past inline gallery w/ wheel
-			if (opts.inline && !zoomed) {
-				return;
-			}
-
-			// Prevent the default to stop scrolling on a zoomed inline image
+			// Zoom instead of scrolling the page
 			e.preventDefault();
 
-			// Change zoom on wheel
 			changeZoom(e.deltaY / -300, e);
 		};
 
@@ -1695,7 +1688,7 @@
 		};
 
 		const onMount = node => {
-			bpImg = node;
+			$$invalidate(27, bpImg = node);
 
 			// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
 			// after its items are made, and the choice of a srcset candidate needs the size the item fits in
@@ -1719,9 +1712,9 @@
 
 		$$self.$$set = $$props => {
 			
-			if ('smallScreen' in $$props) $$invalidate(25, smallScreen = $$props.smallScreen);
-			if ('containerWidth' in $$props) $$invalidate(26, containerWidth = $$props.containerWidth);
-			if ('containerHeight' in $$props) $$invalidate(27, containerHeight = $$props.containerHeight);
+			if ('smallScreen' in $$props) $$invalidate(24, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(25, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(26, containerHeight = $$props.containerHeight);
 			if ('activeDimensions' in $$props) $$invalidate(1, activeDimensions = $$props.activeDimensions);
 			if ('closing' in $$props) $$invalidate(2, closing = $$props.closing);
 		};
@@ -1748,6 +1741,12 @@
 					$$invalidate(10, closingWhileZoomed = true);
 				}
 			}
+
+			if ($$self.$$.dirty[0] & /*bpImg, zoomed*/ 402653184) {
+				// The wheel scrolls the page past an inline image that is not zoomed. A wheel listener makes the browser wait for it
+				// before it scrolls, so there is none then
+				if (bpImg) $$invalidate(27, bpImg.parentNode.onwheel = zoomed || !opts.inline ? onWheel : null, bpImg);
+			}
 		};
 
 		return [
@@ -1769,7 +1768,6 @@
 			maxZoom,
 			show,
 			onKeydown,
-			onWheel,
 			onPointerDown,
 			onPointerMove,
 			onPointerCancel,
@@ -1779,6 +1777,7 @@
 			smallScreen,
 			containerWidth,
 			containerHeight,
+			bpImg,
 			zoomed,
 			load_handler,
 			error_handler
@@ -1797,9 +1796,9 @@
 				not_equal,
 				{
 					props: 0,
-					smallScreen: 25,
-					containerWidth: 26,
-					containerHeight: 27,
+					smallScreen: 24,
+					containerWidth: 25,
+					containerHeight: 26,
 					activeDimensions: 1,
 					closing: 2
 				},
@@ -2065,7 +2064,7 @@
 		};
 	}
 
-	// (844:2) {#if !dialog}
+	// (854:2) {#if !dialog}
 	function create_if_block_8(ctx) {
 		let div;
 
@@ -2085,7 +2084,7 @@
 		};
 	}
 
-	// (855:125) {#if containerWidth > 0 && containerHeight > 0}
+	// (865:125) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
@@ -2159,7 +2158,7 @@
 		};
 	}
 
-	// (855:443) {:else}
+	// (865:443) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2185,7 +2184,7 @@
 		};
 	}
 
-	// (855:381) 
+	// (865:381) 
 	function create_if_block_7(ctx) {
 		let media;
 		let current;
@@ -2227,7 +2226,7 @@
 		};
 	}
 
-	// (855:172) {#if activeItem.type === 'image'}
+	// (865:172) {#if activeItem.type === 'image'}
 	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
@@ -2275,7 +2274,7 @@
 		};
 	}
 
-	// (844:94) {#key activeItem.i}
+	// (854:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -2357,7 +2356,7 @@
 		};
 	}
 
-	// (855:585) {#if activeItem.caption}
+	// (865:585) {#if activeItem.caption}
 	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2381,7 +2380,7 @@
 		};
 	}
 
-	// (855:725) {#if activeItem.download}
+	// (865:725) {#if activeItem.download}
 	function create_if_block_3(ctx) {
 		let a;
 		let a_href_value;
@@ -2420,7 +2419,7 @@
 		};
 	}
 
-	// (855:1174) {#if items.length > 1}
+	// (865:1174) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2483,7 +2482,7 @@
 		};
 	}
 
-	// (865:25) {#if opts.thumbs && items.length > 1}
+	// (875:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2527,7 +2526,7 @@
 		};
 	}
 
-	// (836:20) <svelte:element   this={tag}   use:containerActions   class:bp-zoomed={zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={closing}  >
+	// (846:20) <svelte:element   this={tag}   use:containerActions   class:bp-zoomed={zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -3296,9 +3295,17 @@
 				item.alt = item.alt || thumbElement.alt;
 				setDimensions(item, thumbElement);
 			} else if (thumbLink) {
-				item.thumb = thumbElement = new Image();
-				thumbElement.src = thumbLink;
-				thumbElement.onload = () => setDimensions(item, thumbElement);
+				// The open does not load the thumbnails of all items, each loads once its item shows. Its ratio is the size of an
+				// item without one, and the loading screen shows the same file
+				item.thumb = {
+					src: thumbLink,
+					load() {
+						this.load = null;
+						const image = new Image();
+						image.onload = () => setDimensions(item, image);
+						image.src = thumbLink;
+					}
+				};
 			} else if (item.type === 'image' && opts.thumbs && element?.href) {
 				// A link without a thumbnail shows the full image in the strip, loaded lazily
 				item.thumb = { src: element.href };
@@ -3654,6 +3661,9 @@
 				if (items?.[position]) {
 					$$invalidate(8, activeItem = items[position]);
 					$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
+
+					// Load the thumbnail URL once the item shows, see parseThumbnail
+					activeItem.thumb?.load?.();
 				}
 			}
 

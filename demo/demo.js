@@ -346,13 +346,15 @@
 				if (!active) {
 					continue
 				}
+				// Keep the active link visible without scrolling the page. Read the sizes before the class changes, so the
+				// browser does not calculate the layout again
+				const { offsetTop, offsetHeight } = active
+				const { scrollTop, clientHeight } = toc
 				for (const link of tocLinks.values()) {
 					link.parentElement.classList.toggle('active', link === active)
 				}
-				// Keep the active link visible without scrolling the page
-				const { offsetTop, offsetHeight } = active
-				if (offsetTop < toc.scrollTop || offsetTop + offsetHeight > toc.scrollTop + toc.clientHeight) {
-					toc.scrollTo({ top: offsetTop - toc.clientHeight / 2, behavior: 'smooth' })
+				if (offsetTop < scrollTop || offsetTop + offsetHeight > scrollTop + clientHeight) {
+					toc.scrollTo({ top: offsetTop - clientHeight / 2, behavior: 'smooth' })
 				}
 			}
 		},
@@ -370,8 +372,15 @@
 		if (!button) {
 			return
 		}
-		const text = $('code', button.closest('.code')).textContent
-		navigator.clipboard?.writeText(text).then(() => {
+		const code = $('code', button.closest('.code'))
+		let copied = navigator.clipboard?.writeText(code.textContent)
+		// A page on http, such as a local test site, has no Clipboard API, so copy the selected code
+		if (!copied) {
+			getSelection().selectAllChildren(code)
+			copied = document.execCommand('copy') ? Promise.resolve() : null
+			getSelection().removeAllRanges()
+		}
+		copied?.then(() => {
 			button.textContent = 'Copied'
 			setTimeout(() => (button.textContent = 'Copy'), 1500)
 		})

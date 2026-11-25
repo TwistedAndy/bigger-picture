@@ -75,6 +75,8 @@
 	$: if (items?.[position]) {
 		activeItem = items[position];
 		activeDimensions = calculateDimensions(activeItem);
+		// Load the thumbnail URL once the item shows, see parseThumbnail
+		activeItem.thumb?.load?.();
 	}
 
 	// Options of an open call made while closing, applied once the gallery is removed
@@ -512,9 +514,17 @@
 			item.alt = item.alt || thumbElement.alt;
 			setDimensions(item, thumbElement);
 		} else if (thumbLink) {
-			item.thumb = thumbElement = new Image();
-			thumbElement.src = thumbLink;
-			thumbElement.onload = () => setDimensions(item, thumbElement);
+			// The open does not load the thumbnails of all items, each loads once its item shows. Its ratio is the size of an
+			// item without one, and the loading screen shows the same file
+			item.thumb = {
+				src: thumbLink,
+				load() {
+					this.load = null;
+					const image = new Image();
+					image.onload = () => setDimensions(item, image);
+					image.src = thumbLink;
+				}
+			};
 		} else if (item.type === 'image' && opts.thumbs && element?.href) {
 			// A link without a thumbnail shows the full image in the strip, loaded lazily
 			item.thumb = { src: element.href };
