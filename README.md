@@ -409,8 +409,6 @@ The items to show. Elements pass their data through `href` and data attributes, 
 
 If the node matches one of the `items` (or the `element` of an item object), the gallery starts at that item and zooms out of it. Use it in a click handler with the clicked link. A set [`position`](#position) wins over it.
 
-`el` is the deprecated name of this option and still works.
-
 ### position
 
 `number` · default `0`
@@ -451,8 +449,6 @@ Sets the `sizes` attribute of every image with a `srcset`. By default it updates
 
 Zooms the item out of its element on open and back into it on close. With `false` it fades up and down instead, which suits inline galleries.
 
-`intro: 'fadeup'` is the deprecated name of `zoom: false` and still works.
-
 ### inline
 
 `boolean` · default `false`
@@ -467,8 +463,6 @@ Mounts the gallery inline. It doesn't lock the page scroll or trap Tab, and leav
 `boolean` · default `false`
 
 Hides the close button and keeps the gallery open until [`close`](#close) is called. Useful for inline galleries.
-
-`noClose` is the deprecated name of this option and still works.
 
 ### noPinch
 
@@ -618,7 +612,7 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 
 `string`
 
-The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube (also `youtube-nocookie.com`, Shorts and live), Vimeo (also in channels and groups), SoundCloud, Google Drive and Dropbox links. A `srcset` value and a `data:image/` URL are images too. With a `srcset`, the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
+The URL of the item, for elements their `href` by default. The type is detected from it: images, video, audio, PDF, YouTube (also `youtube-nocookie.com`, Shorts and live), Vimeo (also in channels and groups), SoundCloud, Google Drive and Dropbox links. A YouTube or Vimeo player opened again resumes from where it was closed, until the page reloads. A `srcset` value and a `data:image/` URL are images too. With a `srcset`, the `sizes` value updates automatically as the image is zoomed. Override it with [`sizes`](#sizes).
 
 <!-- prettier-ignore -->
 ```html
@@ -698,8 +692,6 @@ The largest height of the item in pixels, such as `600` or `"600px"`. Not needed
 `string`
 
 Alternative text of the image. Iframes use it as their `title`, and video and audio players as their `aria-label`. It defaults to the `alt` of the thumbnail image.
-
-`title` is the deprecated name of this property and still works.
 
 ### caption
 
@@ -803,6 +795,10 @@ html {
 }
 ```
 
+## Upgrading from 1.4
+
+- The deprecated names are removed. Use [`current`](#current) for `el`, [`zoom: false`](#zoom) for `intro: 'fadeup'`, [`persistent`](#persistent) for `noClose`, and the item's [`alt`](#alt) for `title` (`data-alt` for `data-title`).
+
 ## Upgrading from 1.2
 
 - `img` and `iframe` are now [`link`](#link): `data-img` becomes `data-link`, and `data-iframe="url"` becomes `data-link="url" data-type="iframe"`. A `srcset` value is detected as an image.
@@ -832,9 +828,9 @@ The docs page is [`index.html`](index.html), with its scripts and styles in [`de
 
 | File                    | Minified | Gzipped |  Brotli |
 | ----------------------- | -------: | ------: | ------: |
-| `bigger-picture.min.js` |  31.7 KB | 12.6 KB | 11.4 KB |
+| `bigger-picture.min.js` |  29.1 KB | 11.9 KB | 10.6 KB |
 | `bigger-picture.css`    |  10.5 KB |  2.7 KB |  2.3 KB |
-| **Total**               |  42.2 KB | 15.3 KB | 13.7 KB |
+| **Total**               |  39.6 KB | 14.6 KB | 12.9 KB |
 
 Compared with [Fancybox](https://fancyapps.com/fancybox/) 6.1.15 on the same page: 9 thumbnails with their natural aspect ratio that open a gallery with thumbnails, a zoom from the thumbnail and back, default options. Measured in headless Chrome with phone emulation (390×844 at 3×) and the CPU slowed 4×, over 10 runs.
 

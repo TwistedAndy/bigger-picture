@@ -26,26 +26,13 @@
 		return typeof thing === 'function';
 	}
 
-	/** @returns {boolean} */
-	function safe_not_equal(a, b) {
-		return a != a ? b == b : a !== b || (a && typeof a === 'object') || typeof a === 'function';
-	}
-
-	let src_url_equal_anchor;
-
 	/**
 	 * @param {string} element_src
 	 * @param {string} url
 	 * @returns {boolean}
 	 */
 	function src_url_equal(element_src, url) {
-		if (element_src === url) return true;
-		if (!src_url_equal_anchor) {
-			src_url_equal_anchor = document.createElement('a');
-		}
-		// This is actually faster than doing URL(..).href
-		src_url_equal_anchor.href = url;
-		return element_src === src_url_equal_anchor.href;
+		return element_src === url;
 	}
 
 	/** @returns {boolean} */
@@ -56,22 +43,6 @@
 	/** @returns {boolean} */
 	function is_empty(obj) {
 		return Object.keys(obj).length === 0;
-	}
-
-	function subscribe(store, ...callbacks) {
-		if (store == null) {
-			for (const callback of callbacks) {
-				callback(undefined);
-			}
-			return noop;
-		}
-		const unsub = store.subscribe(...callbacks);
-		return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
-	}
-
-	/** @returns {void} */
-	function component_subscribe(component, store, callback) {
-		component.$$.on_destroy.push(subscribe(store, callback));
 	}
 
 	function action_destroyer(action_result) {
@@ -160,71 +131,6 @@
 		if (value == null) node.removeAttribute(attribute);
 		else if (node.getAttribute(attribute) !== value) node.setAttribute(attribute, value);
 	}
-	/**
-	 * List of attributes that should always be set through the attr method,
-	 * because updating them through the property setter doesn't work reliably.
-	 * In the example of `width`/`height`, the problem is that the setter only
-	 * accepts numeric values, but the attribute can also be set to a string like `50%`.
-	 * If this list becomes too big, rethink this approach.
-	 */
-	const always_set_through_set_attribute = ['width', 'height'];
-
-	/**
-	 * @param {Element & ElementCSSInlineStyle} node
-	 * @param {{ [x: string]: string }} attributes
-	 * @returns {void}
-	 */
-	function set_attributes(node, attributes) {
-		// @ts-ignore
-		const descriptors = Object.getOwnPropertyDescriptors(node.__proto__);
-		for (const key in attributes) {
-			if (attributes[key] == null) {
-				node.removeAttribute(key);
-			} else if (key === 'style') {
-				node.style.cssText = attributes[key];
-			} else if (key === '__value') {
-				/** @type {any} */ (node).value = node[key] = attributes[key];
-			} else if (
-				descriptors[key] &&
-				descriptors[key].set &&
-				always_set_through_set_attribute.indexOf(key) === -1
-			) {
-				node[key] = attributes[key];
-			} else {
-				attr(node, key, attributes[key]);
-			}
-		}
-	}
-
-	/**
-	 * @param {Record<string, unknown>} data_map
-	 * @returns {void}
-	 */
-	function set_custom_element_data_map(node, data_map) {
-		Object.keys(data_map).forEach((key) => {
-			set_custom_element_data(node, key, data_map[key]);
-		});
-	}
-
-	/**
-	 * @returns {void} */
-	function set_custom_element_data(node, prop, value) {
-		const lower = prop.toLowerCase(); // for backwards compatibility with existing behavior we do lowercase first
-		if (lower in node) {
-			node[lower] = typeof node[lower] === 'boolean' && value === '' ? true : value;
-		} else if (prop in node) {
-			node[prop] = typeof node[prop] === 'boolean' && value === '' ? true : value;
-		} else {
-			attr(node, prop, value);
-		}
-	}
-
-	/**
-	 * @param {string} tag
-	 */
-	function set_dynamic_element_data(tag) {
-		return /-/.test(tag) ? set_custom_element_data_map : set_attributes;
-	}
 
 	/**
 	 * @param {Text} text
@@ -276,15 +182,7 @@
 	 * }} ChildNodeArray
 	 */
 
-	let current_component;
-
-	/** @returns {void} */
-	function set_current_component(component) {
-		current_component = component;
-	}
-
 	const dirty_components = [];
-	const binding_callbacks = [];
 
 	let render_callbacks = [];
 
@@ -300,11 +198,6 @@
 			update_scheduled = true;
 			resolved_promise.then(flush);
 		}
-	}
-
-	/** @returns {void} */
-	function add_render_callback(fn) {
-		render_callbacks.push(fn);
 	}
 
 	// flush() calls callbacks in this order:
@@ -337,7 +230,7 @@
 		if (flushidx !== 0) {
 			return;
 		}
-		const saved_component = current_component;
+
 		do {
 			// first, call beforeUpdate functions
 			// and update components
@@ -345,7 +238,7 @@
 				while (flushidx < dirty_components.length) {
 					const component = dirty_components[flushidx];
 					flushidx++;
-					set_current_component(component);
+
 					update(component.$$);
 				}
 			} catch (e) {
@@ -354,10 +247,10 @@
 				flushidx = 0;
 				throw e;
 			}
-			set_current_component(null);
+
 			dirty_components.length = 0;
 			flushidx = 0;
-			while (binding_callbacks.length) binding_callbacks.pop()();
+
 			// then, once components are updated, call
 			// afterUpdate functions. This may cause
 			// subsequent updates...
@@ -376,32 +269,19 @@
 		}
 		update_scheduled = false;
 		seen_callbacks.clear();
-		set_current_component(saved_component);
+
 	}
 
 	/** @returns {void} */
 	function update($$) {
 		if ($$.fragment !== null) {
 			$$.update();
-			run_all($$.before_update);
+
 			const dirty = $$.dirty;
 			$$.dirty = [-1];
 			$$.fragment && $$.fragment.p($$.ctx, dirty);
-			$$.after_update.forEach(add_render_callback);
-		}
-	}
 
-	/**
-	 * Useful for example to execute remaining `afterUpdate` callbacks before executing `destroy`.
-	 * @param {Function[]} fns
-	 * @returns {void}
-	 */
-	function flush_render_callbacks(fns) {
-		const filtered = [];
-		const targets = [];
-		render_callbacks.forEach((c) => (fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c)));
-		targets.forEach((c) => c());
-		render_callbacks = filtered;
+		}
 	}
 
 	const outroing = new Set();
@@ -511,36 +391,21 @@
 
 	/** @returns {void} */
 	function mount_component(component, target, anchor) {
-		const { fragment, after_update } = component.$$;
+		const { fragment } = component.$$;
 		fragment && fragment.m(target, anchor);
-		// onMount happens before the initial afterUpdate
-		add_render_callback(() => {
-			const new_on_destroy = component.$$.on_mount.map(run).filter(is_function);
-			// if the component was destroyed immediately
-			// it will update the `$$.on_destroy` reference to `null`.
-			// the destructured on_destroy may still reference to the old array
-			if (component.$$.on_destroy) {
-				component.$$.on_destroy.push(...new_on_destroy);
-			} else {
-				// Edge case - component was destroyed immediately,
-				// most likely as a result of a binding initialising
-				run_all(new_on_destroy);
-			}
-			component.$$.on_mount = [];
-		});
-		after_update.forEach(add_render_callback);
+
+
 	}
 
 	/** @returns {void} */
 	function destroy_component(component, detaching) {
 		const $$ = component.$$;
 		if ($$.fragment !== null) {
-			flush_render_callbacks($$.after_update);
-			run_all($$.on_destroy);
+
 			$$.fragment && $$.fragment.d(detaching);
 			// TODO null out other refs, including component.$$ (but need to
 			// preserve final state?)
-			$$.on_destroy = $$.fragment = null;
+			$$.fragment = null;
 			$$.ctx = [];
 		}
 	}
@@ -576,8 +441,8 @@
 		append_styles = null,
 		dirty = [-1]
 	) {
-		const parent_component = current_component;
-		set_current_component(component);
+
+
 		/** @type {import('./private.js').T$$} */
 		const $$ = (component.$$ = {
 			fragment: null,
@@ -586,27 +451,27 @@
 			props,
 			update: noop,
 			not_equal,
-			bound: {},
+
 			// lifecycle
-			on_mount: [],
-			on_destroy: [],
-			on_disconnect: [],
-			before_update: [],
-			after_update: [],
-			context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
+
+
+
+
+
+
 			// everything else
-			callbacks: {},
+
 			dirty,
-			skip_bound: false,
-			root: options.target || parent_component.$$.root
+
+
 		});
-		append_styles && append_styles($$.root);
+
 		let ready = false;
 		$$.ctx = instance
 			? instance(component, options.props || {}, (i, ret, ...rest) => {
 					const value = rest.length ? rest[0] : ret;
 					if ($$.ctx && not_equal($$.ctx[i], ($$.ctx[i] = value))) {
-						if (!$$.skip_bound && $$.bound[i]) $$.bound[i](value);
+
 						if (ready) make_dirty(component, i);
 					}
 					return ret;
@@ -614,7 +479,7 @@
 			: [];
 		$$.update();
 		ready = true;
-		run_all($$.before_update);
+
 		// `false` as a special case of no DOM component
 		$$.fragment = create_fragment ? create_fragment($$.ctx) : false;
 		if (options.target) {
@@ -625,7 +490,7 @@
 			mount_component(component, options.target, options.anchor);
 			flush();
 		}
-		set_current_component(parent_component);
+
 	}
 
 	/**
@@ -664,17 +529,7 @@
 		 * @param {((e: Events[K]) => void) | null | undefined} callback
 		 * @returns {() => void}
 		 */
-		$on(type, callback) {
-			if (!is_function(callback)) {
-				return noop;
-			}
-			const callbacks = this.$$.callbacks[type] || (this.$$.callbacks[type] = []);
-			callbacks.push(callback);
-			return () => {
-				const index = callbacks.indexOf(callback);
-				if (index !== -1) callbacks.splice(index, 1);
-			};
-		}
+
 
 		/**
 		 * @param {Partial<Props>} props
@@ -682,9 +537,9 @@
 		 */
 		$set(props) {
 			if (this.$$set && !is_empty(props)) {
-				this.$$.skip_bound = true;
+
 				this.$$set(props);
-				this.$$.skip_bound = false;
+
 			}
 		}
 	}
@@ -695,77 +550,6 @@
 	 * @property {boolean} [reflect]
 	 * @property {'String'|'Boolean'|'Number'|'Array'|'Object'} [type]
 	 */
-
-	const subscriber_queue = [];
-
-	/**
-	 * Create a `Writable` store that allows both updating and reading by subscription.
-	 *
-	 * https://svelte.dev/docs/svelte-store#writable
-	 * @template T
-	 * @param {T} [value] initial value
-	 * @param {import('./public.js').StartStopNotifier<T>} [start]
-	 * @returns {import('./public.js').Writable<T>}
-	 */
-	function writable(value, start = noop) {
-		/** @type {import('./public.js').Unsubscriber} */
-		let stop;
-		/** @type {Set<import('./private.js').SubscribeInvalidateTuple<T>>} */
-		const subscribers = new Set();
-		/** @param {T} new_value
-		 * @returns {void}
-		 */
-		function set(new_value) {
-			if (safe_not_equal(value, new_value)) {
-				value = new_value;
-				if (stop) {
-					// store is ready
-					const run_queue = !subscriber_queue.length;
-					for (const subscriber of subscribers) {
-						subscriber[1]();
-						subscriber_queue.push(subscriber, value);
-					}
-					if (run_queue) {
-						for (let i = 0; i < subscriber_queue.length; i += 2) {
-							subscriber_queue[i][0](subscriber_queue[i + 1]);
-						}
-						subscriber_queue.length = 0;
-					}
-				}
-			}
-		}
-
-		/**
-		 * @param {import('./public.js').Updater<T>} fn
-		 * @returns {void}
-		 */
-		function update(fn) {
-			set(fn(value));
-		}
-
-		/**
-		 * @param {import('./public.js').Subscriber<T>} run
-		 * @param {import('./private.js').Invalidator<T>} [invalidate]
-		 * @returns {import('./public.js').Unsubscriber}
-		 */
-		function subscribe(run, invalidate = noop) {
-			/** @type {import('./private.js').SubscribeInvalidateTuple<T>} */
-			const subscriber = [run, invalidate];
-			subscribers.add(subscriber);
-			if (subscribers.size === 1) {
-				stop = start(set, update) || noop;
-			}
-			run(value);
-			return () => {
-				subscribers.delete(subscriber);
-				if (subscribers.size === 0 && stop) {
-					stop();
-					stop = null;
-				}
-			};
-		}
-		return { set, update, subscribe };
-	}
 
 	/* src\components\thumbs.svelte generated by Svelte v4.2.20 */
 
@@ -850,7 +634,7 @@
 		};
 	}
 
-	function create_fragment$5(ctx) {
+	function create_fragment$4(ctx) {
 		let div2;
 		let div1;
 		let div0;
@@ -951,7 +735,7 @@
 		};
 	}
 
-	function instance$5($$self, $$props, $$invalidate) {
+	function instance$4($$self, $$props, $$invalidate) {
 		let captions;
 		let { items } = $$props;
 		let { position } = $$props;
@@ -1120,7 +904,7 @@
 		constructor(options) {
 			super();
 
-			init(this, options, instance$5, create_fragment$5, not_equal, {
+			init(this, options, instance$4, create_fragment$4, not_equal, {
 				items: 0,
 				position: 1,
 				setPosition: 2,
@@ -1128,6 +912,10 @@
 			});
 		}
 	}
+
+	// Playback positions by a key: the first source of a video, or the link of a YouTube or Vimeo player. A video or a player
+	// opened again resumes from there
+	const positions = {};
 
 	// Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url(). Escaped, a quote in a data URL, such
 	// as of an SVG, doesn't end the string
@@ -1171,7 +959,7 @@
 				insert(target, div, anchor);
 
 				if (!mounted) {
-					dispose = listen(div, "animationend", /*animationend_handler*/ ctx[5]);
+					dispose = listen(div, "animationend", /*animationend_handler*/ ctx[4]);
 					mounted = true;
 				}
 			},
@@ -1195,7 +983,7 @@
 		};
 	}
 
-	// (17:67) {#if $closing}
+	// (17:67) {#if closing}
 	function create_if_block$2(ctx) {
 		let div;
 
@@ -1221,11 +1009,11 @@
 		};
 	}
 
-	function create_fragment$4(ctx) {
+	function create_fragment$3(ctx) {
 		let if_block0_anchor;
 		let if_block1_anchor;
 		let if_block0 = !/*hidden*/ ctx[3] && create_if_block_1$2(ctx);
-		let if_block1 = /*$closing*/ ctx[4] && create_if_block$2(ctx);
+		let if_block1 = /*closing*/ ctx[2] && create_if_block$2(ctx);
 
 		return {
 			c() {
@@ -1254,7 +1042,7 @@
 					if_block0 = null;
 				}
 
-				if (/*$closing*/ ctx[4]) {
+				if (/*closing*/ ctx[2]) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 					} else {
@@ -1281,16 +1069,10 @@
 		};
 	}
 
-	function instance$4($$self, $$props, $$invalidate) {
-		let $closing,
-			$$unsubscribe_closing = noop,
-			$$subscribe_closing = () => ($$unsubscribe_closing(), $$unsubscribe_closing = subscribe(closing, $$value => $$invalidate(4, $closing = $$value)), closing);
-
-		$$self.$$.on_destroy.push(() => $$unsubscribe_closing());
+	function instance$3($$self, $$props, $$invalidate) {
 		let { activeItem } = $$props;
 		let { loaded } = $$props;
 		let { closing } = $$props;
-		$$subscribe_closing();
 
 		// True once the loader has faded out
 		let hidden;
@@ -1300,16 +1082,16 @@
 		$$self.$$set = $$props => {
 			if ('activeItem' in $$props) $$invalidate(0, activeItem = $$props.activeItem);
 			if ('loaded' in $$props) $$invalidate(1, loaded = $$props.loaded);
-			if ('closing' in $$props) $$subscribe_closing($$invalidate(2, closing = $$props.closing));
+			if ('closing' in $$props) $$invalidate(2, closing = $$props.closing);
 		};
 
-		return [activeItem, loaded, closing, hidden, $closing, animationend_handler];
+		return [activeItem, loaded, closing, hidden, animationend_handler];
 	}
 
 	class Loading extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$4, create_fragment$4, not_equal, { activeItem: 0, loaded: 1, closing: 2 });
+			init(this, options, instance$3, create_fragment$3, not_equal, { activeItem: 0, loaded: 1, closing: 2 });
 		}
 	}
 
@@ -1324,24 +1106,24 @@
 		return {
 			c() {
 				img = element("img");
-				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[12].sizes || /*opts*/ ctx[13].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`);
-				attr(img, "alt", /*activeItem*/ ctx[12].alt || '');
+				attr(img, "sizes", img_sizes_value = /*activeItem*/ ctx[13].sizes || /*opts*/ ctx[14].sizes || `${Math.max(/*sizes*/ ctx[4], /*activeDimensions*/ ctx[1][0])}px`);
+				attr(img, "alt", /*activeItem*/ ctx[13].alt || '');
 			},
 			m(target, anchor) {
 				insert(target, img, anchor);
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[12].attr)),
-						listen(img, "load", /*load_handler*/ ctx[30]),
-						listen(img, "error", /*error_handler*/ ctx[31])
+						action_destroyer(addAttributes.call(null, img, /*activeItem*/ ctx[13].attr)),
+						listen(img, "load", /*load_handler*/ ctx[29]),
+						listen(img, "error", /*error_handler*/ ctx[30])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*sizes, activeDimensions*/ 10 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[12].sizes || /*opts*/ ctx[13].sizes || `${Math.max(/*sizes*/ ctx[3], /*activeDimensions*/ ctx[1][0])}px`)) {
+				if (dirty[0] & /*sizes, activeDimensions*/ 18 && img_sizes_value !== (img_sizes_value = /*activeItem*/ ctx[13].sizes || /*opts*/ ctx[14].sizes || `${Math.max(/*sizes*/ ctx[4], /*activeDimensions*/ ctx[1][0])}px`)) {
 					attr(img, "sizes", img_sizes_value);
 				}
 			},
@@ -1356,16 +1138,16 @@
 		};
 	}
 
-	// (385:10) {#if showLoader}
+	// (390:10) {#if showLoader}
 	function create_if_block$1(ctx) {
 		let loading;
 		let current;
 
 		loading = new Loading({
 				props: {
-					activeItem: /*activeItem*/ ctx[12],
-					loaded: /*loaded*/ ctx[4],
-					closing: /*closing*/ ctx[15]
+					activeItem: /*activeItem*/ ctx[13],
+					loaded: /*loaded*/ ctx[5],
+					closing: /*closing*/ ctx[2]
 				}
 			});
 
@@ -1379,7 +1161,8 @@
 			},
 			p(ctx, dirty) {
 				const loading_changes = {};
-				if (dirty[0] & /*loaded*/ 16) loading_changes.loaded = /*loaded*/ ctx[4];
+				if (dirty[0] & /*loaded*/ 32) loading_changes.loaded = /*loaded*/ ctx[5];
+				if (dirty[0] & /*closing*/ 4) loading_changes.closing = /*closing*/ ctx[2];
 				loading.$set(loading_changes);
 			},
 			i(local) {
@@ -1397,16 +1180,16 @@
 		};
 	}
 
-	function create_fragment$3(ctx) {
+	function create_fragment$2(ctx) {
 		let div1;
 		let div0;
 		let if_block0_anchor;
-		let style_transform = `translate3d(${/*translate*/ ctx[11][0]}px, ${/*translate*/ ctx[11][1]}px, 0) scale(${/*scale*/ ctx[2]})`;
+		let style_transform = `translate3d(${/*translate*/ ctx[12][0]}px, ${/*translate*/ ctx[12][1]}px, 0) scale(${/*scale*/ ctx[3]})`;
 		let current;
 		let mounted;
 		let dispose;
-		let if_block0 = /*loaded*/ ctx[4] && create_if_block_1$1(ctx);
-		let if_block1 = /*showLoader*/ ctx[5] && create_if_block$1(ctx);
+		let if_block0 = /*loaded*/ ctx[5] && create_if_block_1$1(ctx);
+		let if_block1 = /*showLoader*/ ctx[6] && create_if_block$1(ctx);
 
 		return {
 			c() {
@@ -1418,17 +1201,17 @@
 				attr(div0, "class", "bp-img");
 				set_style(div0, "width", /*activeDimensions*/ ctx[1][0] + "px");
 				set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
-				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[8] || /*prevDiff*/ ctx[7]);
-				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[16] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[10]);
+				toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[9] || /*prevDiff*/ ctx[8]);
+				toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[3] < /*naturalWidth*/ ctx[11]);
 
-				set_style(div0, "background-image", /*shown*/ ctx[6]
+				set_style(div0, "background-image", /*shown*/ ctx[7]
 				? null
-				: getThumbBackground(/*activeItem*/ ctx[12]));
+				: getThumbBackground(/*activeItem*/ ctx[13]));
 
 				set_style(div0, "transform", style_transform);
 				attr(div1, "class", "bp-img-wrap");
 				attr(div1, "role", "none");
-				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[9]);
+				toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[10]);
 			},
 			m(target, anchor) {
 				insert(target, div1, anchor);
@@ -1440,21 +1223,21 @@
 
 				if (!mounted) {
 					dispose = [
-						listen(window, "keydown", /*onKeydown*/ ctx[18], true),
-						action_destroyer(/*onMount*/ ctx[25].call(null, div0)),
-						listen(div1, "wheel", /*onWheel*/ ctx[19]),
-						listen(div1, "pointerdown", /*onPointerDown*/ ctx[20]),
-						listen(div1, "pointermove", /*onPointerMove*/ ctx[21]),
-						listen(div1, "pointerup", /*onPointerUp*/ ctx[23]),
-						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[22]),
-						listen(div1, "click", /*onClick*/ ctx[24])
+						listen(window, "keydown", /*onKeydown*/ ctx[17], true),
+						action_destroyer(/*onMount*/ ctx[24].call(null, div0)),
+						listen(div1, "wheel", /*onWheel*/ ctx[18]),
+						listen(div1, "pointerdown", /*onPointerDown*/ ctx[19]),
+						listen(div1, "pointermove", /*onPointerMove*/ ctx[20]),
+						listen(div1, "pointerup", /*onPointerUp*/ ctx[22]),
+						listen(div1, "pointercancel", /*onPointerCancel*/ ctx[21]),
+						listen(div1, "click", /*onClick*/ ctx[23])
 					];
 
 					mounted = true;
 				}
 			},
 			p(ctx, dirty) {
-				if (/*loaded*/ ctx[4]) {
+				if (/*loaded*/ ctx[5]) {
 					if (if_block0) {
 						if_block0.p(ctx, dirty);
 					} else {
@@ -1467,11 +1250,11 @@
 					if_block0 = null;
 				}
 
-				if (/*showLoader*/ ctx[5]) {
+				if (/*showLoader*/ ctx[6]) {
 					if (if_block1) {
 						if_block1.p(ctx, dirty);
 
-						if (dirty[0] & /*showLoader*/ 32) {
+						if (dirty[0] & /*showLoader*/ 64) {
 							transition_in(if_block1, 1);
 						}
 					} else {
@@ -1498,28 +1281,28 @@
 					set_style(div0, "height", /*activeDimensions*/ ctx[1][1] + "px");
 				}
 
-				if (!current || dirty[0] & /*pointerDown, prevDiff*/ 384) {
-					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[8] || /*prevDiff*/ ctx[7]);
+				if (!current || dirty[0] & /*pointerDown, prevDiff*/ 768) {
+					toggle_class(div0, "bp-drag", /*pointerDown*/ ctx[9] || /*prevDiff*/ ctx[8]);
 				}
 
-				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 66566) {
-					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[16] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[2] < /*naturalWidth*/ ctx[10]);
+				if (!current || dirty[0] & /*maxZoom, activeDimensions, scale, naturalWidth*/ 34826) {
+					toggle_class(div0, "bp-canzoom", /*maxZoom*/ ctx[15] > 1 && /*activeDimensions*/ ctx[1][0] * /*scale*/ ctx[3] < /*naturalWidth*/ ctx[11]);
 				}
 
 				const style_changed = dirty[0] & /*activeDimensions*/ 2;
 
-				if (dirty[0] & /*shown, activeDimensions*/ 66 || style_changed) {
-					set_style(div0, "background-image", /*shown*/ ctx[6]
+				if (dirty[0] & /*shown, activeDimensions*/ 130 || style_changed) {
+					set_style(div0, "background-image", /*shown*/ ctx[7]
 					? null
-					: getThumbBackground(/*activeItem*/ ctx[12]));
+					: getThumbBackground(/*activeItem*/ ctx[13]));
 				}
 
-				if (dirty[0] & /*translate, scale, activeDimensions*/ 2054 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[11][0]}px, ${/*translate*/ ctx[11][1]}px, 0) scale(${/*scale*/ ctx[2]})`) || style_changed) {
+				if (dirty[0] & /*translate, scale, activeDimensions*/ 4106 && style_transform !== (style_transform = `translate3d(${/*translate*/ ctx[12][0]}px, ${/*translate*/ ctx[12][1]}px, 0) scale(${/*scale*/ ctx[3]})`) || style_changed) {
 					set_style(div0, "transform", style_transform);
 				}
 
-				if (!current || dirty[0] & /*closingWhileZoomed*/ 512) {
-					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[9]);
+				if (!current || dirty[0] & /*closingWhileZoomed*/ 1024) {
+					toggle_class(div1, "bp-close", /*closingWhileZoomed*/ ctx[10]);
 				}
 			},
 			i(local) {
@@ -1544,17 +1327,15 @@
 		};
 	}
 
-	function instance$3($$self, $$props, $$invalidate) {
-		let $zoomed;
-		let $closing;
+	function instance$2($$self, $$props, $$invalidate) {
+		let zoomed;
 		let { props } = $$props;
 		let { smallScreen } = $$props;
 		let { containerWidth } = $$props;
 		let { containerHeight } = $$props;
 		let { activeDimensions } = $$props;
-		const { activeItem, opts, prev, next, zoomed, closing } = props;
-		component_subscribe($$self, zoomed, value => $$invalidate(38, $zoomed = value));
-		component_subscribe($$self, closing, value => $$invalidate(29, $closing = value));
+		let { closing } = $$props;
+		const { activeItem, opts, prev, next } = props;
 		const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
 		// The largest zoomed width, the sizes attribute is at least the shown width
@@ -1564,7 +1345,7 @@
 		// show through a transparent image
 		let loaded, showLoader, shown;
 
-		const show = () => $$invalidate(6, shown = true);
+		const show = () => $$invalidate(7, shown = true);
 
 		// Stores pinch info if multiple touch events active
 		let pinchDetails;
@@ -1600,19 +1381,19 @@
 
 		// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
 		// back into its bounds. A function, so the statement doesn't run again on each translate change. Before the zoomed
-		// store below, which must see the scale this sets
+		// statement below, which must see the scale this sets
 		const fitZoom = () => {
 			if (opts.inline || !smallScreen) {
 				reset();
 			} else {
-				$$invalidate(11, translate = boundTranslateValues(translate));
+				$$invalidate(12, translate = boundTranslateValues(translate));
 			}
 		};
 
 		// Back to the starting size, in the center
 		const reset = () => {
-			$$invalidate(2, scale = 1);
-			$$invalidate(11, translate = [0, 0]);
+			$$invalidate(3, scale = 1);
+			$$invalidate(12, translate = [0, 0]);
 		};
 
 		// A value between -max and max, or 0 when the image is smaller than the stage on that axis
@@ -1629,7 +1410,7 @@
 				x = pointerDown ? edge + (x - edge) / 10 : edge;
 
 				if (Math.abs(x - edge) > 20) {
-					$$invalidate(8, pointerDown = x > edge ? prev() : next());
+					$$invalidate(9, pointerDown = x > edge ? prev() : next());
 				}
 			} else {
 				x = edge;
@@ -1640,7 +1421,7 @@
 
 		// Updates zoom level in or out based on amt value
 		function changeZoom(amt = maxZoom, e) {
-			if ($closing) {
+			if (closing) {
 				return;
 			}
 
@@ -1669,16 +1450,16 @@
 			const ratio = 1 - newScale / scale;
 
 			// Update sizes property, the browser loads a larger source if there is one
-			$$invalidate(3, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
+			$$invalidate(4, sizes = Math.round(Math.max(sizes, activeDimensions[0] * newScale)));
 
-			$$invalidate(11, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
-			$$invalidate(2, scale = newScale);
+			$$invalidate(12, translate = boundTranslateValues([translate[0] + x * ratio, translate[1] + y * ratio], newScale));
+			$$invalidate(3, scale = newScale);
 		}
 
 		// Allow zoom to be read / set externally
 		Object.defineProperty(activeItem, 'zoom', {
 			configurable: true,
-			get: () => $zoomed,
+			get: () => zoomed,
 			set: bool => changeZoom(bool ? maxZoom : -maxZoom)
 		});
 
@@ -1694,17 +1475,17 @@
 				ArrowDown: [0, -100]
 			})[e.key];
 
-			if (opts.inline || $closing || !isGalleryKey(e, opts, props.container)) {
+			if (opts.inline || closing || !isGalleryKey(e, opts, props.container)) {
 				return;
 			}
 
 			if (zoom) {
 				changeZoom(zoom);
-			} else if (pan && $zoomed) {
+			} else if (pan && zoomed) {
 				e.preventDefault();
 
 				// Starts from the target, so held keys keep panning while the transition runs
-				$$invalidate(11, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
+				$$invalidate(12, translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]));
 			} else {
 				return;
 			}
@@ -1714,7 +1495,7 @@
 
 		const onWheel = e => {
 			// Return if scrolling past inline gallery w/ wheel
-			if (opts.inline && !$zoomed) {
+			if (opts.inline && !zoomed) {
 				return;
 			}
 
@@ -1737,25 +1518,25 @@
 					pointerCache.clear();
 
 					pinchDetails = null;
-					$$invalidate(7, prevDiff = 0);
+					$$invalidate(8, prevDiff = 0);
 					hasDragged = false;
 					dragPositions.length = 0;
 				}
 
-				if ($zoomed) {
+				if (zoomed) {
 					// Stop the transition where it is, the drag moves the image without one
 					const img = bpImg.getBoundingClientRect();
 
 					const wrap = bpImg.parentNode.getBoundingClientRect();
-					$$invalidate(2, scale = img.width / activeDimensions[0]);
+					$$invalidate(3, scale = img.width / activeDimensions[0]);
 
-					$$invalidate(11, translate = [
+					$$invalidate(12, translate = [
 						img.left + img.width / 2 - wrap.left - wrap.width / 2,
 						img.top + img.height / 2 - wrap.top - wrap.height / 2
 					]);
 				}
 
-				$$invalidate(8, pointerDown = true);
+				$$invalidate(9, pointerDown = true);
 				pointerCache.set(e.pointerId, e);
 				dragStart = e;
 				dragStartTranslate = translate;
@@ -1766,7 +1547,7 @@
 		const onPointerMove = e => {
 			if (pointerCache.size > 1) {
 				// Two pointers pinch
-				$$invalidate(8, pointerDown = false);
+				$$invalidate(9, pointerDown = false);
 
 				const { noPinch } = opts;
 
@@ -1792,14 +1573,14 @@
 				changeZoom(((prevDiff || curDiff) - curDiff) / -35, pinchDetails);
 
 				// Cache the distance for the next move event
-				$$invalidate(7, prevDiff = curDiff);
+				$$invalidate(8, prevDiff = curDiff);
 
 				return;
 			}
 
 			// A release outside the image, such as over a button, sends no pointerup here, so a move without a pressed button ends the drag
 			if (!e.buttons) {
-				$$invalidate(8, pointerDown = false);
+				$$invalidate(9, pointerDown = false);
 			}
 
 			if (!pointerDown) {
@@ -1819,10 +1600,10 @@
 			hasDragged = hasDragged || Math.hypot(x, y) > 5;
 
 			// Handle unzoomed left / right / up swipes
-			if (!$zoomed) {
+			if (!zoomed) {
 				// Close if swipe up
 				if (y < -90) {
-					$$invalidate(8, pointerDown = !opts.persistent && props.close());
+					$$invalidate(9, pointerDown = !opts.persistent && props.close());
 				}
 
 				// Only handle left / right if not swiping vertically
@@ -1830,27 +1611,27 @@
 					// Previous if swipe left
 					if (x > 40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(8, pointerDown = prev());
+						$$invalidate(9, pointerDown = prev());
 					}
 
 					// Next if swipe right
 					if (x < -40) {
 						// Setting pointerDown to undefined stops pointermove from running again
-						$$invalidate(8, pointerDown = next());
+						$$invalidate(9, pointerDown = next());
 					}
 				}
 			}
 
 			// Image drag when zoomed
-			if ($zoomed && hasDragged && !$closing) {
-				$$invalidate(11, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
+			if (zoomed && hasDragged && !closing) {
+				$$invalidate(12, translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]));
 			}
 		};
 
 		// The browser took the pointer, such as for a system gesture, so the drag or the pinch ends without a tap
 		const onPointerCancel = e => {
 			pointerCache.delete(e.pointerId);
-			$$invalidate(8, pointerDown = $$invalidate(7, prevDiff = 0));
+			$$invalidate(9, pointerDown = $$invalidate(8, prevDiff = 0));
 		};
 
 		const onPointerUp = function (e) {
@@ -1858,7 +1639,7 @@
 
 			if (pinchDetails) {
 				// Reset prevDiff and clear pointerDown to trigger return below, the next gesture clears pinchDetails
-				$$invalidate(8, pointerDown = $$invalidate(7, prevDiff = 0));
+				$$invalidate(9, pointerDown = $$invalidate(8, prevDiff = 0));
 			}
 
 			// Make sure pointer events don't carry over to next image
@@ -1866,7 +1647,7 @@
 				return;
 			}
 
-			$$invalidate(8, pointerDown = false);
+			$$invalidate(9, pointerDown = false);
 
 			// A tap on the space around the image closes the gallery in onClick
 			if (e.target === this && !opts.persistent) {
@@ -1879,19 +1660,19 @@
 
 				// A short flick may have fewer than three moves, it gets no inertia
 				if (posThree && Math.hypot(posTwo.x - posThree.x, posTwo.y - posThree.y) > 5) {
-					$$invalidate(11, translate = boundTranslateValues([
+					$$invalidate(12, translate = boundTranslateValues([
 						translate[0] - (posOne.x - posThree.x) * 5,
 						translate[1] - (posOne.y - posThree.y) * 5
 					]));
 				}
 			} else if (!opts.onImageClick?.(props.container, activeItem)) {
-				if ($zoomed) {
+				if (zoomed) {
 					const wrap = this.closest('.bp-wrap');
 					wrap.addEventListener('click', dropClick, { capture: true, once: true });
 					wrap.addEventListener('pointerdown', () => wrap.removeEventListener('click', dropClick, true), { capture: true, once: true });
 				}
 
-				changeZoom($zoomed ? -maxZoom : maxZoom, e);
+				changeZoom(zoomed ? -maxZoom : maxZoom, e);
 			}
 		};
 
@@ -1919,15 +1700,15 @@
 			// Decode initial image before rendering. In a microtask: on open, the gallery measures its stage and reads its gap
 			// after its items are made, and the choice of a srcset candidate needs the size the item fits in
 			queueMicrotask(() => props.loadImage(activeItem).then(() => {
-				$$invalidate(10, naturalWidth = activeItem.width || 0);
-				$$invalidate(4, loaded = true);
+				$$invalidate(11, naturalWidth = activeItem.width || 0);
+				$$invalidate(5, loaded = true);
 				props.preloadNext();
 			}));
 
 			// Show loading indicator if needed
 			setTimeout(
 				() => {
-					$$invalidate(5, showLoader = !loaded);
+					$$invalidate(6, showLoader = !loaded);
 				},
 				250
 			);
@@ -1938,10 +1719,11 @@
 
 		$$self.$$set = $$props => {
 			
-			if ('smallScreen' in $$props) $$invalidate(26, smallScreen = $$props.smallScreen);
-			if ('containerWidth' in $$props) $$invalidate(27, containerWidth = $$props.containerWidth);
-			if ('containerHeight' in $$props) $$invalidate(28, containerHeight = $$props.containerHeight);
+			if ('smallScreen' in $$props) $$invalidate(25, smallScreen = $$props.smallScreen);
+			if ('containerWidth' in $$props) $$invalidate(26, containerWidth = $$props.containerWidth);
+			if ('containerHeight' in $$props) $$invalidate(27, containerHeight = $$props.containerHeight);
 			if ('activeDimensions' in $$props) $$invalidate(1, activeDimensions = $$props.activeDimensions);
+			if ('closing' in $$props) $$invalidate(2, closing = $$props.closing);
 		};
 
 		$$self.$$.update = () => {
@@ -1949,16 +1731,21 @@
 				(fitZoom());
 			}
 
-			if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 6) {
-				zoomed.set(activeDimensions[0] * (scale - 1) > 10);
+			if ($$self.$$.dirty[0] & /*activeDimensions, scale*/ 10) {
+				// True if the image is zoomed past its starting size, the gallery gets it too
+				$$invalidate(28, zoomed = activeDimensions[0] * (scale - 1) > 10);
 			}
 
-			if ($$self.$$.dirty[0] & /*$closing, scale*/ 536870916) {
+			if ($$self.$$.dirty[0] & /*props, zoomed*/ 268435457) {
+				props.setZoomed(zoomed);
+			}
+
+			if ($$self.$$.dirty[0] & /*closing, scale*/ 12) {
 				// If zoomed while closing, zoom out image and add class
 				// to change contain value on .bp-wrap to avoid cropping
-				if ($closing && scale !== 1 && opts.zoom) {
+				if (closing && scale !== 1 && opts.zoom) {
 					reset();
-					$$invalidate(9, closingWhileZoomed = true);
+					$$invalidate(10, closingWhileZoomed = true);
 				}
 			}
 		};
@@ -1966,6 +1753,7 @@
 		return [
 			props,
 			activeDimensions,
+			closing,
 			scale,
 			sizes,
 			loaded,
@@ -1978,8 +1766,6 @@
 			translate,
 			activeItem,
 			opts,
-			zoomed,
-			closing,
 			maxZoom,
 			show,
 			onKeydown,
@@ -1993,7 +1779,7 @@
 			smallScreen,
 			containerWidth,
 			containerHeight,
-			$closing,
+			zoomed,
 			load_handler,
 			error_handler
 		];
@@ -2006,15 +1792,16 @@
 			init(
 				this,
 				options,
-				instance$3,
-				create_fragment$3,
+				instance$2,
+				create_fragment$2,
 				not_equal,
 				{
 					props: 0,
-					smallScreen: 26,
-					containerWidth: 27,
-					containerHeight: 28,
-					activeDimensions: 1
+					smallScreen: 25,
+					containerWidth: 26,
+					containerHeight: 27,
+					activeDimensions: 1,
+					closing: 2
 				},
 				null,
 				[-1, -1]
@@ -2022,115 +1809,7 @@
 		}
 	};
 
-	/* src\components\iframe.svelte generated by Svelte v4.2.20 */
-
-	function create_fragment$2(ctx) {
-		let div;
-		let iframe;
-		let loading;
-		let style_width = `${/*activeDimensions*/ ctx[0][0]}px`;
-		let style_height = `${/*activeDimensions*/ ctx[0][1]}px`;
-		let current;
-		let mounted;
-		let dispose;
-
-		loading = new Loading({
-				props: {
-					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[1],
-					closing: /*closing*/ ctx[3]
-				}
-			});
-
-		return {
-			c() {
-				div = element("div");
-				iframe = element("iframe");
-				create_component(loading.$$.fragment);
-				attr(iframe, "allow", "autoplay; fullscreen");
-				attr(iframe, "title", /*activeItem*/ ctx[2].alt);
-				attr(div, "class", "bp-iframe");
-				set_style(div, "width", style_width);
-				set_style(div, "height", style_height);
-			},
-			m(target, anchor) {
-				insert(target, div, anchor);
-				append(div, iframe);
-				mount_component(loading, div, null);
-				current = true;
-
-				if (!mounted) {
-					dispose = [
-						action_destroyer(/*addSrc*/ ctx[4].call(null, iframe)),
-						listen(iframe, "load", /*load_handler*/ ctx[6])
-					];
-
-					mounted = true;
-				}
-			},
-			p(ctx, [dirty]) {
-				const loading_changes = {};
-				if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
-				loading.$set(loading_changes);
-
-				if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
-					set_style(div, "width", style_width);
-				}
-
-				if (dirty & /*activeDimensions*/ 1 && style_height !== (style_height = `${/*activeDimensions*/ ctx[0][1]}px`)) {
-					set_style(div, "height", style_height);
-				}
-			},
-			i(local) {
-				if (current) return;
-				transition_in(loading.$$.fragment, local);
-				current = true;
-			},
-			o(local) {
-				transition_out(loading.$$.fragment, local);
-				current = false;
-			},
-			d(detaching) {
-				if (detaching) {
-					detach(div);
-				}
-
-				destroy_component(loading);
-				mounted = false;
-				run_all(dispose);
-			}
-		};
-	}
-
-	function instance$2($$self, $$props, $$invalidate) {
-		let { props } = $$props;
-		let { activeDimensions } = $$props;
-		let loaded;
-		const { activeItem, closing } = props;
-
-		const addSrc = node => {
-			addAttributes(node, activeItem.attr);
-			node.src = activeItem.link;
-		};
-
-		const load_handler = () => $$invalidate(1, loaded = true);
-
-		$$self.$$set = $$props => {
-			
-			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
-		};
-
-		return [activeDimensions, loaded, activeItem, closing, addSrc, props, load_handler];
-	}
-
-	class Iframe extends SvelteComponent {
-		constructor(options) {
-			super();
-			init(this, options, instance$2, create_fragment$2, not_equal, { props: 5, activeDimensions: 0 });
-		}
-	}
-
-	/* src\components\video.svelte generated by Svelte v4.2.20 */
+	/* src\components\media.svelte generated by Svelte v4.2.20 */
 
 	function create_fragment$1(ctx) {
 		let div;
@@ -2143,9 +1822,9 @@
 
 		loading = new Loading({
 				props: {
-					activeItem: /*activeItem*/ ctx[2],
-					loaded: /*loaded*/ ctx[1],
-					closing: /*closing*/ ctx[3]
+					activeItem: /*activeItem*/ ctx[3],
+					loaded: /*loaded*/ ctx[2],
+					closing: /*closing*/ ctx[1]
 				}
 			});
 
@@ -2153,10 +1832,10 @@
 			c() {
 				div = element("div");
 				create_component(loading.$$.fragment);
-				attr(div, "class", "bp-video");
+				attr(div, "class", /*sources*/ ctx[4] ? 'bp-video' : 'bp-iframe');
 				set_style(div, "width", style_width);
 				set_style(div, "height", style_height);
-				set_style(div, "background-image", getThumbBackground(/*activeItem*/ ctx[2]));
+				set_style(div, "background-image", /*sources*/ ctx[4] && getThumbBackground(/*activeItem*/ ctx[3]));
 			},
 			m(target, anchor) {
 				insert(target, div, anchor);
@@ -2164,13 +1843,14 @@
 				current = true;
 
 				if (!mounted) {
-					dispose = action_destroyer(/*onMount*/ ctx[4].call(null, div));
+					dispose = action_destroyer(/*onMount*/ ctx[5].call(null, div));
 					mounted = true;
 				}
 			},
 			p(ctx, [dirty]) {
 				const loading_changes = {};
-				if (dirty & /*loaded*/ 2) loading_changes.loaded = /*loaded*/ ctx[1];
+				if (dirty & /*loaded*/ 4) loading_changes.loaded = /*loaded*/ ctx[2];
+				if (dirty & /*closing*/ 2) loading_changes.closing = /*closing*/ ctx[1];
 				loading.$set(loading_changes);
 
 				if (dirty & /*activeDimensions*/ 1 && style_width !== (style_width = `${/*activeDimensions*/ ctx[0][0]}px`)) {
@@ -2202,73 +1882,137 @@
 		};
 	}
 
-	const positions = {};
-
 	function instance$1($$self, $$props, $$invalidate) {
 		let { props } = $$props;
 		let { activeDimensions } = $$props;
+		let { closing } = $$props;
 		let loaded;
-		const { activeItem, opts, closing } = props;
+		const { activeItem, opts } = props;
+		const { sources, link, alt } = activeItem;
 
-		// Create audio / video element
+		// Create the video, audio or iframe element
 		const onMount = node => {
-			const mediaElement = document.createElement(activeItem.type);
+			const media = document.createElement(sources ? activeItem.type : 'iframe'),
+				// Playback positions by the first source of a video, or by the link of a YouTube or Vimeo player
+				key = sources ? sources[0].src : link,
+				youtube = (/youtube(-nocookie)?\.com\/embed/).test(link),
+				post = message => media.contentWindow.postMessage(JSON.stringify(message), '*');
 
-			addAttributes(mediaElement, {
-				controls: true,
-				autoplay: true,
-				playsinline: true,
-				tabindex: '0'
-			});
+			// The YouTube and Vimeo players send their playback time, and a player opened again resumes from there
+			const onMessage = ({ source, data }) => {
+				if (source === media.contentWindow) {
+					// The players send JSON strings. A message that is not one, or is null, stops here
+					try {
+						const { event, info = {}, data: { seconds } = {} } = JSON.parse(data);
 
-			// The alt text names the player for screen readers
-			if (activeItem.alt) {
-				mediaElement.setAttribute('aria-label', activeItem.alt);
-			}
+						// YouTube sends the time in info and the playerState 0 at the end, Vimeo sends it in data and finish at the end
+						positions[key] = info.playerState === 0 || event === 'finish'
+						? 0
+						: info.currentTime ?? seconds ?? positions[key];
 
-			addAttributes(mediaElement, activeItem.attr);
-
-			// Takes supplied object and creates elements in video
-			const appendToVideo = (tag, list) => {
-				for (let item of list) {
-					// Add sources / tracks to media element
-					let el = document.createElement(tag);
-
-					addAttributes(el, item);
-
-					if (tag === 'source') {
-						el.onerror = error => {
-							// The loader goes when the last source fails too, the browser tries them in order
-							$$invalidate(1, loaded ||= item === list.at(-1));
-
-							opts.onError?.(props.container, activeItem, error);
-						};
+						// Vimeo sends events only when it is ready and the page asks for them
+						if (event === 'ready') {
+							['timeupdate', 'ended'].map(value => post({ method: 'addEventListener', value }));
+						}
+					} catch {
+						
 					}
-
-					mediaElement.append(el);
 				}
 			};
 
-			appendToVideo('source', activeItem.sources);
-			appendToVideo('track', activeItem.tracks || []);
-			mediaElement.oncanplay = () => $$invalidate(1, loaded = true);
+			addAttributes(media, sources
+			? {
+					controls: true,
+					autoplay: true,
+					playsinline: true,
+					tabindex: '0'
+				}
+			: { allow: 'autoplay; fullscreen' });
 
-			// A video with no size given, and no thumbnail to take it from, takes the size of the file, such as a portrait one
-			mediaElement.onloadedmetadata = () => props.setDimensions(activeItem, {
-				naturalWidth: mediaElement.videoWidth,
-				naturalHeight: mediaElement.videoHeight
-			});
+			// The alt text names the player or the frame for screen readers
+			if (alt) {
+				media.setAttribute(sources ? 'aria-label' : 'title', alt);
+			}
 
-			// Before the metadata loads, this sets the position the playback starts from
-			const key = activeItem.sources[0].src;
+			addAttributes(media, activeItem.attr);
 
-			mediaElement.currentTime = positions[key] || 0;
-			node.append(mediaElement);
+			if (sources) {
+				// Takes supplied object and creates elements in video
+				const appendToVideo = (tag, list) => {
+					for (let item of list) {
+						// Add sources / tracks to media element
+						let el = document.createElement(tag);
+
+						addAttributes(el, item);
+
+						if (tag === 'source') {
+							el.onerror = error => {
+								// The loader goes when the last source fails too, the browser tries them in order
+								$$invalidate(2, loaded ||= item === list.at(-1));
+
+								opts.onError?.(props.container, activeItem, error);
+							};
+						}
+
+						media.append(el);
+					}
+				};
+
+				appendToVideo('source', sources);
+				appendToVideo('track', activeItem.tracks || []);
+				media.oncanplay = () => $$invalidate(2, loaded = true);
+
+				// A video with no size given, and no thumbnail to take it from, takes the size of the file, such as a portrait one
+				media.onloadedmetadata = () => props.setDimensions(activeItem, {
+					naturalWidth: media.videoWidth,
+					naturalHeight: media.videoHeight
+				});
+
+				// Before the metadata loads, this sets the position the playback starts from
+				media.currentTime = positions[key] || 0;
+			} else {
+				const time = positions[key] | 0;
+				let url = link;
+
+				if (time) {
+					url = new URL(link);
+
+					youtube
+					? url.searchParams.set('start', time)
+					: url.hash = 't=' + time + 's';
+				}
+
+				media.src = url;
+
+				media.onload = () => {
+					$$invalidate(2, loaded = true);
+
+					if (youtube) {
+						// YouTube sends its state only to a page that listens
+						post({ event: 'listening' });
+
+						// YouTube ignores autoplay on some pages, so send a play command through the player API
+						if ((/[?&]autoplay=1/).test(link)) {
+							post({ event: 'command', func: 'playVideo' });
+						}
+					}
+				};
+
+				if (youtube || (/player\.vimeo\.com/).test(link)) {
+					addEventListener('message', onMessage);
+				}
+			}
+
+			node.append(media);
 
 			return {
 				destroy() {
 					// A finished video starts over next time
-					positions[key] = mediaElement.ended ? 0 : mediaElement.currentTime;
+					if (sources) {
+						positions[key] = media.ended ? 0 : media.currentTime;
+					}
+
+					removeEventListener('message', onMessage);
 				}
 			};
 		};
@@ -2276,54 +2020,39 @@
 		$$self.$$set = $$props => {
 			
 			if ('activeDimensions' in $$props) $$invalidate(0, activeDimensions = $$props.activeDimensions);
+			if ('closing' in $$props) $$invalidate(1, closing = $$props.closing);
 		};
 
-		return [activeDimensions, loaded, activeItem, closing, onMount, props];
+		return [activeDimensions, closing, loaded, activeItem, sources, onMount, props];
 	}
 
-	class Video extends SvelteComponent {
+	class Media extends SvelteComponent {
 		constructor(options) {
 			super();
-			init(this, options, instance$1, create_fragment$1, not_equal, { props: 5, activeDimensions: 0 });
+
+			init(this, options, instance$1, create_fragment$1, not_equal, {
+				props: 6,
+				activeDimensions: 0,
+				closing: 1
+			});
 		}
 	}
 
 	/* src\bigger-picture.svelte generated by Svelte v4.2.20 */
 
 	function create_if_block(ctx) {
-		let previous_tag = /*dialog*/ ctx[1] ? 'dialog' : 'div';
-		let svelte_element_anchor;
-		let svelte_element = (/*dialog*/ ctx[1] ? 'dialog' : 'div') && create_dynamic_element(ctx);
+		let svelte_element = /*tag*/ ctx[18] && create_dynamic_element(ctx);
 
 		return {
 			c() {
 				if (svelte_element) svelte_element.c();
-				svelte_element_anchor = empty();
 			},
 			m(target, anchor) {
 				if (svelte_element) svelte_element.m(target, anchor);
-				insert(target, svelte_element_anchor, anchor);
 			},
 			p(ctx, dirty) {
-				if (/*dialog*/ ctx[1] ? 'dialog' : 'div') {
-					if (!previous_tag) {
-						svelte_element = create_dynamic_element(ctx);
-						previous_tag = /*dialog*/ ctx[1] ? 'dialog' : 'div';
-						svelte_element.c();
-						svelte_element.m(svelte_element_anchor.parentNode, svelte_element_anchor);
-					} else if (not_equal(previous_tag, /*dialog*/ ctx[1] ? 'dialog' : 'div')) {
-						svelte_element.d(1);
-						svelte_element = create_dynamic_element(ctx);
-						previous_tag = /*dialog*/ ctx[1] ? 'dialog' : 'div';
-						svelte_element.c();
-						svelte_element.m(svelte_element_anchor.parentNode, svelte_element_anchor);
-					} else {
-						svelte_element.p(ctx, dirty);
-					}
-				} else if (previous_tag) {
-					svelte_element.d(1);
-					svelte_element = null;
-					previous_tag = /*dialog*/ ctx[1] ? 'dialog' : 'div';
+				if (/*tag*/ ctx[18]) {
+					svelte_element.p(ctx, dirty);
 				}
 			},
 			i: noop,
@@ -2331,17 +2060,13 @@
 				transition_out(svelte_element, local);
 			},
 			d(detaching) {
-				if (detaching) {
-					detach(svelte_element_anchor);
-				}
-
 				if (svelte_element) svelte_element.d(detaching);
 			}
 		};
 	}
 
-	// (849:2) {#if !dialog}
-	function create_if_block_9(ctx) {
+	// (844:2) {#if !dialog}
+	function create_if_block_8(ctx) {
 		let div;
 
 		return {
@@ -2360,20 +2085,19 @@
 		};
 	}
 
-	// (860:125) {#if containerWidth > 0 && containerHeight > 0}
+	// (855:125) {#if containerWidth > 0 && containerHeight > 0}
 	function create_if_block_5(ctx) {
 		let current_block_type_index;
 		let if_block;
 		let if_block_anchor;
 		let current;
-		const if_block_creators = [create_if_block_6, create_if_block_7, create_if_block_8, create_else_block];
+		const if_block_creators = [create_if_block_6, create_if_block_7, create_else_block];
 		const if_blocks = [];
 
 		function select_block_type(ctx, dirty) {
 			if (/*activeItem*/ ctx[8].type === 'image') return 0;
-			if (/*activeItem*/ ctx[8].sources) return 1;
-			if (/*activeItem*/ ctx[8].type === 'iframe') return 2;
-			return 3;
+			if (/*activeItem*/ ctx[8].sources || /*activeItem*/ ctx[8].type === 'iframe') return 1;
+			return 2;
 		}
 
 		current_block_type_index = select_block_type(ctx);
@@ -2435,7 +2159,7 @@
 		};
 	}
 
-	// (860:483) {:else}
+	// (855:443) {:else}
 	function create_else_block(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2461,94 +2185,57 @@
 		};
 	}
 
-	// (860:430) 
-	function create_if_block_8(ctx) {
-		let iframe_1;
-		let current;
-
-		iframe_1 = new Iframe({
-				props: {
-					props: /*getChildProps*/ ctx[21](),
-					activeDimensions: /*activeDimensions*/ ctx[15]
-				}
-			});
-
-		return {
-			c() {
-				create_component(iframe_1.$$.fragment);
-			},
-			m(target, anchor) {
-				mount_component(iframe_1, target, anchor);
-				current = true;
-			},
-			p(ctx, dirty) {
-				const iframe_1_changes = {};
-				if (dirty[0] & /*activeDimensions*/ 32768) iframe_1_changes.activeDimensions = /*activeDimensions*/ ctx[15];
-				iframe_1.$set(iframe_1_changes);
-			},
-			i(local) {
-				if (current) return;
-				transition_in(iframe_1.$$.fragment, local);
-				current = true;
-			},
-			o(local) {
-				transition_out(iframe_1.$$.fragment, local);
-				current = false;
-			},
-			d(detaching) {
-				destroy_component(iframe_1, detaching);
-			}
-		};
-	}
-
-	// (860:339) 
+	// (855:381) 
 	function create_if_block_7(ctx) {
-		let video;
+		let media;
 		let current;
 
-		video = new Video({
+		media = new Media({
 				props: {
-					props: /*getChildProps*/ ctx[21](),
+					props: /*getChildProps*/ ctx[20](),
+					closing: /*closing*/ ctx[17],
 					activeDimensions: /*activeDimensions*/ ctx[15]
 				}
 			});
 
 		return {
 			c() {
-				create_component(video.$$.fragment);
+				create_component(media.$$.fragment);
 			},
 			m(target, anchor) {
-				mount_component(video, target, anchor);
+				mount_component(media, target, anchor);
 				current = true;
 			},
 			p(ctx, dirty) {
-				const video_changes = {};
-				if (dirty[0] & /*activeDimensions*/ 32768) video_changes.activeDimensions = /*activeDimensions*/ ctx[15];
-				video.$set(video_changes);
+				const media_changes = {};
+				if (dirty[0] & /*closing*/ 131072) media_changes.closing = /*closing*/ ctx[17];
+				if (dirty[0] & /*activeDimensions*/ 32768) media_changes.activeDimensions = /*activeDimensions*/ ctx[15];
+				media.$set(media_changes);
 			},
 			i(local) {
 				if (current) return;
-				transition_in(video.$$.fragment, local);
+				transition_in(media.$$.fragment, local);
 				current = true;
 			},
 			o(local) {
-				transition_out(video.$$.fragment, local);
+				transition_out(media.$$.fragment, local);
 				current = false;
 			},
 			d(detaching) {
-				destroy_component(video, detaching);
+				destroy_component(media, detaching);
 			}
 		};
 	}
 
-	// (860:172) {#if activeItem.type === 'image'}
+	// (855:172) {#if activeItem.type === 'image'}
 	function create_if_block_6(ctx) {
 		let imageitem;
 		let current;
 
 		imageitem = new Image$1({
 				props: {
-					props: /*getChildProps*/ ctx[21](),
+					props: /*getChildProps*/ ctx[20](),
+					closing: /*closing*/ ctx[17],
 					smallScreen: /*smallScreen*/ ctx[10],
 					containerWidth: /*containerWidth*/ ctx[7],
 					containerHeight: /*containerHeight*/ ctx[14],
@@ -2566,6 +2253,7 @@
 			},
 			p(ctx, dirty) {
 				const imageitem_changes = {};
+				if (dirty[0] & /*closing*/ 131072) imageitem_changes.closing = /*closing*/ ctx[17];
 				if (dirty[0] & /*smallScreen*/ 1024) imageitem_changes.smallScreen = /*smallScreen*/ ctx[10];
 				if (dirty[0] & /*containerWidth*/ 128) imageitem_changes.containerWidth = /*containerWidth*/ ctx[7];
 				if (dirty[0] & /*containerHeight*/ 16384) imageitem_changes.containerHeight = /*containerHeight*/ ctx[14];
@@ -2587,7 +2275,7 @@
 		};
 	}
 
-	// (849:94) {#key activeItem.i}
+	// (844:94) {#key activeItem.i}
 	function create_key_block(ctx) {
 		let div2;
 		let div1;
@@ -2616,9 +2304,9 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*slideActions*/ ctx[20].call(null, div2)),
-						listen(div2, "pointerdown", /*pointerdown_handler*/ ctx[27]),
-						listen(div2, "click", /*click_handler*/ ctx[28])
+						action_destroyer(/*slideActions*/ ctx[19].call(null, div2)),
+						listen(div2, "pointerdown", /*pointerdown_handler*/ ctx[26]),
+						listen(div2, "click", /*click_handler*/ ctx[27])
 					];
 
 					mounted = true;
@@ -2669,7 +2357,7 @@
 		};
 	}
 
-	// (860:625) {#if activeItem.caption}
+	// (855:585) {#if activeItem.caption}
 	function create_if_block_4(ctx) {
 		let div;
 		let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2693,7 +2381,7 @@
 		};
 	}
 
-	// (860:765) {#if activeItem.download}
+	// (855:725) {#if activeItem.download}
 	function create_if_block_3(ctx) {
 		let a;
 		let a_href_value;
@@ -2712,7 +2400,7 @@
 				insert(target, a, anchor);
 
 				if (!mounted) {
-					dispose = action_destroyer(/*label*/ ctx[22].call(null, a, 'download'));
+					dispose = action_destroyer(/*label*/ ctx[21].call(null, a, 'download'));
 					mounted = true;
 				}
 			},
@@ -2732,7 +2420,7 @@
 		};
 	}
 
-	// (860:1214) {#if items.length > 1}
+	// (855:1174) {#if items.length > 1}
 	function create_if_block_2(ctx) {
 		let div;
 		let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2769,9 +2457,9 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*label*/ ctx[22].call(null, button0, 'prev')),
+						action_destroyer(/*label*/ ctx[21].call(null, button0, 'prev')),
 						listen(button0, "click", /*prev*/ ctx[3]),
-						action_destroyer(/*label*/ ctx[22].call(null, button1, 'next')),
+						action_destroyer(/*label*/ ctx[21].call(null, button1, 'next')),
 						listen(button1, "click", /*next*/ ctx[4])
 					];
 
@@ -2795,7 +2483,7 @@
 		};
 	}
 
-	// (870:25) {#if opts.thumbs && items.length > 1}
+	// (865:25) {#if opts.thumbs && items.length > 1}
 	function create_if_block_1(ctx) {
 		let thumbs;
 		let current;
@@ -2839,7 +2527,7 @@
 		};
 	}
 
-	// (840:20) <svelte:element   this={dialog ? 'dialog' : 'div'}   use:containerActions   class="bp-wrap"   class:bp-zoomed={$zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={$closing}  >
+	// (836:20) <svelte:element   this={tag}   use:containerActions   class:bp-zoomed={zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={closing}  >
 	function create_dynamic_element(ctx) {
 		let svelte_element;
 		let div2;
@@ -2852,7 +2540,7 @@
 		let current;
 		let mounted;
 		let dispose;
-		let if_block0 = !/*dialog*/ ctx[1] && create_if_block_9();
+		let if_block0 = !/*dialog*/ ctx[1] && create_if_block_8();
 		let key_block = create_key_block(ctx);
 		let if_block1 = /*activeItem*/ ctx[8].caption && create_if_block_4(ctx);
 		let if_block2 = /*activeItem*/ ctx[8].download && create_if_block_3(ctx);
@@ -2861,7 +2549,7 @@
 
 		return {
 			c() {
-				svelte_element = element(/*dialog*/ ctx[1] ? 'dialog' : 'div');
+				svelte_element = element(/*tag*/ ctx[18]);
 				if (if_block0) if_block0.c();
 				div2 = element("div");
 				div1 = element("div");
@@ -2881,12 +2569,11 @@
 				attr(button, "class", "bp-x");
 				attr(div3, "class", "bp-actions");
 				attr(div4, "class", "bp-controls");
-				set_dynamic_element_data(/*dialog*/ ctx[1] ? 'dialog' : 'div')(svelte_element, { class: "bp-wrap" });
-				toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[16]);
+				toggle_class(svelte_element, "bp-zoomed", /*zoomed*/ ctx[16]);
 				toggle_class(svelte_element, "bp-inline", /*inline*/ ctx[11]);
 				toggle_class(svelte_element, "bp-small", /*smallScreen*/ ctx[10]);
 				toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
-				toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[17]);
+				toggle_class(svelte_element, "bp-closing", /*closing*/ ctx[17]);
 			},
 			m(target, anchor) {
 				insert(target, svelte_element, anchor);
@@ -2906,10 +2593,10 @@
 
 				if (!mounted) {
 					dispose = [
-						action_destroyer(/*rulerActions*/ ctx[24].call(null, div0)),
-						action_destroyer(/*label*/ ctx[22].call(null, button, 'close')),
+						action_destroyer(/*rulerActions*/ ctx[23].call(null, div0)),
+						action_destroyer(/*label*/ ctx[21].call(null, button, 'close')),
 						listen(button, "click", /*close*/ ctx[2]),
-						action_destroyer(/*containerActions*/ ctx[23].call(null, svelte_element))
+						action_destroyer(/*containerActions*/ ctx[22].call(null, svelte_element))
 					];
 
 					mounted = true;
@@ -2918,7 +2605,7 @@
 			p(ctx, dirty) {
 				if (!/*dialog*/ ctx[1]) {
 					if (if_block0) ; else {
-						if_block0 = create_if_block_9();
+						if_block0 = create_if_block_8();
 						if_block0.c();
 						if_block0.m(svelte_element, div2);
 					}
@@ -3001,8 +2688,8 @@
 					check_outros();
 				}
 
-				if (!current || dirty[0] & /*$zoomed*/ 65536) {
-					toggle_class(svelte_element, "bp-zoomed", /*$zoomed*/ ctx[16]);
+				if (!current || dirty[0] & /*zoomed*/ 65536) {
+					toggle_class(svelte_element, "bp-zoomed", /*zoomed*/ ctx[16]);
 				}
 
 				if (!current || dirty[0] & /*inline*/ 2048) {
@@ -3017,8 +2704,8 @@
 					toggle_class(svelte_element, "bp-noclose", /*opts*/ ctx[9].persistent);
 				}
 
-				if (!current || dirty[0] & /*$closing*/ 131072) {
-					toggle_class(svelte_element, "bp-closing", /*$closing*/ ctx[17]);
+				if (!current || dirty[0] & /*closing*/ 131072) {
+					toggle_class(svelte_element, "bp-closing", /*closing*/ ctx[17]);
 				}
 			},
 			i(local) {
@@ -3110,12 +2797,13 @@
 	let pagePadding = null;
 
 	function instance($$self, $$props, $$invalidate) {
-		let $zoomed;
-		let $closing;
 		let { items = undefined } = $$props;
 		let { target = undefined } = $$props;
 		let { dialog = false } = $$props;
 		const html = document.documentElement;
+
+		// The tag of the gallery, a constant: Svelte has no code to switch the tag then. The dialog prop doesn't change
+		const tag = dialog ? 'dialog' : 'div';
 
 		// Index of current active item
 		let position = 0;
@@ -3157,15 +2845,11 @@
 
 		let activeDimensions;
 
-		// True if the image is zoomed past its starting size
-		const zoomed = writable(0);
-
-		component_subscribe($$self, zoomed, value => $$invalidate(16, $zoomed = value));
+		// True if the image is zoomed past its starting size, the image sets it
+		let zoomed = 0;
 
 		// True while this gallery runs its outro, other galleries on the page keep their own
-		const closing = writable(0);
-
-		component_subscribe($$self, closing, value => $$invalidate(17, $closing = value));
+		let closing = 0;
 
 		// Options of an open call made while closing, applied once the gallery is removed
 		let pendingOptions;
@@ -3178,12 +2862,7 @@
 				return;
 			}
 
-			// intro and noClose are the deprecated names of zoom: false and persistent
-			$$invalidate(9, opts = {
-				zoom: !options.intro,
-				persistent: options.noClose,
-				...options
-			});
+			$$invalidate(9, opts = { zoom: true, ...options });
 
 			$$invalidate(13, labels = {
 				close: 'Close',
@@ -3211,8 +2890,8 @@
 
 			$$invalidate(6, position = 0);
 
-			// Set the gallery items, el is the deprecated name of current
-			const list = [], current = opts.current || opts.el;
+			// Set the gallery items
+			const list = [], current = opts.current;
 
 			(opts.items instanceof HTMLElement
 			? [opts.items]
@@ -3290,11 +2969,11 @@
 		};
 
 		const close = () => {
-			if (!items || $closing) {
+			if (!items || closing) {
 				return;
 			}
 
-			closing.set(1);
+			$$invalidate(17, closing = 1);
 			opts.onClose?.(container, activeItem);
 			window.removeEventListener('keydown', onKeydown, true);
 
@@ -3320,7 +2999,7 @@
 
 		const setPosition = index => {
 			// No items while closed, and the item stays during the outro
-			if (!items || $closing) {
+			if (!items || closing) {
 				return;
 			}
 
@@ -3346,7 +3025,7 @@
 
 			// The zoomed image pans with the arrows instead, a text field in an HTML item moves its caret, and a focused video or
 			// audio item seeks
-			const arrows = !$zoomed && !target.isContentEditable && !(/^(INPUT|TEXTAREA|SELECT|VIDEO|AUDIO)$/).test(target.tagName);
+			const arrows = !zoomed && !target.isContentEditable && !(/^(INPUT|TEXTAREA|SELECT|VIDEO|AUDIO)$/).test(target.tagName);
 
 			if (key === 'Escape') {
 				!opts.persistent && close();
@@ -3391,7 +3070,7 @@
 
 		// The focus stays in the upper gallery. Tab moves it out of the controls of a video or audio, as the keydown handler
 		// lets the browser move it into them
-		const onFocusin = ({ target }) => !$closing && getUpperGallery() === container && !(opts.focusWrap || container).contains(target) && container.focus({ preventScroll: true });
+		const onFocusin = ({ target }) => !closing && getUpperGallery() === container && !(opts.focusWrap || container).contains(target) && container.focus({ preventScroll: true });
 
 		// Normalize a gallery item
 		const prepareItem = item => {
@@ -3419,9 +3098,6 @@
 
 			// A copy too, the gallery writes the image src, srcset and sizes into it
 			item.attr = { ...item.attr };
-
-			// title is the deprecated name of alt
-			item.alt = item.alt || item.title;
 
 			let link = item.link = item.link || item.element?.href, type = item.type;
 
@@ -3490,34 +3166,13 @@
 				return item;
 			}
 
-			// HTML5 video and audio, the first group holds a video extension
+			// HTML5 video and audio, the first group holds a video extension. The source has no type: with one source, a type
+			// only makes the browser skip a file that it can play, such as an H.264 .mov in Chrome
 			match = link.match(/\.(?:(mp4|m4v|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
 
 			if (match) {
-				const ext = (match[1] || match[2]).toLowerCase();
 				item.type = match[1] ? 'video' : 'audio';
-
-				// The MIME subtype, where it is not the extension
-				const subtype = ({
-					ogv: 'ogg',
-					mov: 'quicktime',
-					avi: 'x-msvideo',
-					mp3: 'mpeg',
-					m4a: 'mp4',
-					m4v: 'mp4',
-					oga: 'ogg',
-					opus: 'ogg',
-					mid: 'midi',
-					weba: 'webm'
-				})[ext];
-
-				item.sources = [
-					{
-						src: link,
-						type: item.type + '/' + (subtype || ext)
-					}
-				];
-
+				item.sources = [{ src: link }];
 				return item;
 			}
 
@@ -3528,7 +3183,7 @@
 			if (match) {
 				// The privacy-enhanced mode stays on the youtube-nocookie.com host
 				let sourceURL = new URL(link),
-					targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + match[3] + '?autoplay=1&playsinline=1&controls=1&rel=0');
+					targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + match[3] + '?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1');
 
 				// Shorts are portrait, 9:16
 				if (!item.width && (/\/shorts\//).test(link)) {
@@ -3812,16 +3467,16 @@
 			} else {
 				// Deferred so the item is measured after the container action has shown the dialog and called onOpen. Not when
 				// onOpen has closed the gallery, the outro is set then
-				queueMicrotask(() => $closing || zoom(node, ''));
+				queueMicrotask(() => closing || zoom(node, ''));
 			}
 
 			slide = node;
 
 			return {
 				destroy() {
-					// The next item and the next open are not zoomed. The image sets the store itself, an item of another type
+					// The next item and the next open are not zoomed. The image sets the value itself, an item of another type
 					// would keep the value, and the gallery would read the gap of a zoomed one on open
-					zoomed.set(0);
+					$$invalidate(16, zoomed = 0);
 
 					// The items are removed on close, the slide leaves with the gallery then
 					if (items) {
@@ -3837,7 +3492,6 @@
 
 		// Provides object w/ needed funcs / data to child components
 		const getChildProps = () => ({
-			closing,
 			preloadNext,
 			setDimensions,
 			activeItem,
@@ -3846,7 +3500,7 @@
 			get container() {
 				return container;
 			},
-			zoomed,
+			setZoomed: value => $$invalidate(16, zoomed = value),
 			close,
 			opts,
 			prev,
@@ -3862,6 +3516,9 @@
 		// Process the gallery mount and destroy
 		const containerActions = node => {
 			container = node;
+
+			// Set here for the reason of the attributes below, and before the measure, as the class sizes the stage
+			node.classList.add('bp-wrap');
 
 			// Measure the stage, which the thumbnails, the offsets and the scroll lock make other than the target, and read the gap
 			// of the gallery, which can set its own, such as none when inline. The image of the item loads after this, see onMount
@@ -3901,7 +3558,7 @@
 				// The back button closes the gallery instead of leaving the page. The gallery of an open call made while closing
 				// keeps the entry of the last one. Not when closed in the same tick as opened, the close has already passed its
 				// history.back()
-				if (opts.history && !$closing) {
+				if (opts.history && !closing) {
 					if (!historyId) {
 						historyUrl = location.href;
 						history.pushState({ bp: historyId = Math.random() }, '');
@@ -3923,7 +3580,7 @@
 					window.removeEventListener('focusin', onFocusin);
 					window.removeEventListener('popstate', onPopstate);
 					focusTrigger?.focus({ preventScroll: true });
-					closing.set(0);
+					$$invalidate(17, closing = 0);
 					slide = null;
 
 					// The page stays locked while another gallery is open, the node of this one is removed already
@@ -3959,7 +3616,7 @@
 						$$invalidate(14, containerHeight = height);
 
 						// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
-						$zoomed || readGap();
+						zoomed || readGap();
 
 						$$invalidate(15, activeDimensions = calculateDimensions(activeItem));
 					}
@@ -3987,7 +3644,7 @@
 
 		$$self.$$set = $$props => {
 			if ('items' in $$props) $$invalidate(0, items = $$props.items);
-			if ('target' in $$props) $$invalidate(25, target = $$props.target);
+			if ('target' in $$props) $$invalidate(24, target = $$props.target);
 			if ('dialog' in $$props) $$invalidate(1, dialog = $$props.dialog);
 		};
 
@@ -4022,10 +3679,9 @@
 			labels,
 			containerHeight,
 			activeDimensions,
-			$zoomed,
-			$closing,
 			zoomed,
 			closing,
+			tag,
 			slideActions,
 			getChildProps,
 			label,
@@ -4050,9 +3706,9 @@
 				not_equal,
 				{
 					items: 0,
-					target: 25,
+					target: 24,
 					dialog: 1,
-					open: 26,
+					open: 25,
 					close: 2,
 					prev: 3,
 					next: 4,
@@ -4070,7 +3726,7 @@
 
 
 		get target() {
-			return this.$$.ctx[25];
+			return this.$$.ctx[24];
 		}
 
 
@@ -4082,7 +3738,7 @@
 
 
 		get open() {
-			return this.$$.ctx[26];
+			return this.$$.ctx[25];
 		}
 
 		get close() {

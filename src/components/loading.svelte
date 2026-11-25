@@ -4,7 +4,7 @@
 	export let activeItem;
 	export let loaded;
 
-	// Closing store of the gallery
+	// True while the gallery runs its outro
 	export let closing;
 
 	// True once the loader has faded out
@@ -23,7 +23,7 @@
 	</div>
 {/if}
 
-{#if $closing}
+{#if closing}
 	<div
 		class="bp-load"
 		style:background-image={getThumbBackground(activeItem)}

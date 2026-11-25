@@ -18,7 +18,7 @@ const terserOptions = {
 		// fragment and update, so the list must not have a public name, such as the close, prev and next methods
 		properties: {
 			builtins: true,
-			regex: /^(duration|easing|delay|activeItem|activeDimensions|calculateDimensions|containerWidth|containerHeight|loaded|closing|dirty|tick|preloadNext|setDimensions|opts|loadImage|smallScreen|props|before_update|after_update|ctx|\$\$set|\$set|invalidate|skip_bound|callbacks|on_disconnect|on_mount|not_equal|on_destroy|fragment|update|\$\$)$/
+			regex: /^(duration|easing|delay|activeItem|activeDimensions|calculateDimensions|containerWidth|containerHeight|loaded|closing|setZoomed|dirty|tick|preloadNext|setDimensions|opts|loadImage|smallScreen|props|ctx|\$\$set|\$set|invalidate|not_equal|fragment|update|\$\$)$/
 		}
 	},
 	compress: {
@@ -58,6 +58,24 @@ const findReplaceOptions = [
 	[`, important ? 'important' : ''`, ''],
 	[/if \('props' in \$\$props.+;$/gm, ''],
 	[': blank_object()', ': {}'],
+	// The library uses no bind:, context, $on, beforeUpdate, afterUpdate or component styles, so the runtime drops their code
+	[/^\s*(bound|callbacks): \{},$|^\s*(on_disconnect|before_update|after_update): \[],$|^\s*context: new Map\(.+$|^\s*skip_bound: false,$|^\s*root: options\.target.+$/gm, ''],
+	[/^\s*append_styles && append_styles\(\$\$\.root\);$/gm, ''],
+	[/^\s*if \(!\$\$\.skip_bound && \$\$\.bound\[i]\).+$/gm, ''],
+	[/^\s*this\.\$\$\.skip_bound = (true|false);$/gm, ''],
+	[/^\s*run_all\(\$\$\.before_update\);$/gm, ''],
+	[/^\s*(\$\$\.)?after_update\.forEach\(add_render_callback\);$/gm, ''],
+	['const { fragment, after_update } = component.$$;', 'const { fragment } = component.$$;'],
+	[/^\s*flush_render_callbacks\(\$\$\.after_update\);$/gm, ''],
+	[/^\s*while \(binding_callbacks\.length\) binding_callbacks\.pop\(\)\(\);$/gm, ''],
+	[/^\t\$on\(type, callback\) \{[\s\S]*?^\t}$/gm, ''],
+	// No onMount, onDestroy or store subscriptions, so the lists stay empty, and nothing reads the current component
+	[/^\t\/\/ onMount happens before the initial afterUpdate\n\tadd_render_callback\(\(\) => \{[\s\S]*?^\t}\);$/m, ''],
+	[/^\s*on_(mount|destroy): \[],$|^\s*run_all\(\$\$\.on_destroy\);$/gm, ''],
+	['$$.on_destroy = $$.fragment = null;', '$$.fragment = null;'],
+	[/^\s*set_current_component\(.*\);$|^\s*const (parent|saved)_component = current_component;$/gm, ''],
+	// Only the thumbnail src uses it, which changes when the items change. A relative URL sets the same src again then
+	[/export function src_url_equal\(element_src, url\) \{\n[\s\S]*?\n}/, 'export function src_url_equal(element_src, url) {\n\treturn element_src === url;\n}'],
 ].map(([find, replace]) => modify({ find, replace }))
 
 /**

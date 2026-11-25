@@ -1557,7 +1557,7 @@ const groups = [
 			return { read, count: window.bp.items.length, errors, same: JSON.stringify(items) === copy, links, sizes, ratio: box.width / box.height };
 		});
 		const read = value.read;
-		check('YouTube: the embed URL with the start time in seconds', read[0].iframe === 'https://www.youtube.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0&start=3723', read[0].iframe);
+		check('YouTube: the embed URL with the start time in seconds', read[0].iframe === 'https://www.youtube.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&start=3723', read[0].iframe);
 		check('Vimeo: the player URL with the private hash', read[1].iframe === 'https://player.vimeo.com/video/123456?autoplay=1&playsinline=1&h=abcdef1234', read[1].iframe);
 		check('a comma in an image URL stays in the URL', (read[2].img || '').endsWith('/img/c/1000x500.png?x=1,2'), read[2].img);
 		check('a srcset with no space after the comma: the gallery picks a candidate', /\/img\/c\/1200x800\.png$/.test(read[3].img || ''), read[3].img);
@@ -1565,7 +1565,7 @@ const groups = [
 		check('the loader of an iframe and an audio item fades out once they load', /bp-loaded/.test(read[5].loader ?? 'bp-loaded') && /bp-loaded/.test(read[6].loader ?? 'bp-loaded'), show([read[5].loader, read[6].loader]));
 		check('a data URL of an image is an image item', read[8].type === 'image' && read[8].img?.startsWith('data:image/svg'), show(read[8]));
 		check('a link with no known type is left out, and the item objects stay as they are', value.count === 15 && value.same, show(value));
-		check('youtube-nocookie: the embed stays on its host', value.links[0] === 'iframe https://www.youtube-nocookie.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0', value.links[0]);
+		check('youtube-nocookie: the embed stays on its host', value.links[0] === 'iframe https://www.youtube-nocookie.com/embed/abcdefghijk?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1', value.links[0]);
 		check('Vimeo: a link in a channel gives the player URL', value.links[1] === 'iframe https://player.vimeo.com/video/123456?autoplay=1&playsinline=1', value.links[1]);
 		check('YouTube Shorts are portrait', value.sizes[2] === '1080x1920', value.sizes[2]);
 		check('a .jfif link is an image', value.links[3] === 'image /img/c/photo.jfif', value.links[3]);
@@ -1611,6 +1611,36 @@ const groups = [
 			const back = await paused();
 			check('Space on a focused player plays or pauses it once', player !== start, show({ start, player }));
 			check('Space plays and pauses the audio item', wrap !== player && back === player, show({ player, wrap, back }));
+		}
+
+		// A YouTube or Vimeo player opened again resumes from the time that it sent, and a finished one starts over
+		{
+			const value = await page.evaluate(async () => {
+				const go = async (index) => {
+						window.bp.setPosition(index);
+						await t.wait(50);
+						await t.idle();
+						return new URL(t.$('iframe', t.slide()).src);
+					},
+					send = (data, source = t.$('iframe', t.slide()).contentWindow) => window.dispatchEvent(new MessageEvent('message', { data: JSON.stringify(data), source }));
+				await go(0);
+				send({ event: 'infoDelivery', info: { currentTime: 42.7 } });
+				// A message from another window does not change the time
+				send({ event: 'infoDelivery', info: { currentTime: 99 } }, window);
+				await go(1);
+				send({ event: 'playProgress', data: { seconds: 61.2 } });
+				const youtube = (await go(0)).searchParams.get('start'),
+					vimeo = (await go(1)).hash;
+				send({ event: 'finish', data: { seconds: 200 } });
+				await go(0);
+				send({ event: 'infoDelivery', info: { currentTime: 300, playerState: 0 } });
+				const vimeoEnd = (await go(1)).hash,
+					youtubeEnd = (await go(0)).searchParams.get('start');
+				return { youtube, vimeo, youtubeEnd, vimeoEnd };
+			});
+			check('a YouTube player opened again starts from the time that it sent', value.youtube === '42', show(value));
+			check('a Vimeo player opened again starts from the time that it sent', value.vimeo === '#t=61s', show(value));
+			check('a finished YouTube or Vimeo player starts over, YouTube from the start time of its link', value.youtubeEnd === '3723' && value.vimeoEnd === '', show(value));
 		}
 
 		// HTML larger than the stage fits in it and scrolls, and a long word breaks
@@ -2012,7 +2042,7 @@ const groups = [
 				await t.wait(50);
 				return { links: window.bp.items.map((item) => item.link), thumbs: window.bp.items.map((item) => item.thumb) };
 			});
-			check('YouTube: a playlist keeps its list and gets no video thumbnail', value.links[0] === 'https://www.youtube.com/embed/videoseries?autoplay=1&playsinline=1&controls=1&rel=0&si=abc&list=PL123' && value.links[1] === 'https://www.youtube.com/embed/?autoplay=1&playsinline=1&controls=1&rel=0&listType=playlist&list=PL123' && !value.thumbs[0] && !value.thumbs[1], show(value));
+			check('YouTube: a playlist keeps its list and gets no video thumbnail', value.links[0] === 'https://www.youtube.com/embed/videoseries?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&si=abc&list=PL123' && value.links[1] === 'https://www.youtube.com/embed/?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&listType=playlist&list=PL123' && !value.thumbs[0] && !value.thumbs[1], show(value));
 		}
 
 		// Items that the gallery can't measure or play: no errors, see the check of page errors

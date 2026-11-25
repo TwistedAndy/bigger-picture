@@ -7,8 +7,6 @@ interface options {
 	 *
 	 * For example, pass the clicked link in a click handler. */
 	current?: HTMLElement | EventTarget
-	/** @deprecated Use `current` */
-	el?: HTMLElement | EventTarget
 	/** Defines which types should be included to the gallery. Supported values: 'image', 'video', 'audio', 'iframe' and 'html' */
 	types?: string | string[]
 	/** Start position of gallery (zero-indexed). Defaults to the item of `current`, or the first item. */
@@ -21,14 +19,10 @@ interface options {
 	sizes?: string
 	/** Zooms the item out of its `element` on open and back into it on close. Set `false` to fade it up and down instead. Defaults to `true`. */
 	zoom?: boolean
-	/** @deprecated Use `zoom: false` */
-	intro?: string
 	/** Specifies that the lightbox is inline. Interaction events are modified to avoid hijacking scroll and tab press. */
 	inline?: boolean
 	/** Hides the close button and prevents the lightbox from closing unless the [`close`](https://github.com/TwistedAndy/bigger-picture#close) method is called. Recommended to use in combination with an inline gallery. */
 	persistent?: boolean
-	/** @deprecated Use `persistent` */
-	noClose?: boolean
 	/** Disables pinch zoom. A function runs at the time of the pinch and disables it when it returns a truthy value. Supplies `container` - the gallery's wrapper element.
 	 *
 	 * ```js
@@ -104,8 +98,6 @@ interface item {
 	html?: string
 	/** Alternative text of the image, also used as the iframe title and the `aria-label` of video and audio players. */
 	alt?: string
-	/** @deprecated Use `alt` */
-	title?: string
 	/** Text to be displayed using built in caption. You may pass html tags and styles can be overriden via CSS. */
 	caption?: string
 	/** Sets the sizes attribute if you're using `srcset`, overriding the `sizes` option. */

@@ -9,7 +9,10 @@
 	export let containerHeight;
 	export let activeDimensions;
 
-	const { activeItem, opts, prev, next, zoomed, closing } = props;
+	// True while the gallery runs its outro
+	export let closing;
+
+	const { activeItem, opts, prev, next } = props;
 
 	const maxZoom = activeItem.maxZoom || opts.maxZoom || 10;
 
@@ -55,7 +58,7 @@
 
 	// Fit the zoom to a new stage size. Small screens keep the zoom, e.g. on a turn of the phone, and only bring the image
 	// back into its bounds. A function, so the statement doesn't run again on each translate change. Before the zoomed
-	// store below, which must see the scale this sets
+	// statement below, which must see the scale this sets
 	const fitZoom = () => {
 		if (opts.inline || !smallScreen) {
 			reset();
@@ -72,11 +75,13 @@
 
 	$: activeDimensions, fitZoom();
 
-	$: zoomed.set(activeDimensions[0] * (scale - 1) > 10);
+	// True if the image is zoomed past its starting size, the gallery gets it too
+	$: zoomed = activeDimensions[0] * (scale - 1) > 10;
+	$: props.setZoomed(zoomed);
 
 	// If zoomed while closing, zoom out image and add class
 	// to change contain value on .bp-wrap to avoid cropping
-	$: if ($closing && scale !== 1 && opts.zoom) {
+	$: if (closing && scale !== 1 && opts.zoom) {
 		reset();
 		closingWhileZoomed = true;
 	}
@@ -103,7 +108,7 @@
 
 	// Updates zoom level in or out based on amt value
 	function changeZoom(amt = maxZoom, e) {
-		if ($closing) {
+		if (closing) {
 			return;
 		}
 
@@ -140,7 +145,7 @@
 	// Allow zoom to be read / set externally
 	Object.defineProperty(activeItem, 'zoom', {
 		configurable: true,
-		get: () => $zoomed,
+		get: () => zoomed,
 		set: (bool) => changeZoom(bool ? maxZoom : -maxZoom),
 	})
 
@@ -149,12 +154,12 @@
 		// Zoom out by the same factor, 1.5x in and 1 / 1.5x out
 		const zoom = { '+': 0.5, '=': 0.5, '-': -1 / 3 }[e.key];
 		const pan = { ArrowLeft: [100, 0], ArrowRight: [-100, 0], ArrowUp: [0, 100], ArrowDown: [0, -100] }[e.key];
-		if (opts.inline || $closing || !isGalleryKey(e, opts, props.container)) {
+		if (opts.inline || closing || !isGalleryKey(e, opts, props.container)) {
 			return;
 		}
 		if (zoom) {
 			changeZoom(zoom);
-		} else if (pan && $zoomed) {
+		} else if (pan && zoomed) {
 			e.preventDefault();
 			// Starts from the target, so held keys keep panning while the transition runs
 			translate = boundTranslateValues([translate[0] + pan[0], translate[1] + pan[1]]);
@@ -166,7 +171,7 @@
 
 	const onWheel = (e) => {
 		// Return if scrolling past inline gallery w/ wheel
-		if (opts.inline && !$zoomed) {
+		if (opts.inline && !zoomed) {
 			return;
 		}
 		// Prevent the default to stop scrolling on a zoomed inline image
@@ -189,7 +194,7 @@
 				hasDragged = false;
 				dragPositions.length = 0;
 			}
-			if ($zoomed) {
+			if (zoomed) {
 				// Stop the transition where it is, the drag moves the image without one
 				const img = bpImg.getBoundingClientRect();
 				const wrap = bpImg.parentNode.getBoundingClientRect();
@@ -252,7 +257,7 @@
 		hasDragged = hasDragged || Math.hypot(x, y) > 5;
 
 		// Handle unzoomed left / right / up swipes
-		if (!$zoomed) {
+		if (!zoomed) {
 			// Close if swipe up
 			if (y < -90) {
 				pointerDown = !opts.persistent && props.close();
@@ -273,7 +278,7 @@
 		}
 
 		// Image drag when zoomed
-		if ($zoomed && hasDragged && !$closing) {
+		if (zoomed && hasDragged && !closing) {
 			translate = boundTranslateValues([dragStartTranslate[0] + x, dragStartTranslate[1] + y]);
 		}
 	};
@@ -312,12 +317,12 @@
 				translate = boundTranslateValues([translate[0] - (posOne.x - posThree.x) * 5, translate[1] - (posOne.y - posThree.y) * 5]);
 			}
 		} else if (!opts.onImageClick?.(props.container, activeItem)) {
-			if ($zoomed) {
+			if (zoomed) {
 				const wrap = this.closest('.bp-wrap');
 				wrap.addEventListener('click', dropClick, { capture: true, once: true });
 				wrap.addEventListener('pointerdown', () => wrap.removeEventListener('click', dropClick, true), { capture: true, once: true });
 			}
-			changeZoom($zoomed ? -maxZoom : maxZoom, e);
+			changeZoom(zoomed ? -maxZoom : maxZoom, e);
 		}
 	};
 

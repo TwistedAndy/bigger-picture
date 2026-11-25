@@ -7,11 +7,9 @@
 </script>
 
 <script>
-	import { writable } from 'svelte/store';
 	import Thumbs from './components/thumbs.svelte';
 	import ImageItem from './components/image.svelte';
-	import Iframe from './components/iframe.svelte';
-	import Video from './components/video.svelte';
+	import Media from './components/media.svelte';
 	import { getUpperGallery, isGalleryKey } from './utils';
 
 	// Items in the gallery
@@ -24,6 +22,9 @@
 	export let dialog = false;
 
 	const html = document.documentElement;
+
+	// The tag of the gallery, a constant: Svelte has no code to switch the tag then. The dialog prop doesn't change
+	const tag = dialog ? 'dialog' : 'div';
 
 	// Index of current active item
 	let position = 0;
@@ -64,11 +65,11 @@
 	let activeItem;
 	let activeDimensions;
 
-	// True if the image is zoomed past its starting size
-	const zoomed = writable(0);
+	// True if the image is zoomed past its starting size, the image sets it
+	let zoomed = 0;
 
 	// True while this gallery runs its outro, other galleries on the page keep their own
-	const closing = writable(0);
+	let closing = 0;
 
 	// Update the active item and dimensions on position change
 	$: if (items?.[position]) {
@@ -88,8 +89,7 @@
 			return;
 		}
 
-		// intro and noClose are the deprecated names of zoom: false and persistent
-		opts = { zoom: !options.intro, persistent: options.noClose, ...options };
+		opts = { zoom: true, ...options };
 		labels = { close: 'Close', download: 'Download', prev: 'Previous', next: 'Next', thumb: 'View image', gallery: 'Gallery', ...opts.labels };
 		inline = opts.inline;
 
@@ -104,9 +104,9 @@
 
 		position = 0;
 
-		// Set the gallery items, el is the deprecated name of current
+		// Set the gallery items
 		const list = [],
-			current = opts.current || opts.el;
+			current = opts.current;
 
 		(opts.items instanceof HTMLElement ? [opts.items] : [...opts.items]).forEach((item, i) => {
 
@@ -182,10 +182,10 @@
 
 	// Close the gallery
 	export const close = () => {
-		if (!items || $closing) {
+		if (!items || closing) {
 			return;
 		}
-		closing.set(1);
+		closing = 1;
 		opts.onClose?.(container, activeItem);
 		window.removeEventListener('keydown', onKeydown, true);
 		// Closed without the back button, drop the history entry. The gallery of an open call made while closing takes it
@@ -213,7 +213,7 @@
 	// Jump to a specific position
 	export const setPosition = (index) => {
 		// No items while closed, and the item stays during the outro
-		if (!items || $closing) {
+		if (!items || closing) {
 			return;
 		}
 		const nextPosition = getNextPosition(index);
@@ -239,7 +239,7 @@
 		}
 		// The zoomed image pans with the arrows instead, a text field in an HTML item moves its caret, and a focused video or
 		// audio item seeks
-		const arrows = !$zoomed && !target.isContentEditable && !/^(INPUT|TEXTAREA|SELECT|VIDEO|AUDIO)$/.test(target.tagName);
+		const arrows = !zoomed && !target.isContentEditable && !/^(INPUT|TEXTAREA|SELECT|VIDEO|AUDIO)$/.test(target.tagName);
 		if (key === 'Escape') {
 			!opts.persistent && close();
 		} else if (key === 'ArrowRight' && arrows) {
@@ -281,7 +281,7 @@
 	// The focus stays in the upper gallery. Tab moves it out of the controls of a video or audio, as the keydown handler
 	// lets the browser move it into them
 	const onFocusin = ({ target }) =>
-		!$closing && getUpperGallery() === container && !(opts.focusWrap || container).contains(target) && container.focus({ preventScroll: true });
+		!closing && getUpperGallery() === container && !(opts.focusWrap || container).contains(target) && container.focus({ preventScroll: true });
 
 	// Normalize a gallery item
 	const prepareItem = (item) => {
@@ -307,9 +307,6 @@
 
 		// A copy too, the gallery writes the image src, srcset and sizes into it
 		item.attr = { ...item.attr };
-
-		// title is the deprecated name of alt
-		item.alt = item.alt || item.title;
 
 		let link = item.link = item.link || item.element?.href,
 			type = item.type;
@@ -382,15 +379,13 @@
 			return item;
 		}
 
-		// HTML5 video and audio, the first group holds a video extension
+		// HTML5 video and audio, the first group holds a video extension. The source has no type: with one source, a type
+		// only makes the browser skip a file that it can play, such as an H.264 .mov in Chrome
 		match = link.match(/\.(?:(mp4|m4v|mpeg|mov|ogv|webm|avi|h264)|(mp3|wav|ogg|oga|m4a|aac|flac|opus|wma|weba|mid))([?#].*)?$/i);
 
 		if (match) {
-			const ext = (match[1] || match[2]).toLowerCase();
 			item.type = match[1] ? 'video' : 'audio';
-			// The MIME subtype, where it is not the extension
-			const subtype = { ogv: 'ogg', mov: 'quicktime', avi: 'x-msvideo', mp3: 'mpeg', m4a: 'mp4', m4v: 'mp4', oga: 'ogg', opus: 'ogg', mid: 'midi', weba: 'webm' }[ext];
-			item.sources = [{ src: link, type: item.type + '/' + (subtype || ext) }];
+			item.sources = [{ src: link }];
 			return item;
 		}
 
@@ -402,7 +397,7 @@
 
 			// The privacy-enhanced mode stays on the youtube-nocookie.com host
 			let sourceURL = new URL(link),
-				targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + match[3] + '?autoplay=1&playsinline=1&controls=1&rel=0');
+				targetURL = new URL('https://www.youtube' + (match[2] || '') + '.com/embed/' + match[3] + '?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1');
 
 			// Shorts are portrait, 9:16
 			if (!item.width && /\/shorts\//.test(link)) {
@@ -689,15 +684,15 @@
 		} else {
 			// Deferred so the item is measured after the container action has shown the dialog and called onOpen. Not when
 			// onOpen has closed the gallery, the outro is set then
-			queueMicrotask(() => $closing || zoom(node, ''));
+			queueMicrotask(() => closing || zoom(node, ''));
 		}
 		slide = node;
 
 		return {
 			destroy() {
-				// The next item and the next open are not zoomed. The image sets the store itself, an item of another type
+				// The next item and the next open are not zoomed. The image sets the value itself, an item of another type
 				// would keep the value, and the gallery would read the gap of a zoomed one on open
-				zoomed.set(0);
+				zoomed = 0;
 				// The items are removed on close, the slide leaves with the gallery then
 				if (items) {
 					// Svelte has removed the previous slide, put it back under the new one until it slides out
@@ -711,7 +706,6 @@
 
 	// Provides object w/ needed funcs / data to child components
 	const getChildProps = () => ({
-		closing,
 		preloadNext,
 		setDimensions,
 		activeItem,
@@ -720,7 +714,7 @@
 		get container() {
 			return container;
 		},
-		zoomed,
+		setZoomed: (value) => (zoomed = value),
 		close,
 		opts,
 		prev,
@@ -736,6 +730,8 @@
 	// Process the gallery mount and destroy
 	const containerActions = (node) => {
 		container = node;
+		// Set here for the reason of the attributes below, and before the measure, as the class sizes the stage
+		node.classList.add('bp-wrap');
 
 		// Measure the stage, which the thumbnails, the offsets and the scroll lock make other than the target, and read the gap
 		// of the gallery, which can set its own, such as none when inline. The image of the item loads after this, see onMount
@@ -769,7 +765,7 @@
 			// The back button closes the gallery instead of leaving the page. The gallery of an open call made while closing
 			// keeps the entry of the last one. Not when closed in the same tick as opened, the close has already passed its
 			// history.back()
-			if (opts.history && !$closing) {
+			if (opts.history && !closing) {
 				if (!historyId) {
 					historyUrl = location.href;
 					history.pushState({ bp: (historyId = Math.random()) }, '');
@@ -789,7 +785,7 @@
 				window.removeEventListener('focusin', onFocusin);
 				window.removeEventListener('popstate', onPopstate);
 				focusTrigger?.focus({ preventScroll: true });
-				closing.set(0);
+				closing = 0;
 				slide = null;
 				// The page stays locked while another gallery is open, the node of this one is removed already
 				if (!getUpperGallery()) {
@@ -823,7 +819,7 @@
 				containerWidth = width;
 				containerHeight = height;
 				// A zoomed gallery has no gap, the item keeps the one it fits in once zoomed out
-				$zoomed || readGap();
+				zoomed || readGap();
 				activeDimensions = calculateDimensions(activeItem);
 			}
 
@@ -845,14 +841,13 @@
 
 {#if items}
 	<svelte:element
-		this={dialog ? 'dialog' : 'div'}
+		this={tag}
 		use:containerActions
-		class="bp-wrap"
-		class:bp-zoomed={$zoomed}
+		class:bp-zoomed={zoomed}
 		class:bp-inline={inline}
 		class:bp-small={smallScreen}
 		class:bp-noclose={opts.persistent}
-		class:bp-closing={$closing}
+		class:bp-closing={closing}
 	>
 		{#if !dialog}
 			<div class="bp-overlay"></div>
@@ -876,11 +871,9 @@
 						<div class="bp-crop"><div>
 							{#if containerWidth > 0 && containerHeight > 0}
 								{#if activeItem.type === 'image'}
-									<ImageItem props={getChildProps()} {smallScreen} {containerWidth} {containerHeight} {activeDimensions} />
-								{:else if activeItem.sources}
-									<Video props={getChildProps()} {activeDimensions} />
-								{:else if activeItem.type === 'iframe'}
-									<Iframe props={getChildProps()} {activeDimensions} />
+									<ImageItem props={getChildProps()} {closing} {smallScreen} {containerWidth} {containerHeight} {activeDimensions} />
+								{:else if activeItem.sources || activeItem.type === 'iframe'}
+									<Media props={getChildProps()} {closing} {activeDimensions} />
 								{:else}
 									<div class="bp-html">
 										{@html activeItem.html}

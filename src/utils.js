@@ -1,3 +1,7 @@
+// Playback positions by a key: the first source of a video, or the link of a YouTube or Vimeo player. A video or a player
+// opened again resumes from there
+export const positions = {};
+
 // Quoted, a URL with parentheses, such as "photo (1).jpg", is invalid in a bare url(). Escaped, a quote in a data URL, such
 // as of an SVG, doesn't end the string
 export const getThumbBackground = (activeItem) => activeItem.thumb ? `url("${CSS.escape(activeItem.thumb.src)}")` : null;
