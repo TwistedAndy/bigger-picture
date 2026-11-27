@@ -13,6 +13,10 @@ interface options {
 	position?: number
 	/** Controls the size of the displayed item. Use `1` to fill item to screen edges. */
 	scale?: number
+	/** The size of an image relative to its own `width` and `height`. `'fit'` fills the gallery, `'natural'` keeps the own size, `'page'` keeps the own size but not smaller than the thumbnail on the page, and a number is the largest enlargement. A larger image gets smaller to fit. Defaults to `'natural'`. */
+	imageSize?: 'fit' | 'natural' | 'page' | number
+	/** The place of the caption: `'overlay'` on the item, `'footer'` at the bottom of the gallery, or `'attached'` directly below the item. With `'footer'` and `'attached'`, the item gets smaller and does not go under the caption. Defaults to `'overlay'`. */
+	captionPosition?: 'overlay' | 'footer' | 'attached'
 	/** Shows a strip of thumbnails at the bottom of the gallery when it has more than one item. */
 	thumbs?: boolean
 	/** Sets the sizes attribute for all images using `srcset`. By default it is updated automatically when an image is zoomed. */
@@ -106,6 +110,8 @@ interface item {
 	 *
 	 * If `maxZoom` is set on an individual item it will override the value set in options. Attribute name is `data-max-zoom`. */
 	maxZoom?: number
+	/** The size of this image relative to its own size, overriding the `imageSize` option. Attribute name is `data-image-size`. */
+	imageSize?: 'fit' | 'natural' | 'page' | number
 	/** Array of text track data to use with videos. String option is just a stringified array. See the [MDN page on track elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/track) for more information. */
 	tracks?: string | object[]
 	/** To control the default open / close animation, add a property `element` to each item that contains a node on the page. The active item's `element` will be where the animation opens from / closes to. If you're not using the default scale animation, this is not needed. */

@@ -556,12 +556,40 @@
 
 	const readGap = () => (gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0);
 
+	// The content box of an element, a thumbnail is drawn inside its padding and border, and the object-fit of the element
+	const contentBox = (node) => {
+		const style = getComputedStyle(node);
+		const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
+		const bounds = node.getBoundingClientRect();
+		return {
+			left: bounds.left + edge('Left'),
+			top: bounds.top + edge('Top'),
+			width: bounds.width - edge('Left') - edge('Right'),
+			height: bounds.height - edge('Top') - edge('Bottom'),
+			fit: style.objectFit
+		};
+	};
+
 	// Calculate width and height to fit inside a container
-	const calculateDimensions = ({
-		width = 1920,
-		height = 1080
-	}) => {
-		const ratio = (opts.scale ?? 1) * Math.min((containerWidth - 2 * gap) / width, (containerHeight - 2 * gap) / height);
+	const calculateDimensions = (item) => {
+		const { width = 1920, height = 1080 } = item;
+		const size = item.imageSize || opts.imageSize || 'natural';
+		// The largest enlargement of the image, a number from a data attribute is a string. Not a number fills the gallery
+		const upscale = { fit: Infinity, natural: 1, page: 1 }[size] || +size;
+		let ratio = (opts.scale ?? 1) * Math.min((containerWidth - 2 * gap) / width, (containerHeight - 2 * gap) / height);
+
+		// Only an image of a known size is limited. A size from a thumbnail or the default is only a ratio, and fills the gallery
+		if (item.type === 'image' && item.width && !item.scaled && ratio > upscale) {
+			let page = 0;
+			// Not smaller than the thumbnail on the page. A hidden thumbnail has a zero size, a removed one a NaN size, and
+			// neither sets a lower limit
+			if (size === 'page' && item.source) {
+				const box = contentBox(item.source);
+				page = Math[(item.fit || box.fit) === 'cover' ? 'max' : 'min'](box.width / width, box.height / height) || 0;
+			}
+			ratio = Math.min(ratio, Math.max(upscale, page));
+		}
+
 		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	};
@@ -615,6 +643,8 @@
 			if ((item.scaled || !item.width || !item.height) && image.naturalWidth) {
 				item.width = Math.round(image.naturalWidth * factor);
 				item.height = Math.round(image.naturalHeight * factor);
+				// The size is real now, the imageSize limit applies
+				item.scaled = 0;
 				if (item === activeItem) {
 					activeDimensions = calculateDimensions(item);
 				}
@@ -642,19 +672,9 @@
 			const content = activeItem.type === 'html' && node.querySelector('.bp-html')?.firstElementChild;
 			const dimensions = content ? [content.clientWidth, content.clientHeight] : activeDimensions;
 
-			// Rect is the content box of the trigger element, the image is drawn inside its padding and border
-			const source = activeItem.source || focusTrigger;
-			const style = window.getComputedStyle(source);
-			// The object-fit of the thumbnail, read for the active item only, not for each item on open
-			const fit = activeItem.fit || style.objectFit;
-			const edge = (side) => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
-			const bounds = source.getBoundingClientRect();
-			const rect = {
-				left: bounds.left + edge('Left'),
-				top: bounds.top + edge('Top'),
-				width: bounds.width - edge('Left') - edge('Right'),
-				height: bounds.height - edge('Top') - edge('Bottom')
-			};
+			// The content box of the trigger element, and the object-fit of the thumbnail
+			const rect = contentBox(activeItem.source || focusTrigger);
+			const fit = activeItem.fit || rect.fit;
 
 			// A hidden or removed thumbnail, or an item with no size, has no scale to zoom from, the slide fades instead. A
 			// removed one has a NaN size. The comparison stays a > 0: the unsafe_comps option of terser compiles !(a > 0) to
@@ -896,7 +916,13 @@
 				<div class="bp-ruler" use:rulerActions></div>
 			</div>
 			{#if activeItem.caption}
-				<div class="bp-caption">
+				<!-- A footer or attached caption takes its own space below the item. An attached one moves up to the item -->
+				<div
+					class="bp-caption"
+					class:bp-footer={opts.captionPosition === 'footer'}
+					class:bp-attached={opts.captionPosition === 'attached'}
+					style:transform={opts.captionPosition === 'attached' ? `translateY(${(activeDimensions[1] - containerHeight) / 2}px)` : null}
+				>
 					{@html activeItem.caption}
 				</div>
 			{/if}

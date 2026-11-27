@@ -280,10 +280,10 @@ function helpers() {
 			return { ...rect, gap, right: rect.left + rect.width, bottom: rect.top + rect.height };
 		},
 
-		// The rect an item of the given size must fit in, centered in the stage
-		fit(width, height, scale = 1) {
+		// The rect an item of the given size must fit in, centered in the stage. An image grows to upscale times its size at most
+		fit(width, height, scale = 1, upscale = 1) {
 			const stage = t.stage(),
-				ratio = Math.min((stage.width - 2 * stage.gap) / width, (stage.height - 2 * stage.gap) / height) * scale,
+				ratio = Math.min(Math.min((stage.width - 2 * stage.gap) / width, (stage.height - 2 * stage.gap) / height) * scale, upscale),
 				w = Math.round(width * ratio),
 				h = Math.round(height * ratio);
 			return { left: stage.left + (stage.width - w) / 2, top: stage.top + (stage.height - h) / 2, width: w, height: h };
@@ -1216,15 +1216,16 @@ const groups = [
 	['scaling', async ({ page, check, idle }) => {
 		const specs = [photo, { w: 1667, h: 2500 }, { w: 2400, h: 2400 }, { w: 4000, h: 1000 }, { w: 1000, h: 3000 }, { w: 400, h: 300 }].map((spec) => ({ ...spec, tag: 'scale' }));
 		await page.evaluate((specs) => t.grid(specs), specs);
-		const fitAll = (options = {}, scale = 1) => page.evaluate(async (specs, options, scale) => {
+		// JSON has no Infinity, null stands for it
+		const fitAll = (options = {}, scale = 1, upscale = 1) => page.evaluate(async (specs, options, scale, upscale) => {
 			const result = [];
 			for (const [index, spec] of specs.entries()) {
 				await t.open({ position: index, ...options });
 				const image = t.$('.bp-img img');
-				result.push({ index, visible: t.visible(), fit: t.fit(spec.w, spec.h, scale), ratio: image.naturalWidth / image.naturalHeight, shown: image.offsetWidth / image.offsetHeight });
+				result.push({ index, visible: t.visible(), fit: t.fit(spec.w, spec.h, scale, upscale ?? Infinity), ratio: image.naturalWidth / image.naturalHeight, shown: image.offsetWidth / image.offsetHeight });
 			}
 			return result;
-		}, specs, options, scale);
+		}, specs, options, scale, upscale);
 		const report = (list) => list.filter((item) => !near(item.visible, item.fit) || Math.abs(item.ratio - item.shown) > 0.01);
 
 		for (const [name, viewport] of [['1200 x 900', { width: 1200, height: 900 }], ['700 x 1000', { width: 700, height: 1000 }], ['1600 x 500', { width: 1600, height: 500 }]]) {
@@ -1233,6 +1234,50 @@ const groups = [
 			check(name + ': each item fits the stage, centered, with its own aspect ratio', !bad.length, show(bad));
 		}
 		await page.setViewport({ width: 1200, height: 900 });
+
+		// The imageSize option. The 400 x 300 image keeps its size by default, fills the stage with 'fit', and doubles with 2
+		for (const [imageSize, upscale] of [['fit', null], [2, 2]]) {
+			const bad = report(await fitAll({ imageSize }, 1, upscale));
+			check(`imageSize: ${imageSize} limits the size of the small image`, !bad.length, show(bad));
+		}
+		{
+			const value = await page.evaluate(async () => {
+				const image = t.$$('#root img')[5];
+				image.style.cssText = 'width: 600px; height: 450px';
+				await t.open({ position: 5, imageSize: 'page' });
+				const page = t.visible();
+				await t.open({ position: 5, imageSize: 'natural' });
+				const natural = t.visible();
+				image.style.cssText = '';
+				t.reset();
+				return { page, natural };
+			});
+			check("imageSize: 'page' is not smaller than the image on the page", Math.abs(value.page.width - 600) <= 1 && Math.abs(value.page.height - 450) <= 1 && Math.abs(value.natural.width - 400) <= 1, show(value));
+		}
+
+		// The captionPosition option, measured on the first item with a caption
+		{
+			const value = await page.evaluate(async () => {
+				const result = {};
+				t.$('#root a').dataset.caption = 'Caption<br>Second line';
+				for (const captionPosition of ['overlay', 'footer', 'attached']) {
+					await t.open({ position: 0, captionPosition });
+					const caption = t.$('.bp-caption').getBoundingClientRect();
+					result[captionPosition] = { item: t.visible(), top: caption.top, bottom: caption.bottom, height: innerHeight };
+				}
+				delete t.$('#root a').dataset.caption;
+				t.reset();
+				return result;
+			});
+			const { overlay, footer, attached } = value;
+			check("captionPosition: 'overlay' puts the caption on the item", overlay.top < overlay.item.top + overlay.item.height, show(overlay));
+			check("captionPosition: 'footer' puts the caption at the bottom, below the item", footer.item.top + footer.item.height <= footer.top && Math.abs(footer.height - 10 - footer.bottom) <= 1, show(footer));
+			check(
+				"captionPosition: 'attached' puts the caption 10px below the item, and centers them together",
+				Math.abs(attached.top - attached.item.top - attached.item.height - 10) <= 1 && Math.abs(attached.item.top - (attached.height - attached.bottom)) <= 1,
+				show(attached)
+			);
+		}
 
 		// The scale option and the thumbnails
 		{

@@ -99,9 +99,11 @@
 			cursor: grab;
 		}
 
+		// The hidden caption lets the drag of the zoomed image through
 		.bp-caption {
 			animation: none !important;
 			opacity: 0;
+			pointer-events: none;
 		}
 
 	}
@@ -512,6 +514,20 @@
 
 	a {
 		color: inherit;
+	}
+
+	// Below the item in the stage, the ruler and the item get shorter by its height
+	&.bp-footer,
+	&.bp-attached {
+		position: relative;
+		bottom: auto;
+		flex-shrink: 0;
+		margin: 10px auto;
+	}
+
+	// It moves up to the item, the space above the item and below the caption stay the same
+	&.bp-attached {
+		margin-bottom: 0;
 	}
 
 }

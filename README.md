@@ -32,13 +32,13 @@ Load the minified build and the stylesheet from jsDelivr. The script exposes a g
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.4/dist/bigger-picture.css"
-  integrity="sha384-FqLLbHS7HnznxHVY6vHj02K9JCid7V8XWSSeaocXXzggR5m83m5BtgEkGMYntBMK"
+  href="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.5/dist/bigger-picture.css"
+  integrity="sha384-z1+jeM/roOhoBf8Yu+wmgOFrs/N8CWbgGLHJNf8nWR/CLWfrKNxXr1Ac7BlL4ffn"
   crossorigin="anonymous"
 />
 <script
-  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.4/dist/bigger-picture.min.js"
-  integrity="sha384-hnpR9sBmWNX9f53pk3gB/R/YcUmC6eVFp/2H6/mrWKSCYv13+kDgRUrVdZxTdkBj"
+  src="https://cdn.jsdelivr.net/gh/TwistedAndy/bigger-picture@v1.4.5/dist/bigger-picture.min.js"
+  integrity="sha384-ri8mr2vdSfP7wTr0L9BuH2SatJZRqgkvN7EnGVlviXDOlf+L0gl3G6XXayoTtpJP"
   crossorigin="anonymous"
 ></script>
 ```
@@ -378,6 +378,8 @@ Options passed to `open()`.
 | [`position`](#position)        | `number`                           | `0`         | Item to start at, counted from zero.                    |
 | [`types`](#types)              | `string` or `string[]`             | all         | Item types to include.                                  |
 | [`scale`](#scale)              | `number`                           | `1`         | Size of the item relative to the gallery.               |
+| [`imageSize`](#imagesize)      | `string` or `number`               | `'natural'` | Size of an image relative to its own size.              |
+| [`captionPosition`](#captionposition) | `string`                    | `'overlay'` | Caption on the item, at the bottom, or below the item.  |
 | [`thumbs`](#thumbs)            | `boolean`                          | `false`     | Shows a strip of thumbnails.                            |
 | [`sizes`](#sizes)              | `string`                           |             | `sizes` attribute for every `srcset` image.             |
 | [`zoom`](#zoom)                | `boolean`                          | `true`      | Zooms from `current` and back, or fades with `false`.   |
@@ -430,6 +432,31 @@ bp.open({ items, types: ['image', 'video'] })
 `number` · default `1`
 
 The size of the item relative to the gallery. `1` fills it up to the edges.
+
+### imageSize
+
+`string` or `number` · default `'natural'`
+
+The size of an image relative to its own `width` and `height`:
+
+- `'fit'` fills the gallery, as other items do.
+- `'natural'` shows the image at its own size. An image larger than the gallery gets smaller to fit.
+- `'page'` shows the image at its own size, but not smaller than its thumbnail on the page.
+- A number is the largest enlargement. With `1.5`, a 600px image grows to 900px at most.
+
+The image never becomes larger than the [`scale`](#scale) of the gallery. The limit applies only to an image with a known size: the `width` and `height` properties, or the size of the loaded file. Until the file loads, an image with no size takes the ratio of its thumbnail and fills the gallery. Give the size, and the image opens at its own size. An item's own `imageSize` overrides this value.
+
+### captionPosition
+
+`string` · default `'overlay'`
+
+The place of the [`caption`](#caption):
+
+- `'overlay'` shows the caption on the bottom of the item.
+- `'footer'` shows the caption at the bottom of the gallery. The item gets smaller and does not go under the caption.
+- `'attached'` shows the caption directly below the item, and centers them together. The item gets smaller and does not go under the caption.
+
+With `'footer'` and `'attached'`, the size of the item changes with the height of its caption.
 
 ### thumbs
 
@@ -605,6 +632,7 @@ Pass them as data attributes (`data-link`, `data-max-zoom`) on elements, or as p
 | [`attr`](#attr)          | `object` or `string`                   | Extra attributes for the media element.                    |
 | [`sizes`](#sizes-1)      | `string`                               | `sizes` attribute for a `srcset` image.                    |
 | [`maxZoom`](#maxzoom-1)  | `number`                               | Maximum zoom for this item.                                |
+| [`imageSize`](#imagesize-1) | `string` or `number`                | Size of this image relative to its own size.               |
 | [`download`](#download-1) | `string` or `boolean`                 | Download URL, or `false` to hide the link.                 |
 | `element`                | `Node`                                 | Element to zoom from and back into, for objects.           |
 
@@ -733,6 +761,12 @@ Sets the `sizes` attribute of an image with a `srcset`, overriding the [`sizes`]
 
 The maximum zoom of this item, overriding the [`maxZoom`](#maxzoom) option. The attribute is `data-max-zoom`.
 
+### imageSize
+
+`string` or `number`
+
+The size of this image relative to its own size, overriding the [`imageSize`](#imagesize) option. The attribute is `data-image-size`.
+
 ### download
 
 `string` or `boolean`
@@ -794,6 +828,10 @@ html {
 	scrollbar-gutter: stable;
 }
 ```
+
+## Upgrading from 1.4.4
+
+- An image with a known size that is smaller than the gallery shows at its own size, not stretched. Set [`imageSize: 'fit'`](#imagesize) to fill the gallery as before.
 
 ## Upgrading from 1.4.3
 

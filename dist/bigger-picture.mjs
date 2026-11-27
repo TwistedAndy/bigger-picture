@@ -2059,7 +2059,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (854:2) {#if !dialog}
+// (874:2) {#if !dialog}
 function create_if_block_8(ctx) {
 	let div;
 
@@ -2079,7 +2079,7 @@ function create_if_block_8(ctx) {
 	};
 }
 
-// (865:125) {#if containerWidth > 0 && containerHeight > 0}
+// (885:125) {#if containerWidth > 0 && containerHeight > 0}
 function create_if_block_5(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2153,7 +2153,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (865:443) {:else}
+// (885:443) {:else}
 function create_else_block(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].html + "";
@@ -2179,7 +2179,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (865:381) 
+// (885:381) 
 function create_if_block_7(ctx) {
 	let media;
 	let current;
@@ -2221,7 +2221,7 @@ function create_if_block_7(ctx) {
 	};
 }
 
-// (865:172) {#if activeItem.type === 'image'}
+// (885:172) {#if activeItem.type === 'image'}
 function create_if_block_6(ctx) {
 	let imageitem;
 	let current;
@@ -2269,7 +2269,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (854:94) {#key activeItem.i}
+// (874:94) {#key activeItem.i}
 function create_key_block(ctx) {
 	let div2;
 	let div1;
@@ -2351,7 +2351,7 @@ function create_key_block(ctx) {
 	};
 }
 
-// (865:585) {#if activeItem.caption}
+// (885:585) {#if activeItem.caption}
 function create_if_block_4(ctx) {
 	let div;
 	let raw_value = /*activeItem*/ ctx[8].caption + "";
@@ -2360,13 +2360,33 @@ function create_if_block_4(ctx) {
 		c() {
 			div = element("div");
 			attr(div, "class", "bp-caption");
+			toggle_class(div, "bp-footer", /*opts*/ ctx[9].captionPosition === 'footer');
+			toggle_class(div, "bp-attached", /*opts*/ ctx[9].captionPosition === 'attached');
+
+			set_style(div, "transform", /*opts*/ ctx[9].captionPosition === 'attached'
+			? `translateY(${(/*activeDimensions*/ ctx[15][1] - /*containerHeight*/ ctx[14]) / 2}px)`
+			: null);
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
 			div.innerHTML = raw_value;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*activeItem*/ 256 && raw_value !== (raw_value = /*activeItem*/ ctx[8].caption + "")) div.innerHTML = raw_value;		},
+			if (dirty[0] & /*activeItem*/ 256 && raw_value !== (raw_value = /*activeItem*/ ctx[8].caption + "")) div.innerHTML = raw_value;
+			if (dirty[0] & /*opts*/ 512) {
+				toggle_class(div, "bp-footer", /*opts*/ ctx[9].captionPosition === 'footer');
+			}
+
+			if (dirty[0] & /*opts*/ 512) {
+				toggle_class(div, "bp-attached", /*opts*/ ctx[9].captionPosition === 'attached');
+			}
+
+			if (dirty[0] & /*opts, activeDimensions, containerHeight*/ 49664) {
+				set_style(div, "transform", /*opts*/ ctx[9].captionPosition === 'attached'
+				? `translateY(${(/*activeDimensions*/ ctx[15][1] - /*containerHeight*/ ctx[14]) / 2}px)`
+				: null);
+			}
+		},
 		d(detaching) {
 			if (detaching) {
 				detach(div);
@@ -2375,7 +2395,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (865:725) {#if activeItem.download}
+// (890:97) {#if activeItem.download}
 function create_if_block_3(ctx) {
 	let a;
 	let a_href_value;
@@ -2414,7 +2434,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (865:1174) {#if items.length > 1}
+// (890:546) {#if items.length > 1}
 function create_if_block_2(ctx) {
 	let div;
 	let t0_value = /*position*/ ctx[6] + 1 + "";
@@ -2477,7 +2497,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (875:25) {#if opts.thumbs && items.length > 1}
+// (900:25) {#if opts.thumbs && items.length > 1}
 function create_if_block_1(ctx) {
 	let thumbs;
 	let current;
@@ -2521,7 +2541,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (846:20) <svelte:element   this={tag}   use:containerActions   class:bp-zoomed={zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={closing}  >
+// (866:20) <svelte:element   this={tag}   use:containerActions   class:bp-zoomed={zoomed}   class:bp-inline={inline}   class:bp-small={smallScreen}   class:bp-noclose={opts.persistent}   class:bp-closing={closing}  >
 function create_dynamic_element(ctx) {
 	let svelte_element;
 	let div2;
@@ -3330,9 +3350,44 @@ function instance($$self, $$props, $$invalidate) {
 
 	const readGap = () => gap = parseInt(getComputedStyle(container).getPropertyValue('--bp-stage-gap')) || 0;
 
+	// The content box of an element, a thumbnail is drawn inside its padding and border, and the object-fit of the element
+	const contentBox = node => {
+		const style = getComputedStyle(node);
+		const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
+		const bounds = node.getBoundingClientRect();
+
+		return {
+			left: bounds.left + edge('Left'),
+			top: bounds.top + edge('Top'),
+			width: bounds.width - edge('Left') - edge('Right'),
+			height: bounds.height - edge('Top') - edge('Bottom'),
+			fit: style.objectFit
+		};
+	};
+
 	// Calculate width and height to fit inside a container
-	const calculateDimensions = ({ width = 1920, height = 1080 }) => {
-		const ratio = (opts.scale ?? 1) * Math.min((containerWidth - 2 * gap) / width, (containerHeight - 2 * gap) / height);
+	const calculateDimensions = item => {
+		const { width = 1920, height = 1080 } = item;
+		const size = item.imageSize || opts.imageSize || 'natural';
+
+		// The largest enlargement of the image, a number from a data attribute is a string. Not a number fills the gallery
+		const upscale = ({ fit: Infinity, natural: 1, page: 1 })[size] || +size;
+
+		let ratio = (opts.scale ?? 1) * Math.min((containerWidth - 2 * gap) / width, (containerHeight - 2 * gap) / height);
+
+		// Only an image of a known size is limited. A size from a thumbnail or the default is only a ratio, and fills the gallery
+		if (item.type === 'image' && item.width && !item.scaled && ratio > upscale) {
+			let page = 0;
+
+			// Not smaller than the thumbnail on the page. A hidden thumbnail has a zero size, a removed one a NaN size, and
+			// neither sets a lower limit
+			if (size === 'page' && item.source) {
+				const box = contentBox(item.source);
+				page = Math[(item.fit || box.fit) === 'cover' ? 'max' : 'min'](box.width / width, box.height / height) || 0;
+			}
+
+			ratio = Math.min(ratio, Math.max(upscale, page));
+		}
 
 		// Round number so we don't use a float as the sizes attribute
 		return [Math.round(width * ratio), Math.round(height * ratio)];
@@ -3381,6 +3436,9 @@ function instance($$self, $$props, $$invalidate) {
 				item.width = Math.round(image.naturalWidth * factor);
 				item.height = Math.round(image.naturalHeight * factor);
 
+				// The size is real now, the imageSize limit applies
+				item.scaled = 0;
+
 				if (item === activeItem) {
 					$$invalidate(15, activeDimensions = calculateDimensions(item));
 				}
@@ -3410,23 +3468,10 @@ function instance($$self, $$props, $$invalidate) {
 			? [content.clientWidth, content.clientHeight]
 			: activeDimensions;
 
-			// Rect is the content box of the trigger element, the image is drawn inside its padding and border
-			const source = activeItem.source || focusTrigger;
+			// The content box of the trigger element, and the object-fit of the thumbnail
+			const rect = contentBox(activeItem.source || focusTrigger);
 
-			const style = window.getComputedStyle(source);
-
-			// The object-fit of the thumbnail, read for the active item only, not for each item on open
-			const fit = activeItem.fit || style.objectFit;
-
-			const edge = side => parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']);
-			const bounds = source.getBoundingClientRect();
-
-			const rect = {
-				left: bounds.left + edge('Left'),
-				top: bounds.top + edge('Top'),
-				width: bounds.width - edge('Left') - edge('Right'),
-				height: bounds.height - edge('Top') - edge('Bottom')
-			};
+			const fit = activeItem.fit || rect.fit;
 
 			// A hidden or removed thumbnail, or an item with no size, has no scale to zoom from, the slide fades instead. A
 			// removed one has a NaN size. The comparison stays a > 0: the unsafe_comps option of terser compiles !(a > 0) to
